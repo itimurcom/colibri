@@ -1,0 +1,76 @@
+/* настройки элементов для галлерей */
+
+.fancybox-lock body {
+    overflow: visible !important;
+}
+
+
+.gallery_avatar
+	{
+	width:100%;
+	}
+
+
+.gal_remove_div
+	{
+	position:absolute;
+	top:2%;
+	right:16px;
+	}
+
+.gal_remove
+	{
+	width:28px;
+	height:28px;
+	opacity:.6;
+	border-radius:8px;
+	-moz-border-radius:8px;
+	-khtml-border-radius:8px;
+	-webkit-border-radius:8px;
+	}
+
+.add_image_button
+	{
+	position:relative;
+	opacity:.6;
+	}
+
+.add_image_button:active
+	{
+	top:1px;
+	left:1px;
+	}
+
+.gal_remove:hover, .add_image_button:hover
+	{
+	cursor:pointer;
+	opacity:1;
+-webkit-transition: all 600ms cubic-bezier(0.250, 0.100, 0.250, 1.000); 
+   -moz-transition: all 600ms cubic-bezier(0.250, 0.100, 0.250, 1.000); 
+     -o-transition: all 600ms cubic-bezier(0.250, 0.100, 0.250, 1.000); 
+        transition: all 600ms cubic-bezier(0.250, 0.100, 0.250, 1.000);
+	}
+
+.gal_remove:not(:hover), .add_image_button:not(:hover)
+	{
+-webkit-transition: all 600ms cubic-bezier(0.250, 0.100, 0.250, 1.000); 
+   -moz-transition: all 600ms cubic-bezier(0.250, 0.100, 0.250, 1.000); 
+     -o-transition: all 600ms cubic-bezier(0.250, 0.100, 0.250, 1.000); 
+        transition: all 600ms cubic-bezier(0.250, 0.100, 0.250, 1.000);
+	}
+
+.gallery_n
+	{
+	position:absolute;
+	bottom:0;
+	left:0;
+	padding:.2em;
+	width:10%;
+	color:gray;
+	font-size:.95em;
+	}
+
+.f_caption
+	{
+	color:lightgreen;
+	}

@@ -1,0 +1,87 @@
+/*// ================ CRC ================
+// version: 1.15.02
+// hash: 8f34c6b48f7fcc529eae79d5dd641c19952e588587fbb6c01ddf5f7786f9b80b
+// date: 21 March 2019 20:47
+// ================ CRC ================*/
+a.goals_field:hover
+	{
+	text-decoration: none !important;
+	color:yellow !important;
+	font-size: 1.1em;
+	}
+	
+
+a.goals_field:active
+	{
+	transform: translate(1px, 1px);
+	-webkit-transform: translate(1px, 1px);
+	-moz-transform: translate(1px, 1px);
+	}
+
+.goals_field.red
+	{
+	background:rgba(255, 0, 0, .5);
+	color:white !important;
+	}
+
+.goals_field.red:hover
+	{
+	background:rgba(255, 0, 0, 1);
+	}
+
+.goals_field.blue
+	{
+	background:rgba(0, 0, 255, .5);
+	color:white !important;
+	}
+
+.goals_field.blue:hover
+	{
+	background:rgba(0, 0, 255, 1);
+	}
+
+
+.goals_field.green
+	{
+	background:rgba(0, 128, 0, .5);
+	color:white !important;
+	}
+
+.goals_field.green:hover
+	{
+	background:rgba(0, 128, 0, 1);
+	}
+
+.goals_field.yellow
+	{
+	background:rgba(255, 255, 0, .5);
+	color:black !important;
+	}
+
+.goals_field.yellow:hover
+	{
+	background:rgba(255, 255, 0, 1);
+	color:darkblue !important;
+	}
+
+.goals_field.brown
+	{
+	background:rgba(165, 42, 42, .5);
+	color:white !important;
+	}
+
+.goals_field.brown:hover
+	{
+	background:rgba(165, 42, 42, 1);
+	}
+
+.goals_field.violet
+	{
+	background:rgba(148, 0, 211, .5);
+	color:white !important;
+	}
+
+.goals_field.violet:hover
+	{
+	background:rgba(148, 0, 211, 1);
+	}

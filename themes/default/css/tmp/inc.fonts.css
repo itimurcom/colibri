@@ -1,0 +1,42 @@
+@font-face
+	{
+	font-family: 'Corinthia';
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;	
+	src: url(/themes/default/fonts/Corinthia.ttf), local('Comic Sans MS');
+	}
+
+@font-face
+	{
+	font-family: 'Katherine';
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;	
+	src: url(/themes/default/fonts/Katherine.ttf), local('Comic Sans MS');
+	}
+
+@font-face
+	{
+	font-family: 'Arbat';
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;
+	src: url(/themes/default/fonts/ArbatDi.ttf);
+	}
+
+
+@font-face
+	{
+	font-family: 'Comic Sans MS';
+	font-style: normal;
+	font-weight: normal;
+	font-display: swap;
+	src: local('Comic Sans MS'),url(/themes/default/fonts/comic.ttf);
+	}
+
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-display: swap !important;
+}

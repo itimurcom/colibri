@@ -1,0 +1,13 @@
+.mailpattern
+	{
+	display: table;
+	text-align: left;
+	color: black;
+	font-size:.85em;
+	overflow-y:auto;
+ 	height:48em;
+	max-height:48em;
+	width:100%;
+	border:0;
+	padding:1.2em;
+	}

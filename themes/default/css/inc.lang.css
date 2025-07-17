@@ -1,0 +1,53 @@
+.lang_select_div
+	{
+	position:absolute;
+	bottom:.4em;
+	width:100%;
+	text-align: center;
+	}
+	
+.lang_div
+	{
+	position: relative;
+	display: inline-table;
+	text-align: center;
+	background-color: var(--menu-node);
+	margin: 0 .2em;
+	}
+
+.lang_div:hover,
+.lang_div.selected
+	{
+	background-color: var(--menu-node-hover);
+	}
+
+.lang_div:active
+	{
+	left:1px;
+	top:1px;
+	}
+
+		
+.lang_div a
+	{
+	display: table;
+	width:3.6em;
+	padding:0 1.2em .2em;
+	color: var(--menu-link-opacity);
+	text-decoration:none;
+	font-size:1.2em;
+	}
+
+.lang_div a:active
+	{
+	left:0px !important;
+	top:0px !important;
+	}
+
+.lang_div.selected a,
+.lang_div a:hover
+	{
+	color: var(--menu-link);
+	}
+	
+	

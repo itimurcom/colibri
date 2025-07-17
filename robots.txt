@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /engine/
+Disallow: /languages/
+Disallow: /mvc/
+Disallow: /themes/
+
+User-agent: *
+Allow: /
+
+Host: atelier-colibri.com
+#Sitemap: https://atelier-colibri.com/sitemap.xml

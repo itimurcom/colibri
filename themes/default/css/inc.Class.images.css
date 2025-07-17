@@ -1,0 +1,93 @@
+/* itAutoSelect */
+.ui-autocomplete-loading
+	{
+    	background: white url("/themes/default/images/imgloader.gif") right center no-repeat;
+  	}
+
+
+/* inc.blocks */
+.preloader
+	{
+	display:table;
+	background:rgba(0,0,0,0) url(/themes/default/images/preloader.gif) center 40% no-repeat;
+	background-size:cover;
+	}
+
+.preloader.blue
+	{
+	background:rgba(0,0,0,0) url(/themes/default/images/trader-preloader-blue.gif) center 40% no-repeat;
+	background-size:cover;
+	}
+
+/* inc.modals */
+.modal_message
+	{
+	background:rgba(0,120,0,.7) url(/themes/default/images/preloader.gif) center 20% no-repeat;
+	}
+
+.modal_message.error
+	{
+	background:rgba(255,0,0,.7) url(/themes/default/images/preloader.gif) center 20% no-repeat;
+	}
+
+.modal_message.upload
+	{
+	background:rgba(0,0,120,.7) url(/themes/default/images/preloader.gif) center 20% no-repeat;
+	}
+
+
+/* itSettings */
+.set .onoff
+	{
+	background: url(/themes/default/images/trader-on.png);
+	background-size:cover;
+	background-repeat: no-repeat;
+	}
+
+.set .onoff.on
+	{
+	background: url(/themes/default/images/trader-on.png);
+	background-size:cover;
+	background-repeat: no-repeat;
+	}
+
+.set .onoff.off
+	{
+	background: url(/themes/default/images/trader-off.png);
+	background-size:cover;
+	background-repeat: no-repeat;
+	}
+
+/* itSharer */
+
+.l-ico
+	{
+	background-image:url("/themes/default/images/main_frames_line_48.png");
+	background-size:cover;
+	background-repeat:no-repeat;
+	}
+
+.l-ico.groups
+	{
+	background-image:url("/themes/default/images/main_frames_line_48.png");
+	background-size:cover;
+	background-repeat:no-repeat;
+	}
+
+/* itSlider */
+/*
+.main_slider_div .bx-wrapper .bx-controls .bx-controls-direction a.bx-prev
+	{
+	left:1em;
+	background: url(/themes/default/images/smartad-slider-left.png) no-repeat 0 0;
+	background-size:cover;
+	}
+
+.main_slider_div .bx-wrapper .bx-controls .bx-controls-direction a.bx-next
+	{
+	right:1em;
+	background: url(/themes/default/images/smartad-slider-right.png) no-repeat 0px 0px;
+	background-size:cover;
+	}
+*/
+

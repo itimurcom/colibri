@@ -1,0 +1,317 @@
+.tit
+	{
+	position: relative;
+	display: table;
+	width: 100%;
+	text-align: center;
+	padding:.8em;
+	margin:.8em auto;
+	margin:.8 auto;
+	font-size:1.4em;	
+	min-height:1.4em;
+	vertical-align: middle;
+	box-sizing:border-box;
+	-webkit-box-sizing:border-box;
+	-moz-box-sizing:border-box;
+	opacity: .7;
+	}
+
+.tit:not([class*="bg_"])
+	{
+	background-color: var(--title-back);
+	opacity: 1;		
+	}
+	
+.tit.small
+	{
+	font-size:1.2em;
+	}
+
+.tit .articul
+	{
+	font-size:.8em !important;
+	float:left;
+	}
+
+.row .itimages 
+	{
+	position: relative;
+	width:100%;
+	border-collapse: collapse;
+	}
+	
+.row .itimages .avatar
+	{
+	position: relative;
+	width:25%;
+	height:auto;
+	float:left;
+	}
+	
+.row .itimages .avatar .image
+	{
+	position: relative;
+	display: table;
+	width: 100%;
+	height: auto;
+	}
+	
+.row .itimages .caption
+	{
+	position:absolute;
+	bottom:.8em;
+	right:0;
+	background:rgba(0,0,0,.5);
+	padding:.2em;
+	}
+	
+.itimages .admin_div
+	{
+	position:absolute;
+	display: table;
+	width:25%;
+	z-index: 1000;
+	right:0;
+	bottom:0;
+	}
+	
+.itimages_container
+	{
+	position: relative;
+	width: 100%;
+	display: table;
+	}
+
+span.itButton-image.itimages_add
+	{
+	padding:0;
+	}
+.itButton-image.itimages_add
+	{
+	position:relative;
+	display:table;
+	float:none !important;
+	clear:left !important;
+	margin:0 auto !important;
+	width:6em;
+	height:6em;
+	}
+	
+.itimages_add img
+	{
+	position: relative;
+	padding:1.2em;
+	}
+	
+.item_div,
+.color_xml .avatar
+	{
+	position: relative;
+	width: 20%;
+	max-width: 20%;
+/* 	display: inline-table; */
+	float:left;
+	}
+
+.item_div:hover .price
+	{
+	opacity: 1;
+	}
+	
+.item_div.full
+	{
+	width: 76% !important;
+	max-width: 76% !important;
+	float:none;
+	margin: 0 auto;
+	}
+	
+.item_div.full .avatar
+	{
+	border:0;
+	}
+	
+.item_div:hover
+	{
+	opacity:.8;
+	}
+	
+.item_div .avatar,
+.color_xml .avatar .image
+	{
+	position: relative;
+	display: inline-table;
+	width:100%;
+	height: auto;
+/* 	border-left:1.2em solid transparent; */
+	padding:.4em .8em;
+	}
+	
+	
+.item_div .title
+	{
+	display: table;
+	width:100%;
+	text-align: center;
+	line-height: 1;
+	height:5em;
+	border-left:1.2em solid transparent;
+	padding:.4em;
+	color: var(--menu-link);
+	}
+	
+.new_flash,
+.econom_flash,
+.new_flash
+	{
+	position:absolute;
+	right:-1em;
+	top:-1em;
+	width:3em;
+	height:3em;
+	z-index:1;
+/* 	opacity:.3; */
+	pointer-events: none;
+	}
+
+.econom_flash
+	{
+	top:auto;
+	bottom:3.6em;
+	}
+
+.new_flash img,
+.econom_flash img
+	{
+	display: table;
+	width:100%;
+	height:auto;
+	}
+	
+.item_div .id
+	{ 
+	position:absolute;
+	bottom:4.2em;
+	left:1.2em;
+	padding:.1em .2em;
+	color:yellow;
+	text-shadow:2px 2px 4px rgba(0,0,0,.6);
+	background: rgba(0, 0, 0, .4);
+	}
+	
+.item_div .price
+	{
+	position:absolute;
+	bottom:5.4em;
+	width:auto;
+	left:50%;
+	transform: translateX(-50%);
+	-webkit-transform: translateX(-50%);
+	z-index: 1;
+	color: var(--menu-link);
+	text-align: center;
+	font-size:1.2em;
+	padding:.3em 1.2em .4em;
+	pointer-events: none;
+	background-color: var(--menu-node-hover);
+	font-weight: bold;
+	opacity: .8;
+	}
+
+.item_div .price.sale
+	{
+	background-color: rgba(0, 255, 0, .7);
+	}
+
+.lastseen .item_div
+	{
+	width: 12.5%;
+	max-width: 12.5%;
+	}
+	
+.fewer_begin
+	{
+	display: table;
+	width: 100%;
+	text-align: center;
+	margin-bottom:2.4em;
+	color:yellow;
+	}
+
+.item_control
+	{
+	display:table;
+	width:100%;
+	}
+	
+.item_control .colors
+	{
+	display: table;
+	width:100%;
+	padding:0 .8em .8em .8em;
+	}
+
+.item_control .buttons
+	{
+	display: table;
+	margin:0 auto;
+	padding:1.2em;
+        }
+
+.item_price
+	{
+	position: absolute;
+	min-width:8em;
+	max-width:8em;	
+	top:.8em;
+	left: 50%;
+	margin-left:-4em;
+	z-index:1000;
+	}
+
+.item_price .itButton.big
+	{
+	width: 100%;
+	text-align: center;
+	font-size:1.6em;
+	opacity:.3;
+	}
+
+.item_price .itButton.big:hover
+	{
+	opacity: 1;
+	}
+	
+.portofolio
+	{
+	position: relative;
+	}
+	
+.portofolio .flags .new_flash,
+.portofolio .flags .econom_flash
+	{
+	z-index: 1000;
+	width: 3.6em;
+	height: 3.6em;
+	}
+
+.portofolio .flags .econom_flash
+	{
+	bottom:-1.6em;
+	}
+	
+#wishlist
+	{
+	display: table;
+	width: 100%;
+	text-align: center;
+	}
+
+#wishlist .item_div
+	{
+	width:12.5%;
+	max-width:12.5%;	
+	display: inline-table;
+	float: none;
+	margin: 0 auto;
+	}

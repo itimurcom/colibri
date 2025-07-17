@@ -1,0 +1,82 @@
+.related_group_title
+	{
+	position:relative;
+	text-transform:uppercase;
+	color:teal;
+	text-decoration:none !important;
+	font-weight:bold;
+	display:table;
+	margin-top:2.4em;
+	margin-bottom:.8em;
+	}
+
+.related_admin
+	{
+	position:relative;
+	top:-8px;
+	}
+
+
+.experience_title
+	{
+	padding:.2em 0;
+	text-decoration:none !important;
+	position: relative;
+	width:100%;
+	display:table;
+	vertical-align: middle;
+	opacity:.7;
+	}
+
+.experience_title:hover
+	{
+	opacity:1;	
+	}
+	
+
+.experience_title .title
+	{
+	color:rgba(40, 40, 250, .7);
+	position:relative;
+	font-weight:bold;
+	display:table-cell;
+	}
+
+.experience_title a:active, .related_group_title a:active
+	{
+	top:1px;
+	left:1px;	
+	}
+
+.title-icon
+	{
+	display:table-cell;
+	width:3em;
+	white-space: nowrap;
+	text-align: right;
+	opacity: .7;
+	}
+
+.experience_title:hover
+	{
+	background: rgba(31,120,103,.1);
+	}
+	
+.experience_title:hover *
+	{
+	opacity: 1;	
+	}
+	
+.title-icon img
+	{
+	display: inline-table;
+	width:50%;
+	height:auto;
+	}
+	
+.title-icon span
+	{
+	color:rgba(31,120,103,1);
+	font-size:.85em;
+	padding:.4em;
+	}

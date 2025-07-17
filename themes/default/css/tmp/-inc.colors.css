@@ -1,0 +1,138 @@
+/* установка цветов для элементов сайта */
+
+.bg_red
+	{
+	background:red;
+	}
+
+.bg_green
+	{
+	background: green;
+	}
+
+.bg_blue
+	{
+	background:blue;
+	}
+
+.bg_gray
+	{
+	background:rgba(50,50,50,1);
+	}
+
+.bg_brown
+	{
+	background:brown;
+	}
+
+.bg_fiolet
+	{
+	background:#a063b2;
+	}
+	
+.bg_gold
+	{
+	background:#a0a000;
+	}
+
+.bg_yellow
+	{
+	background:#a0a000;
+	}
+
+span.bg_yellow 
+	{
+	color:black !important;
+	}
+
+.fiolet, a:link.fiolet, a:visited.fiolet
+	{
+	color:#a063b2 !important;
+	}
+
+.gold, a:link.gold, a:visited.gold
+	{
+	color:#a0a000 !important;
+	}
+
+
+.red, a:link.red, a:visited.red
+	{
+	color:red !important;
+	}
+
+.lightred, a:link.lightred, a:visited.lightred
+	{
+	color:rgba(255,160,160,1);
+	}
+
+
+.white, a:link.white, a:visited.white
+	{
+	color:white !important;
+	}
+
+
+.green, a:link.green, a:visited.green
+	{
+	color:#00ff00 !important;
+	}
+
+.lightgreen, a:link.lightgreen, a:visited.lightgreen
+	{
+	color:lightgreen;
+	}
+
+
+.blue, a:link.blue, a:visited.blue
+	{
+	color:blue !important;
+	}
+
+.lightblue, a:link.lightblue, a:visited.lightblue	
+	{
+	color:rgba(160,160,255,1);
+	}
+
+
+.gray, a:link.gray, a:visited.gray
+	{
+	color:gray !important;
+	}
+
+.yellow, a:link.yellow, a:visited.yellow
+	{
+	color:yellow !important;
+	}
+
+.brown, a:link.brown, a:visited.brown
+	{
+	color:brown !important;
+	}
+
+
+a:hover.gray
+	{
+	color:darkblue;
+	}
+
+input.red
+	{
+	background-color:#fff8f8;
+	color:black;
+	border: 1px dashed red;
+	}
+
+input.green
+	{
+	background-color:#fff8f8;
+	color:black;
+	border: 1px dashed red;
+	}
+
+input.blue
+	{
+	background-color:#f8f8ff;
+	color:black;
+	border: 1px dashed blue;
+	}

@@ -1,0 +1,52 @@
+.cus-form
+	{
+	display: table;
+	width:100%;
+	position: relative;
+	margin:1.2em auto;
+	}
+
+.cus-form .body
+	{
+	position: relative;
+	width: 100%;
+	padding:1.2em .4em;
+	}	
+
+#ajaxlogin, #ajaxpin
+	{
+	max-width:20em;
+	text-align: center;
+	}
+	
+	
+.cus-form span.title:first-child
+	{
+	display:table;
+	font-size:1.2em;
+	position:relative;
+	background-color:var(--title-back);
+	text-align:center;
+	min-height:3em;
+	line-height: 3em;
+	width:100%;
+	}
+
+.cus-form input[id^=pin]
+	{
+	font-size:2em;
+	font-weight: bold;
+	width:6em;
+	left:50%;	
+	}
+	
+
+#container-pin_enter-logpin
+	{
+	text-align: center;
+	float: none;
+	}
+#pin_enter-logpin
+	{
+
+	}

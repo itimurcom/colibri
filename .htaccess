@@ -1,0 +1,65 @@
+Options ALL -Indexes
+Order Deny,Allow
+#Deny from all
+
+#обработка ошибки доступа
+ErrorDocument 403 /index4all.php
+ErrorDocument 404 /404.php
+
+<Files "404.php">
+    allow from all
+</Files>
+
+<Files "index4all.php">
+    allow from all
+</Files>
+
+<FilesMatch "\.(ico|png|gif|jpg)$">
+    allow from all
+</FilesMatch>
+
+# Запуск mod_rewrite
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^www\.(.*)
+RewriteRule ^.*$ https://%1/$1 [R=301,L]
+
+RewriteCond %{HTTP_HOST} ^atelie-colibri.com$ [OR]
+RewriteCond %{HTTP_HOST} ^www.atelie-colibri.com$
+RewriteRule (.*)$ https://atelier-colibri.com/$1 [R=301,L]
+
+#
+# Внутренние преобразования статических URL в динамические
+
+#вход и выход из системы
+RewriteRule ^admin/?$ login.php [L,QSA]
+RewriteRule ^login/?$ login.php [L,QSA]
+RewriteRule ^enter/?$ enter.php [L,QSA]
+
+RewriteRule ^mail/(.*)$ mailbody.php?id=$1 [L,QSA]
+
+RewriteRule ^logout/?$ logout.php [L]
+RewriteRule ^exit/?$ logout.php [L]
+
+RewriteRule ^(.*)/?top_left_logo(.*).png$ maillogo.php?path=$1&mail_id=$2 [B]
+
+RewriteRule ^social(.*)$ soclogin.php?op=login&engine=$1 [L,QSA]
+RewriteRule ^soclogin/$ soclogin.php [L,QSA]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ index.php/ [L,QSA]
+
+RewriteRule items/(.*)$ index.php?url=$1 [L,QSA]
+
+RewriteRule ^sitemap.xml$ sitemap.php [L,QSA]
+
+#автоматическое генерирование аватарок
+RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^img/(.*)$ img.php?img_url=$1 [L]
+
+# http2https
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

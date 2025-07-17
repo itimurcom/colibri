@@ -1,0 +1,84 @@
+span.nav_button.toggle,
+.moremenu,
+.itmenu_top_button:hover,
+.itmenu_top_button:not(:hover),
+.coll_node:hover,
+.coll_node:not(:hover),
+.tabs_div .inset:hover,
+.tabs_div .inset:not(:hover),
+
+.item_div:hover,
+.item_div:not(:hover),
+
+span.itButton:hover,
+span.itButton:not(:hover),
+a:hover,
+a:not(:hover),
+	
+.ed_active:hover,
+.cke_textarea_inline:hover,
+.ed_active:not(:hover),
+.cke_textarea_inline:not(:hover),
+
+.slider_text:hover,
+.slider_text:not(:hover),
+
+.more_text,
+.color_set,
+
+.blur,
+.grayscale,
+.ungrayscale,
+.sepia,
+.unsepia,
+
+a.bx-prev:hover,
+a.bx-prev:not(:hover),
+a.bx-next:hover,
+a.bx-next:not(:hover),
+
+.goals_field:hover,
+.goals_field:not(:hover),
+
+.l-ico,
+#footer_logo:hover,
+#footer_logo:not(:hover),
+
+.feed_avatar,
+.top_nav_button,
+
+.btn:hover,
+.btn:not(:hover),
+.ava_btn:not(:hover), 
+.ava_x_btn:not(:hover),
+select:hover,
+select:not(:hover),
+
+input.autoselect:hover,
+input.autoselect:not(:hover),
+
+.title-icon:hover,
+.title-icon:not(:hover)
+	{
+-webkit-transition: all 300ms cubic-bezier(0.250, 0.100, 0.250, 1.000); 
+   -moz-transition: all 300ms cubic-bezier(0.250, 0.100, 0.250, 1.000); 
+     -o-transition: all 300ms cubic-bezier(0.250, 0.100, 0.250, 1.000); 
+        transition: all 300ms cubic-bezier(0.250, 0.100, 0.250, 1.000);
+	}
+	
+
+
+.rotar {
+-webkit-animation: spin1 .3s  linear;
+-moz-animation: spin1 .3s  linear;
+-o-animation: spin1 .3s  linear;
+-ms-animation: spin1 .3s  linear;
+animation: spin1 .3s  linear;
+}
+
+.rotar{
+    -ms-transform: rotate(720deg);
+    -moz-transform: rotate(720deg);
+    -webkit-transform: rotate(720deg);
+    transform: rotate(720deg);
+}

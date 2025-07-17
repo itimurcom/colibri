@@ -1,0 +1,179 @@
+/*// ================ CRC ================
+// version: 1.43.04
+// hash: 8b1caf19c1ee2679d6ae61ada84259a0239d8808774dc3f022f1319b71895e3b
+// date: 29 March 2021  0:44
+// ================ CRC ================*/
+.ed_form
+	{
+	position: relative;
+	padding: 0 .8em;		
+	}
+.f2_form
+	{
+	position: relative;
+	}
+
+.f2_title
+	{
+	font-size:1em;
+	}
+
+.f2_form .f2_admin
+	{
+	border-top:1px dashed rgba(200,200,200,.7) !important;
+	margin-top: -.4em;
+	display: table;
+	width:100%;
+	}
+	
+.f2_form .f2_admin2:after
+	{
+	display: table;
+	height:1em;
+	content: " ";
+	}
+	
+.reveal-modal-bg
+	{
+	position:fixed !important;
+	}
+	
+.f2_form .f2_admin .ed_number
+	{
+	color:black;
+	background: rgba(200, 200, 200, .7);
+	font-size: .7em;
+	padding:.2em;
+	}
+	
+.f2_form .f2_row
+	{
+	padding: .2em 0;
+	}
+
+.f2_form .f2_row:not(.title):hover
+	{
+	background: rgba(100,100,255, .1);
+	}
+
+.f2_form .f2_row.compact
+	{
+	display:flex;
+	align-items: center;
+	}
+	
+.f2_form .f2_row.edit
+	{
+	border:1px dashed rgba(100,255,100,.4);
+	}
+
+
+.f2_form .f2_row .label,
+.f2_form .f2_row .value
+	{
+	padding: 0 .4em;
+	}
+
+.f2_form .label.compact
+	{
+	flex:1;
+	text-align: left;
+	}
+
+.f2_form .label.full
+	{
+	flex:1;
+	}
+
+.f2_form .more.compact
+	{
+	flex:2;
+	padding:.4em;
+	}
+
+.f2_form .value.compact
+	{
+	flex:1;
+	}
+
+.f2_form .value.compact.full
+	{
+	flex:2;
+	}
+
+	
+.f2_form .more .ed_devider
+	{
+	height:auto;
+	}
+	
+.f2_form .more.compact .ed_block
+	{
+	vertical-align: middle;
+	align-self: flex-end;
+	}
+	
+.f2_form .f2_row .ed_text
+	{
+	text-indent: 0;
+	}
+	
+.f2_row.focus
+	{
+	background-color:rgba(255, 100, 100, .2);
+	}
+
+.f2_row.focusblue
+	{
+	background-color:rgba(100, 100, 255, .2);
+	}	
+
+.f2_row.focusgreen
+	{
+	background-color:rgba(100, 255, 100, .2);
+	}	
+
+.calculator .f2_form
+	{
+	font-size:.95em;
+	}
+	
+.calculator .f2_form .value.compact.full
+	{
+	flex:1;
+	}
+
+.calculator .f2_form .label.compact
+	{
+	flex:4;
+	}
+
+.calculator.big .f2_form .label.compact
+	{
+	flex:1;
+	}		
+	
+.calcres
+	{
+	font-size: 1.2em;
+	}
+	
+.ed_text:empty
+	{
+	padding: 0;
+	}
+
+.modal_row.hidden
+	{
+	display:none;
+	}
+
+.grecaptcha-badge {
+/*
+	left:50%;
+	transform: translateX(-50%);
+	-webkit-transform: translateX(-50%);
+	z-index:10000;
+*/
+/* 	visibility: hidden; */
+	}

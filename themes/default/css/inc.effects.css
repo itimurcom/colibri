@@ -1,0 +1,92 @@
+.blur
+	{
+	filter: blur(6px); 
+	-o-filter: blur(6px); 
+	-moz-filter: blur(6px); 
+	-webkit-filter: blur(6px); 
+	}
+
+.blur:hover
+	{
+	filter: blur(0); 
+	-o-filter: blur(0); 
+	-moz-filter: blur(0); 
+	-webkit-filter: blur(0); 
+	}
+
+/* градации серого */
+.grayscale
+	{
+	filter: grayscale(80%) contrast(125%);
+	-o-filter: grayscale(80%) contrast(125%);
+	-moz-filter: grayscale(80%) contrast(125%);
+	-webkit-filter: grayscale(80%) contrast(125%);
+	}
+
+.grayscale:hover
+	{
+	filter: grayscale(0);
+	-o-filter: grayscale(0);
+	-moz-filter: grayscale(0);
+	-webkit-filter: grayscale(0);
+	}
+
+/* обратный эффект градации серого */
+.ungrayscale
+	{
+	filter: grayscale(0);
+	-o-filter: grayscale(0);
+	-moz-filter: grayscale(0);
+	-webkit-filter: grayscale(0);
+	}
+
+.ungrayscale:hover
+	{
+	filter: grayscale(80%) contrast(125%);
+	-o-filter: grayscale(80%) contrast(125%);
+	-moz-filter: grayscale(80%) contrast(125%);
+	-webkit-filter: grayscale(80%) contrast(125%);
+	}
+
+/* эфект сепии */
+.sepia
+	{
+	filter: sepia(100%); 
+	-o-filter: sepia(100%); 
+	-moz-filter: sepia(100%); 
+	-webkit-filter: sepia(100%); 
+	}
+
+.sepia:hover
+	{
+	filter: sepia(0); 
+	-o-filter: sepia(0); 
+	-moz-filter: sepia(0); 
+	-webkit-filter: sepia(0); 
+	}
+
+/* обратный эфект сепии */
+.unsepia
+	{
+	filter: sepia(0); 
+	-o-filter: sepia(0); 
+	-moz-filter: sepia(0); 
+	-webkit-filter: sepia(0); 
+	}
+
+.unsepia:hover
+	{
+	filter: sepia(100%); 
+	-o-filter: sepia(100%); 
+	-moz-filter: sepia(100%); 
+	-webkit-filter: sepia(100%); 
+	}
+
+.smart_shadow-broken
+	{
+	filter: "progid:DXImageTransform.Microsoft.Dropshadow(OffX=12, OffY=12, Color='#444')";
+	filter: url(#drop-shadow);
+	-webkit-filter: drop-shadow(0px 3px 8px rgba(1,34,93,0.5));
+	filter: drop-shadow(0px 3px 8px rgba(1,34,93,0.5));	
+	z-index: 1;
+	}
