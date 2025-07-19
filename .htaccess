@@ -1,18 +1,14 @@
 Options ALL -Indexes
 Order Deny,Allow
-#Deny from all
+Deny from all
 
 #обработка ошибки доступа
-ErrorDocument 403 /index4all.php
+ErrorDocument 403 /403.php
 ErrorDocument 404 /404.php
 
-<Files "404.php">
+<FilesMatch "(403|404|setip|deip)\.php$">
     allow from all
-</Files>
-
-<Files "index4all.php">
-    allow from all
-</Files>
+</FilesMatch>
 
 <FilesMatch "\.(ico|png|gif|jpg)$">
     allow from all
@@ -63,3 +59,6 @@ RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+
+allow from 209.198.134.178

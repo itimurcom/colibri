@@ -1,0 +1,51 @@
+.settings_div
+	{
+	float:right;
+	}
+
+
+.set	{
+	font-weight:normal !important;
+	line-height:1.6em;
+	float:left;
+	margin-left:.4em;
+	}
+
+.set label
+	{
+	color:rgba(128,128,128,1) !important;
+	float:left;
+	}
+
+.set .onoff
+	{
+	position:relative;
+	display:inline-table;
+	opacity:.5;
+	cursor:pointer;
+	margin:.2em .4em;
+	width:1.2em;
+	height:1.2em;
+	text-align:center;
+	}
+
+.set .onoff:hover
+	{
+	opacity:1;
+	}
+
+.set .onoff:active
+	{
+	left:1px;
+	top:1px;
+	}
+
+.set .onoff.on
+	{
+	text-align:center;
+	}
+
+.set .onoff.off
+	{
+	text-align:center;
+	}

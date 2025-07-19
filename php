@@ -1,0 +1,2 @@
+apt install php8.4
+apt install php8.4-common php8.4-gd php8.4-ldap php8.4-odbc php8.4-xsl php8.4-apcu php8.4-curl php8.4-gmp php8.4-opcache php8.4-mbstring php8.4-pgsql php8.4-imagick php8.4-memcached php8.4-bz2 php8.4-ds php8.4-imap php8.4-cgi php8.4-mysql php8.4-cli php8.4-fpm php8.4-xml

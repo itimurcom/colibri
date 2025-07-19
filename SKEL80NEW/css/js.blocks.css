@@ -1,0 +1,147 @@
+.boxed {
+	box-sizing:border-box;
+	-webkit-box-sizing:border-box;
+	-moz-box-sizing:border-box;
+	}
+
+.centered {
+	clear:both;
+	text-align:center;
+	}
+
+.bold, .b {
+	font-weight:bold;
+	}
+
+.bolder, .bb {
+	font-weight:bolder;
+	}
+
+.lighter, .thin	{
+	font-weight:lighter;
+}
+
+
+
+.admin_panel_div
+	{
+	margin:0px auto;
+	width:100%;
+	display:table;
+	position:relative;
+	top:-1.2em;
+	}
+	
+.hidden
+	{
+	display: none;
+	}
+
+.seo-container,
+.seo-panel,
+.seo-btn,
+.seo-close  {
+	transition-duration: 300ms;
+	-moz-transition-duration: 300ms;
+	-webkit-transition-duration: 300ms;
+	-o-transition-duration: 300ms;
+	transition-duration: 300ms;
+}
+
+.seo-container {
+	position: fixed;
+	width:100%;
+	top:0;
+	box-sizing: border-box;
+	z-index:999;
+	
+	/* z-index:1001; */
+}
+
+.seo-panel {
+	height:0;
+	position: relative;
+	overflow: hidden;
+	max-width: 60em;
+	background-color: rgba(240, 240, 240,.95);
+	margin: -3px auto 0;
+
+	box-sizing: border-box;
+	padding:0 1.2em;
+	border:3px solid rgba(200, 200, 200, .6);
+	border-top:none;
+}
+
+.seo-panel.open {
+	padding:.8em 1.2em;
+	height:auto;
+	min-height:20em;
+}
+
+.seo-btn {
+	position: absolute;
+	bottom:-2em;
+	left:50%;
+	transform: translateX(-50%);
+	color:white;
+	font-weight: bold;
+	padding:.4em 1.2em;
+	box-sizing: border-box;
+	opacity:.3;
+
+	border-radius:0px;
+	cursor:pointer;
+}
+
+.seo-close {
+	position: absolute;
+	/* top:6%; */
+	right:0;
+	color:red;
+	width: 2em;
+	height: 2em;
+	float: right;
+	opacity: .2;
+	cursor: pointer;
+	z-index: 1001;
+}
+
+.seo-panel, .seo-btn {
+	border-bottom-left-radius:8px;
+	-moz-border-radius-bottomleft:8px;
+	-webkit-border-bottom-left-radius:8px;
+	border-bottom-right-radius:8px;
+	-moz-border-radius-bottomright:8px;
+	-webkit-border-bottom-right-radius:8px;
+}
+
+.seo-btn:hover, .seo-close:hover {
+	opacity: 1;
+}
+.seo-btn:active {
+	transform: translate(-50%,2px);
+}
+
+.adaptive_container
+	{
+	position: relative;
+	padding-bottom: 56.25%; /* 16/9 ratio */
+	height: 0;
+	overflow: hidden;
+	}
+
+.adaptive_container iframe,
+.adaptive_container object,
+.adaptive_container embed
+	{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	}
+	
+.cke_notifications_area {
+	display: none !important;
+	opacity: 0;
+}

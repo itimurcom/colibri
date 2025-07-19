@@ -1,0 +1,48 @@
+.opeclose
+	{
+	padding:.8em auto;
+	}
+
+.openclose .switch
+	{
+	display: inline-table;
+	position:relative;
+	opacity:.7;
+	cursor:pointer !important;	
+	}
+
+.openclose .switch:hover
+	{
+	opacity:1 !important;
+	}
+
+.openclose .switch:active
+	{
+	top:1px;
+	left:1px;
+	}
+
+
+.openclose .block
+	{
+	display:none;
+	}
+	
+.opencloseall
+	{
+	cursor:pointer;
+	position:relative;
+	margin-left:1em;
+	opacity: .7;
+	}
+
+.opencloseall:hover
+	{
+	opacity:1;
+	}
+
+.opencloseall:active
+	{
+	top:1px;
+	lefT:1px;
+	}

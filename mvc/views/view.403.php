@@ -1,0 +1,1 @@
+<?include "./themes/".CMS_THEME."/tpl.tool.php"?>

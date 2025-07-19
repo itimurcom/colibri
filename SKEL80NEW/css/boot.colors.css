@@ -1,0 +1,108 @@
+.bg_white
+	{
+	background:white;
+	color:gray;
+	}
+
+.bg_red
+	{
+	background:red;
+	}
+
+.bg_green
+	{
+	background: green;
+	}
+
+.bg_blue
+	{
+	background:blue;
+	}
+
+.bg_gray
+	{
+	background:rgba(50,50,50,1);
+	}
+
+.bg_brown
+	{
+	background:brown;
+	}
+
+.bg_fiolet
+	{
+	background:#a063b2;
+	}
+	
+.bg_gold
+	{
+	background:#a0a000;
+	}
+
+.bg_yellow
+	{
+	background:#a0a000;
+	}
+
+span.bg_yellow 
+	{
+	color:black !important;
+	}
+
+.red, a:link.red, a:visited.red
+	{
+	color:red;
+	}
+
+.lightred, a:link.lightred, a:visited.lightred
+	{
+	color:rgba(255,160,160,1);
+	}
+
+
+.white, a:link.white, a:visited.white
+	{
+	color:white;
+	}
+
+.black, a:link.black, a:visited.black
+	{
+	color:black;
+	}
+
+.green, a:link.green, a:visited.green
+	{
+	color:green;
+	}
+
+.lightgreen, a:link.lightgreen, a:visited.lightgreen
+	{
+	color:lightgreen;
+	}
+
+
+.blue, a:link.blue, a:visited.blue
+	{
+	color:blue;
+	}
+
+.lightblue, a:link.lightblue, a:visited.lightblue	
+	{
+	color:rgba(160,160,255,1);
+	}
+
+
+.gray, a:link.gray, a:visited.gray
+	{
+	color:gray;
+	}
+
+.yellow, a:link.yellow, a:visited.yellow
+	{
+	color:yellow;
+	}
+
+a:hover.gray
+	{
+	color:darkblue;
+	}

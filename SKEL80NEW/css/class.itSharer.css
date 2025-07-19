@@ -1,0 +1,86 @@
+.sharing_div
+	{
+	position:absolute;
+	top:2em;
+	right:0em;
+	z-index:1;
+	}
+
+.sharing_title
+	{
+	position:relative;
+	float:left;
+	color:lightgray;
+	font-size:.8em;
+	line-height:2em;
+	margin:.4em;
+	}
+
+
+.groups_div
+	{
+	display:table;
+	margin:0px auto;
+	text-align:center;
+	}
+
+
+.l-ico
+	{
+	position:relative;
+	width:28px;
+	height:28px;
+	cursor:pointer;
+	opacity:.7;
+	float:left;	
+	margin:2px;
+	}
+
+
+.l-ico  {
+	-webkit-filter: grayscale(80%);
+	-moz-filter: grayscale(80%);
+	filter: grayscale(80%);
+	opacity:.5;
+	}
+
+.l-ico:hover
+	{
+	-webkit-filter: grayscale(0);
+	-moz-filter: grayscale(0);
+	filter: grayscale(0);
+	opacity:1;
+	}
+
+
+.l-ico:active
+	{
+	top:1px;
+	left:1px;
+	}
+
+/* настройки для размера иконок 28 пикселей */
+
+.l-ico.l-gg {
+background-position:0 0;
+}
+
+.l-ico.l-tw {
+background-position:-28px 0;
+}
+
+.l-ico.l-vk  {
+background-position:-56px 0;
+}
+
+.l-ico.l-fb {
+background-position:-84px 0;
+}
+
+.l-ico.l-ok {
+background-position:-112px 0;
+}
+
+.l-ico.l-rss {
+background-position:-150px 0;
+}

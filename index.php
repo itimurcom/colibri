@@ -18,5 +18,5 @@ if (array_key_exists('user',get_defined_vars()))
 	}
 
 $time = microtime(true) - $start;
-//printf('Скрипт выполнялся %.4F сек.', $time);
+// printf('Скрипт выполнялся %.4F сек.', $time);
 ?>

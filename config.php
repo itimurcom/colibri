@@ -4,7 +4,7 @@
 define('CMS_DB_SERVER', 'localhost');
 define('CMS_DB_USER', 'colibri');
 define('CMS_DB_PASS', 'cqD4Rv8hSY8BjHtb');
-define('CMS_DB_NAME', 'colibri');
+define('CMS_DB_NAME', 'colibri2');
 define('CMS_DB_CODEPAGE', 'utf8mb4');
 define('DB_PREFIX','colibri_');
 
@@ -20,7 +20,7 @@ define('CMS_AUTHOR','itimur.com');
 define('CMS_THEME','default');
 define('DEFAULT_LANG','en');
 
-define ('SERVER_ROOT_DEBUG',dirname(__FILE__));
+define ('SERVER_ROOT_DEBUG', dirname(__FILE__));
 define ('SERVER_HTTP_DEBUG', 'https://atelier-colibri.com');
 
 // категории товаров на продажу (через зяпятую)

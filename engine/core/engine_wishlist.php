@@ -54,7 +54,7 @@ function store_wishlist($id_of_user=NULL, $wish_arr=NULL)
 //..............................................................................
 function wishlist($forced=false)
 	{
-	if (!$forced AND !in_array($_REQUEST['controller'], str_getcsv(ALOW_WISHLIST))) return;
+	if (!$forced AND !in_array($_REQUEST['controller'], str_getcsv(get_const('ALOW_WISHLIST')))) return;
 
 	return !is_null($result = wishlist_body($counter))
 		?	TAB."<div class='widget bordered rounded'>".
