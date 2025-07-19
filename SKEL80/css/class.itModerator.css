@@ -1,0 +1,71 @@
+/*// ================ CRC ================
+// version: 1.15.01
+// hash: b338d1086a36dbbcf4658c04342b3750dfb053853c536aa652fe3a34cd0ca47b
+// date: 16 September 2018 17:02
+// ================ CRC ================*/
+.moderate_div
+	{
+	position:relative;
+	width:100%;
+	background:rgba(255,255,255,.1);
+	box-sizing:border-box;
+	-webkit-box-sizing:border-box;
+	-moz-box-sizing:border-box;
+	-ms-box-sizing:border-box;
+	font-size:.85em;
+	}
+
+.moderate_panel
+	{
+	position:relative;
+	display:table;
+	width:100%;
+	margin:0;
+	}
+
+
+.moderate_title
+	{
+	font-weight:bold;
+	margin:.4em 0;
+	border-bottom:1px dashed lightgray;
+	color:blue !important;
+	}
+
+
+.moderate_title span
+	{
+	font-size:1.2em;
+	}
+
+.moderate_row
+	{
+	position:relative;
+	width:100%;
+	vertical-align:middle;
+	}
+
+.moderate_field
+	{
+	display:inline-table;
+	}
+
+.moderate_field.number
+	{
+	padding:.8em;
+	}
+
+.moderate_field.title
+	{
+	text-align:left;
+	}
+
+.moderate_field.category
+	{
+	float:right;
+	}
+
+.moderate_field.status
+	{
+	float:right;
+	}

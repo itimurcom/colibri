@@ -1,0 +1,13 @@
+/*// ================ CRC ================
+// version: 1.15.02
+// hash: 562a836056c9f491dbe33dfa97b1bb5eb052050aad27878a21e3ea55862d3daa
+// date: 09 August 2020 13:20
+// ================ CRC ================*/
+.error_msg
+	{
+    display: table;
+    margin: 0 auto;
+    clear: both;
+    text-align: center;
+    padding: 0 1.2em .6em;;
+	}
