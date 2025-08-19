@@ -62,3 +62,5 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 
 allow from 209.198.134.178
+allow from 145.224.103.187
+allow from 216.128.30.145

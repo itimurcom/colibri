@@ -9,7 +9,7 @@ define ('ENGINE_VERSION_VAL','0.2.135.01.beta');
 define ('ENGINE_VERSION_DATE','25 May 2021');
 
 define('ENGINE_VERSION',ENGINE_VERSION_VAL." ".ENGINE_VERSION_DATE);
-
+define ('DEFAULT_SMTP_HOST', 'mail.atelier-colibri.com');
 // путь к SKELETON
 // require "engine/core/skeleton/run.php";
 // require "./SKEL80NEW/run.php";
@@ -25,6 +25,7 @@ definition($constants = [
 // установим данные email для отправки
 define ('DEFAULT_ADMIN_EMAIL', $_SETTINGS['SITE_ADMIN_EMAIL']['value']);
 define ('DEFAULT_ADMIN_NAME', "admin<".DEFAULT_ADMIN_EMAIL.">");
+
 define ('DEFAULT_PIN_TABLE' , 'pins');
 
 // редактор текста
