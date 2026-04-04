@@ -2,8 +2,8 @@
 $start = microtime(true);
 include ("engine/kernel.php");
 
-$o_mailer = new itMailer();
-unset($o_mailer);
+// $o_mailer = new itMailer();
+// unset($o_mailer);
 
 $o_site = new itSite();
 $o_site->compile();

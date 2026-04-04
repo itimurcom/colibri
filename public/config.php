@@ -20,7 +20,8 @@ define('CMS_AUTHOR','itimur.com');
 define('CMS_THEME','default');
 define('DEFAULT_LANG','en');
 
-define ('SERVER_ROOT_DEBUG', dirname(__FILE__));
+// define ('SERVER_ROOT_DEBUG', dirname(__FILE__)."/public/");
+// define('SERVER_ROOT_DEBUG', '/var/www/html/colibri.localhost/public/');
 define ('SERVER_HTTP_DEBUG', 'https://colibri.localhost/');
 // категории товаров на продажу (через зяпятую)
 // 1

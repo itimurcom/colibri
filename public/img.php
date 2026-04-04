@@ -1,9 +1,11 @@
 <?php
 define('NO_PREPARED_ARR', 1);
+
 set_time_limit(3);
 
 /* скрипт на который поизводит перевод htaccess если не найдена картинка */
 include ("engine/kernel.php");
+echo PICTURE_ROOT; die;
 
 if (isset($_REQUEST['img_url']))
 	{

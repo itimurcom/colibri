@@ -12,7 +12,8 @@ define('ENGINE_VERSION',ENGINE_VERSION_VAL." ".ENGINE_VERSION_DATE);
 
 // путь к SKELETON
 // require "engine/core/skeleton/run.php";
-require "./SKEL80/run.php";
+
+require "/var/www/html/colibri.localhost/SKEL80/run.php";
 
 // установим данные email для отправки
 define ('DEFAULT_ADMIN_EMAIL', $_SETTINGS['SITE_ADMIN_EMAIL']['value']);

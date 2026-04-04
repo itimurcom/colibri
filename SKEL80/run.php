@@ -23,6 +23,8 @@ definition([
 	'CLEARTEXT'	=> '</b></font>',
 	]);
 
+	// echo $_SERVER['DOCUMENT_ROOT']; die;
+
 // установим основные пути для работы скриптов
 if (file_exists($_SERVER['DOCUMENT_ROOT'].'/config.php'))
 	include_once($_SERVER['DOCUMENT_ROOT'].'/config.php');
@@ -34,7 +36,9 @@ set_skeleton_core_ways();
 if (file_exists(USER_ENGINE_PATH.'kernel.path.php'))
 	include USER_ENGINE_PATH.'kernel.path.php';
 
+
 // Настраиваем пути
+
 definition([
 	'SERVER_ROOT_DEBUG'	=> $_SERVER['DOCUMENT_ROOT'],
 	'SERVER_HTTP_DEBUG'	=> get_request_http(),
@@ -51,7 +55,6 @@ register_classes_autoload();
 // задекларируем функции
 register_skleton_engine(USER_CORE_PATH); 			// подключаем пользовательский движок
 register_events_folder(SKELETON_CORE_PATH."kernel/events/");	// системные
-
 // установим константы
 register_skeleton_user_const(USER_ENGINE_PATH."ini/");		// пред-константы пользователя
 register_skeleton_core_const(SKELETON_EVENTS_PATH);		// пост-константы ядра
@@ -96,7 +99,6 @@ register_skeleton_core_common(SKELETON_EVENTS_PATH);
 global $_USER;
 // подключим проверку пользователя
 $_USER = new itUser();
-
 register_skeleton_user_custom(USER_ENGINE_PATH."ini/");		// пост-настройки пользователя
 
 // подготовим массивы для работы модератора

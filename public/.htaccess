@@ -1,6 +1,6 @@
 Options ALL -Indexes
 Order Deny,Allow
-Deny from all
+#Deny from all
 
 #обработка ошибки доступа
 ErrorDocument 403 /index4all.php
@@ -70,3 +70,4 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 allow from 216.128.30.145
 allow from 176.108.4.104
+allow from ::1
