@@ -1,0 +1,53 @@
+/*// ================ CRC ================
+// version: 1.15.01
+// hash: fc336f68c8af82fc3bd297aa9f3743d2c0cef1ae264c729d5d4884541ee6aaf1
+// date: 16 September 2018 17:02
+// ================ CRC ================*/
+.opeclose
+	{
+	padding:.8em auto;
+	}
+
+.openclose .switch
+	{
+	display: inline-table;
+	position:relative;
+	opacity:.7;
+	cursor:pointer !important;	
+	}
+
+.openclose .switch:hover
+	{
+	opacity:1 !important;
+	}
+
+.openclose .switch:active
+	{
+	top:1px;
+	left:1px;
+	}
+
+
+.openclose .block
+	{
+	display:none;
+	}
+	
+.opencloseall
+	{
+	cursor:pointer;
+	position:relative;
+	margin-left:1em;
+	opacity: .7;
+	}
+
+.opencloseall:hover
+	{
+	opacity:1;
+	}
+
+.opencloseall:active
+	{
+	top:1px;
+	lefT:1px;
+	}

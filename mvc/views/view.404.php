@@ -1,0 +1,1 @@
+<center><img class='p404' src='/themes/<?=CMS_THEME?>/images/404.png'></center>

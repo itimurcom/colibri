@@ -1,0 +1,10 @@
+.node_menu,
+.ed_text {
+    vertical-align: middle;
+}
+
+a:link, a:visited
+	{
+	text-decoration: underline;
+	color: var(--menu-link-opacity);
+	}

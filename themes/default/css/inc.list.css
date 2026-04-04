@@ -1,0 +1,4 @@
+.list .row:hover
+	{
+	background: rgba(200,200,255,.1);
+	}

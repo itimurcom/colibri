@@ -1,0 +1,31 @@
+/* 
+ * Stepper v3.0.7 - 2014-05-07 
+ * A jQuery plugin for cross browser number inputs. Part of the Formstone Library. 
+ * http://formstone.it/stepper/ 
+ * 
+ * Copyright 2014 Ben Plum; MIT Licensed 
+ */ 
+
+	.stepper { overflow: hidden; position: relative; }
+	.stepper .stepper-input { overflow: hidden; z-index: 49;
+		-moz-appearance: textfield;
+	}
+
+	.stepper .stepper-input::-webkit-inner-spin-button,
+	.stepper .stepper-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+	.stepper .stepper-input:focus { background-color: #fff; }
+	.stepper .stepper-arrow { background: #eee url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAjCAYAAACpZEt+AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA2hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMy1jMDExIDY2LjE0NTY2MSwgMjAxMi8wMi8wNi0xNDo1NjoyNyAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowMTgwMTE3NDA3MjA2ODExODNEMUM2RUJCNEJDODBBMyIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDpCQTVENEM4NEFCMkYxMUU5QjVFOEY3M0MzQkFCRTBBQyIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpCQTVENEM4M0FCMkYxMUU5QjVFOEY3M0MzQkFCRTBBQyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M2IChNYWNpbnRvc2gpIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6MDI4MDExNzQwNzIwNjgxMTgzRDFDNkVCQjRCQzgwQTMiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6MDE4MDExNzQwNzIwNjgxMTgzRDFDNkVCQjRCQzgwQTMiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4peZ1aAAAAiklEQVR42mL6//8/Az7MxEAAUFmBntaR6SCMVQFQogNIZYAwlA0GjLqahxmBdA8QF6GZ3gfEJSxAYiYQp2KxHqSBlxHkVzp6c1TBiFcASrSzcKRJEJjDdOmaTRo0Vf/HkqrT4IkWmBfagFQFyFQg7gRqBLEZWGDKgQJVQEUCUHdVwt0wCJI9QIABAIjhPbzuEty7AAAAAElFTkSuQmCC') no-repeat; border: 1px solid #ccc; cursor: pointer; display: block; height: 50%; position: absolute; right: 0; text-indent: -99999px; width:1em; height:1em; z-index: 50; }
+	.stepper .stepper-arrow.up { background-position: center top; border-bottom: none; top: .2em; }
+	.stepper .stepper-arrow.down { background-position: center bottom; bottom: .2em; }
+
+	@media screen and (min-width: 740px) {
+		.stepper:hover .stepper-input { background-color: #fff; }
+
+		.stepper .stepper-step:hover { background-color: #F9F9F9; }
+
+		.stepper.disabled .stepper-arrow { background: #fff; border-color: #eee; cursor: default; }
+	}
+
+	.stepper.disabled .stepper-input { background: #fff; border-color: #eee; color: #ccc; }
+	.stepper.disabled .stepper-arrow { background: #fff; border-color: #eee; cursor: default; }

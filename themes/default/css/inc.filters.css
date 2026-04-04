@@ -1,0 +1,178 @@
+.col_selector
+	{
+	display: table;
+	width: 100%;
+	border-collapse: collapse;
+	}
+	
+.col_selector.item
+	{
+	width: auto;
+	float:left;
+	margin: 0;
+	padding: 0;
+	border:0;
+	opacity: 1;
+	}
+	
+.col_sel_title
+	{
+	display: none
+	}
+	
+.color_set
+	{
+	display: table;
+	width: 100%;
+	height: 2em;
+	/* opacity:.7; */
+	}
+	
+.color_set:hover
+	{
+	opacity:1;
+	}
+
+.col_sel	
+	{
+	display: table-cell;
+	border:2px solid transparent;
+	position: relative;
+	cursor:pointer;
+	}
+	
+.col_sel.small
+	{
+	display:inline-table;
+	float:left;
+	width:1.6em;
+	height:1.6em;
+	box-shadow: 0 0 6px rgba(255, 255, 0, .5);
+	margin:.1em;
+	}
+	
+.col_sel:active
+	{
+	top:1px;
+	left:1px;
+	}
+
+.col_sel.no_shadow
+	{
+	background:rgba(0,0,0,.4);		
+	}
+	
+.col_sel.no_shadow:before
+	{
+	position: absolute;
+	content: "✖";
+	width:1em;
+	left:50%;
+	top:50%;
+	margin-top:-.75em;
+	margin-left:-.5em;
+	font-size: 1.2em;
+	color: rgba(255,64,64,1);
+	text-shadow: 1px 1px 2px rgba(0,0,0,1);
+	}
+
+.col_sel.selected:before
+	{
+	position: absolute;
+	content:'✔';
+	width:1em;
+	left:50%;
+	top:50%;
+	margin-top:-.75em;
+	margin-left:-.5em;
+	font-size: 1.2em;
+	text-shadow: 1px 1px 2px rgba(0,0,0,1);
+	color:white;
+	}
+	
+.subselect
+	{
+	margin-bottom: .4em;
+	}
+	
+.feed_sort .modal_row div.label:empty
+	{
+	display: none;
+	}
+	
+
+.feed_selector_div
+	{
+	display:table;
+	width:100%;
+	position: relative;
+	padding:0 1.6em;
+	margin-bottom: 1.6em;;	
+	}
+	
+.feed_color,
+.feed_sort,
+.feed_price
+	{
+	display:table-cell;
+	position: relative;
+	vertical-align: middle;
+	}
+
+.feed_color
+	{
+	position: relative;
+	width:50%;
+	}
+		
+.feed_price
+	{
+	width:30%;
+	position: relative;
+	}
+
+.feed_sort
+	{
+	width:20%;
+	border-left: 1.2em solid transparent;	
+	}
+
+.range_div
+	{
+	display: table;
+	width:100%;
+	position: relative;
+	vertical-align: middle;
+	text-align: center;
+	
+	line-height: 1;
+	}
+
+.range-min,
+.range-max,
+.range-ok,
+.range
+	{
+	display: table-cell;
+	width:20%;
+	vertical-align: middle;
+	text-align: center;
+	line-height: 1;
+	}
+
+.range-max
+	{
+	border-left:.6em solid transparent;	
+	}
+
+.range
+	{
+	width:54%;
+	}
+
+.range-ok
+	{
+	width:6%;
+	cursor:pointer;
+	text-align: left;
+	}

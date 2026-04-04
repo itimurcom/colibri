@@ -1,0 +1,89 @@
+.widgets
+	{
+	display:flex;
+	flex:1;
+	position: relative;
+	width: 100%;
+	height: 100%;
+	padding:0 .05em;
+	flex-direction: column;
+	align-items:stretch;
+	align-content: stretch;
+	}
+	
+.widgets.row
+	{
+	flex-direction: row;
+	padding:.8em;
+	}
+
+.widget
+	{
+	position:relative;
+	margin-top:.8em;
+	}
+
+.widget.contacts
+	{
+/* 	max-height: 18.6em; */
+	flex:1;
+	width:100%;
+	flex:3;
+	}
+	
+
+.widget.search
+	{
+	flex:2;
+	flex:1;
+	width:100%;
+
+/* 	max-height: 11.6em;		 */
+	}
+
+.widget .title:first-child
+	{
+	display:table;
+	font-size:1.2em;
+	position:relative;
+	background-color:var(--title-back);
+	text-align:center;
+	width:100%;
+	border:0;
+	margin: 0;
+	padding:.8em 0;
+	}
+	
+.widget .body
+	{
+	width: 100%;
+	padding:.4em .4em;
+	position: relative;
+/* 	background-color:var (--menu-node-hover); */
+	}
+
+.widget .body .ed_block
+	{
+	position: relative;
+	padding: 0;
+	}
+	
+.widget .body .ed_block.glass
+	{
+	background: none !important;
+	}
+	
+.widget .body .ed_block .ed_avatar_div
+	{
+	display: table;
+	position: relative;
+	width:100% !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	margin-bottom: .8em !important;
+	}
+
+.widget .body .ed_devider
+	{
+	height:auto;
+	}
