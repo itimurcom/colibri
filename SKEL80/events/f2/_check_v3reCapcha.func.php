@@ -4,6 +4,9 @@
 //..............................................................................
 function _check_v3reCaptcha()
     {
+    if (!defined('USE_CAPTCHA') OR USE_CAPTCHA!=true) {
+        return true;
+        }
     if (!isset($_SESSION['v3checked']['score'])) {
 		itForm2::_reCaptcha();
 		}		

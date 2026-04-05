@@ -442,7 +442,11 @@ if ($_USER->is_logged($_RIGHTS['EDIT']))
 		case 'is_replicant' : {
 			if ($row = itMySQL::_get_rec_from_db($data['table_name'], $data['rec_id']))
 				{
-				itMySQL::_update_value_db($data['table_name'], $data['rec_id'], !$row[$_REQUEST['op']], $_REQUEST['op']);
+				// Legacy item flags are stored in integer DB columns. On PHP 8 / strict null fixes
+				// boolean false may degrade into an empty string during SQL serialization, so
+				// persist explicit 1/0 integers instead of raw booleans.
+				$value = !empty($row[$_REQUEST['op']]) ? 0 : 1;
+				itMySQL::_update_value_db($data['table_name'], $data['rec_id'], $value, $_REQUEST['op']);
 				}
 			cms_redirect_page("$url");
 			break;

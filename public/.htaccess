@@ -3,8 +3,8 @@ Order Deny,Allow
 #Deny from all
 
 #обработка ошибки доступа
-ErrorDocument 403 /index4all.php
-ErrorDocument 404 /404.php
+# ErrorDocument 403 /index4all.php
+# ErrorDocument 404 /404.php
 
 <Files "setip.php">
     allow from all

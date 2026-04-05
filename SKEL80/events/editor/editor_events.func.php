@@ -297,7 +297,9 @@ function editor_events($url, $path)
 			}
 			
 		case 'ava_x' : {
-			itMySQL::_update_value_db($data['table_name'], $data['rec_id'], NULL, 'avatar');
+			// Legacy project DB may keep avatar column as NOT NULL, so remove avatar by
+			// writing an empty string instead of NULL.
+			itMySQL::_update_value_db($data['table_name'], $data['rec_id'], '', 'avatar');
 			cms_redirect_page("$url");
 			break;
 			}

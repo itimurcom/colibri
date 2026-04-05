@@ -34,6 +34,7 @@ class itModerator
 			$table_name = isset($options['table']) ? $options['table'] : DEFAULT_MODERATOR_TABLE;
 			}
 		$this->table_name = $table_name;
+		$this->data = [];
 		$tmp_arr = itMySQL::_get_arr_from_db($table_name, "`".DEFAULT_STATUS_FIELD."` NOT IN (".NOT_PUBLISHED_STATUSES.")", $this->order);
 		if (is_array($tmp_arr))
 			foreach ($tmp_arr as $key=>$row)
@@ -44,8 +45,8 @@ class itModerator
 				}
 		$this->set = isset($options['set']) ? $options['set'] : NULL;
 		
-		$this->statuses	= isset($options['statuses']) ? $options['statuses'] : $statuses;
-		$this->allowed	= isset($options['allowed']) ? $options['allowed'] : (defined('MODERATED_STATUSES') ? unserialize(MODERATED_STATUSES) : NULL);
+		$this->statuses	= isset($options['statuses']) && is_array($options['statuses']) ? $options['statuses'] : (is_array($statuses) ? $statuses : []);
+		$this->allowed	= isset($options['allowed']) && is_array($options['allowed']) ? $options['allowed'] : (defined('MODERATED_STATUSES') ? (is_array(@unserialize(MODERATED_STATUSES)) ? @unserialize(MODERATED_STATUSES) : []) : []);
 		$this->compile();
 		}
 
@@ -61,12 +62,12 @@ class itModerator
 		$func = 'get_'.$this->table_name.'_moderate_code';
 		if (function_exists($func))
 			{
-		if (count($this->data))
-			{
-			$result = html_comment('Начало блока модерации').
-				TAB."\t<div class='moderate_panel list'>";
-			foreach ($this->allowed as $group_key)
-				if (isset($this->data[$group_key]) and count($this->data[$group_key]))
+			if (is_array($this->data) && count($this->data) && is_array($this->allowed) && count($this->allowed))
+				{
+				$result = html_comment('Начало блока модерации').
+					TAB."\t<div class='moderate_panel list'>";
+				foreach ($this->allowed as $group_key)
+					if (isset($this->data[$group_key]) and is_array($this->data[$group_key]) and count($this->data[$group_key]))
 					{
 					if ($num = count($this->data[$group_key]))
 

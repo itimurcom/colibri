@@ -1065,6 +1065,15 @@ class itEditor
 		
 		if (isset($this->data['id']))
 			unset($this->data['id']);
+
+		// PHP 8 / strict DB compatibility: some legacy project tables keep `avatar` as NOT NULL.
+		// Editor text save updates the whole record, so normalize missing avatar to empty string
+		// instead of NULL to avoid breaking AJAX JSON responses with a backend fatal.
+		if (array_key_exists('avatar', $this->data) AND is_null($this->data['avatar']))
+			{
+			$this->data['avatar'] = '';
+			}
+
 		itMySQL::_update_db_rec($this->table_name, $rec_id, $this->data);
 		}
 

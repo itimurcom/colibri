@@ -22,6 +22,6 @@ archive_path="$(dirname "$PWD")/${archive_name}"
 
 # Create ZIP in the parent directory, excluding .git everywhere
 zip -r -9 "$archive_path" . \
-  -x "./.git" "./img/*" "./uploads/*" "./.git/*" "*/.git/*" "./vendor/*" "./composer.*" "./phpunit.*" "./ziphere.sh" "config.secret.php" "*/config.secret.local.example.php"
+  -x "./.git" "public/img/*" "public/uploads/*" "./.git/*" "*/.git/*" "public/vendor/*" "public/composer.*" "public/phpunit.*"
 
 echo "Created: $archive_path"

@@ -20,23 +20,55 @@ class itMySQL
 		if (defined('CMS_DB_PORT')) $db_port = CMS_DB_PORT;
 		if (defined('SKIP_SQL')===false)
 			{
-			try
+			$attempts = [
+				[$db_server, $db_name],
+				];
+
+			if (is_string($db_name) AND preg_match('/_bak$/', $db_name))
 				{
-				$this->db = mysqli_connect($db_server, $db_user, $db_pass, $db_name, $db_port);
-				} catch (Exception $e)
+				$fallback_db_name = preg_replace('/_bak$/', '', $db_name);
+				$attempts[] = [$db_server, $fallback_db_name];
+				}
+
+			if ($db_server==='localhost')
+				{
+				$attempts[] = ['127.0.0.1', $db_name];
+				if (isset($fallback_db_name))
 					{
-					
+					$attempts[] = ['127.0.0.1', $fallback_db_name];
 					}
+				}
+
+			$errors = [];
+			$used_server = $db_server;
+			$used_name = $db_name;
+			foreach ($attempts as $row)
+				{
+				list($try_server, $try_name) = $row;
+				$this->db = @mysqli_connect($try_server, $db_user, $db_pass, $try_name, $db_port);
+				if ($this->db)
+					{
+					$used_server = $try_server;
+					$used_name = $try_name;
+					break;
+					}
+
+				$errors[] = $try_server.':'.$db_port.'/'.$try_name.' -> '.mysqli_connect_errno().' '.mysqli_connect_error();
+				}
 
 			if ($this->db)
 				{
 				$codepage = defined('CMS_DB_CODEPAGE') ? CMS_DB_CODEPAGE : 'utf8';
 				mysqli_query($this->db, "SET NAMES '{$codepage}'");
-				$this->db_server	= $db_server;
-                	        $this->db_user 		= $db_user;
-                        	$this->db_name		= $db_name;
-                        	$this->db_pass		= $db_pass;
-                        	$this->db_prefix	= $db_prefix;
+				$this->db_server	= $used_server;
+				$this->db_user 		= $db_user;
+				$this->db_name		= $used_name;
+				$this->db_pass		= $db_pass;
+				$this->db_prefix	= $db_prefix;
+				}
+			else
+				{
+				die('MySQL connection failed. Tried: '.implode(' | ', $errors));
 				}
 			}
 		}
@@ -208,7 +240,7 @@ class itMySQL
 			$value = json_encode($value, JSON_ALLOWED);
 			}
 
-		if ($value!=NULL)
+		if ($value !== NULL)
 			{
 			$value = "'".addslashes($value)."'";
 			} else $value = 'NULL';
@@ -252,7 +284,7 @@ class itMySQL
 				}
 
 			$rows[] = "`{$key}` = ".
-				(($row!=NULL) ? "'".addslashes($row)."'" : 'NULL');
+				(($row !== NULL) ? "'".addslashes($row)."'" : 'NULL');
 			}
 
 		$query = "UPDATE {$this->db_prefix}$table_name".

@@ -205,10 +205,14 @@ class itForm2
 		{
 		@decode_json_values($this->fields_xml);
 		
+		$reCaptcha_value = ($this->reCaptcha===true OR $this->reCaptcha===1 OR $this->reCaptcha==='1')
+			? 1
+			: 0;
+
 		$values_arr = [
 			'action' 	=> $this->action,
 			'method'	=> $this->method,
-			'reCaptcha'	=> $this->reCaptcha,
+			'reCaptcha'	=> $reCaptcha_value,
 			'form_id'	=> $this->form_id,
 			'element_id'	=> $this->element_id,
 			'title_xml'	=> $this->title_xml,
