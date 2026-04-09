@@ -12,6 +12,26 @@ global $_LDJSON, $_RDFA, $_SCHEMA;
 //..............................................................................
 class itMarkUp
 	{
+	public $image = array();
+	public $name = '';
+	public $brand = '';
+	public $description = '';
+	public $offers = NULL;
+	public $url = '';
+	public $price = '0.00';
+	public $currency = 'USD';
+	public $condition = 'NewCondition';
+	public $availability = 'InStock';
+	public $expire = '';
+	public $seller = '';
+	public $sku = '';
+	public $mpn = '';
+	public $review = array(
+		'count' => 1,
+		'value' => 5,
+		'author' => ''
+	);
+
 	//..............................................................................
 	// конструктор класса (ему можно передать конкретные данные)
 	//..............................................................................
@@ -85,7 +105,7 @@ class itMarkUp
 
 		$this->expire  = isset($options['expire'])
 				? $options['expire']
-				: ready_val($_MARKUP['expire'], strftime("%Y-01-01",strtotime('now +1 year'))); 			// Дата (в формате ISO 8601), после которой цена перестанет действовать.
+				: ready_val($_MARKUP['expire'], skel80_strftime_compat("%Y-01-01", strtotime('now +1 year'), 'en')); 			// Дата (в формате ISO 8601), после которой цена перестанет действовать.
 
 		$this->seller  = isset($options['seller'])
 				? $options['seller']

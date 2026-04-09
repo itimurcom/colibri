@@ -397,14 +397,14 @@ class itForm2
 			}
 
 		// проверим есть ли больше одного поля
-		if (is_array($this->buttons_xml) AND count($this->button_xml)>1)
+		if (is_array($this->buttons_xml) AND count($this->buttons_xml)>1)
 			{
 			// да? - раздвигаем массив
 			$res = array_slice($this->buttons_xml, 0, $ed_key+1, true) +
 				$ed_new_field +
 				array_slice($this->buttons_xml, $ed_key+1, NULL, true);
 
-			$this->button_xml = $res;
+			$this->buttons_xml = $res;
 			unset($res);
         		} else	{
 				// есть только одно поле! - тупо добавим поле после первого
