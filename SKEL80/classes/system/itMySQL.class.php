@@ -74,19 +74,6 @@ class itMySQL
 		}
 
 	//..............................................................................
-	// безопасно декодирует значение из базы, сохраняя NULL как NULL
-	//..............................................................................
-	private function decode_db_value($value=NULL)
-		{
-		if ($value===NULL)
-			{
-			return NULL;
-			}
-
-		return html_entity_decode((string)$value, ENT_QUOTES, 'UTF-8');
-		}
-
-	//..............................................................................
 	// деструктор класса - закрывает соединение, открытое в базе
 	//..............................................................................
 	public	function __destruct()
@@ -139,6 +126,31 @@ class itMySQL
 		}
 
 	//..............................................................................
+	// нормализует значение из БД для legacy runtime
+	//..............................................................................
+	protected function normalize_db_value($value_row)
+		{
+		if (is_null($value_row))
+			{
+			return NULL;
+			}
+
+		$value = html_entity_decode((string)$value_row, ENT_QUOTES, 'UTF-8');
+		if ($value === '')
+			{
+			return $value;
+			}
+
+		$value_rec = json_decode($value, true);
+		if (json_last_error()===JSON_ERROR_NONE and !doubleval($value) and is_array($value_rec))
+			{
+			return $value_rec;
+			}
+
+		return $value;
+		}
+
+	//..............................................................................
 	// возвращает массив данных из базы по id
 	//..............................................................................
 	public function get_rec_from_db($table_name=NULL, $rec_id=NULL, $field='id')
@@ -156,13 +168,7 @@ class itMySQL
 			{
 			foreach ($request_row as $key=>$row)
 				{
-				$value = $this->decode_db_value($row);
-				if (!doubleval($value) and ($value_rec = json_decode($value, true)))
-					{
-					$result[$key] = $value_rec;
-					} else 	{
-						$result[$key] = $value;
-						}
+				$result[$key] = $this->normalize_db_value($row);
 				}
 
 			$result['table_name'] = $table_name;
@@ -214,13 +220,7 @@ class itMySQL
 			{
 			foreach ($row as $key=>$value_row)
 				{
-				$value = $this->decode_db_value($value_row);
-				if (!doubleval($value) and ($value_rec = json_decode($value, true)))
-					{
-					$result[$key] = $value_rec;
-					} else 	{
-						$result[$key] = $value;
-						}
+				$result[$key] = $this->normalize_db_value($value_row);
 				}
 
 			$result['table_name'] = $table_name;
@@ -379,13 +379,7 @@ class itMySQL
 				{
 				foreach ($row as $key=>$row)
 					{
-					$value = $this->decode_db_value($row);
-					if (!doubleval($value) and ($value_rec = json_decode($value, true)))
-						{
-						$line[$key] = $value_rec;
-						} else 	{
-							$line[$key] = $value;
-							}
+					$line[$key] = $this->normalize_db_value($row);
 					}
 
 				$result[] = $line;
