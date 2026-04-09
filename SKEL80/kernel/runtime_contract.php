@@ -3,6 +3,8 @@
 // This file is intentionally declarative: it formalizes the boot phases,
 // overlay points and precedence model without changing the historical runtime.
 
+require_once 'runtime_boundaries.php';
+
 function skel80_runtime_contract()
 	{
 	static $contract = NULL;
@@ -197,6 +199,7 @@ function skel80_runtime_contract()
 				'purpose' => 'Final project-level overlay after shared run.php completes.',
 			],
 		],
+		'boundaries' => skel80_runtime_boundaries(),
 		'precedence' => [
 			'config' => [
 				'public/config.php',

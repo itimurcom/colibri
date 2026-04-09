@@ -31,3 +31,13 @@
 - `is_new`, `is_econom`, `is_shop`, and `is_replicant` now persist explicit `1/0` integers instead of raw PHP booleans.
 - Expected result: repeated toggles no longer try to write an empty string into integer DB columns like `colibri_items.is_replicant`.
 - Next step: if another toggle fails similarly, inspect that endpoint for boolean-to-string persistence before touching DB helpers again.
+
+## M0 / P3 explicit shared/project boundaries
+- Added `SKEL80/kernel/runtime_boundaries.php` with an explicit ownership map for shared core, project overlay, project delivery surface and historical mixed hotspots.
+- Added `public/engine/overlay_contract.php` as the declarative Colibri overlay manifest.
+- `SKEL80/kernel/runtime_contract.php` now exposes the boundary map together with the phase/precedence contract.
+- `public/engine/kernel.php` now loads the overlay contract before handing control to `SKEL80/run.php`, making the project overlay declaration part of the runtime surface.
+- Added `docs/SHARED_PROJECT_BOUNDARIES.md` and extended `docs/PLATFORM_CONTRACT.md` with dependency rules and ownership zones.
+- Expected result: future refactors can separate shared platform work from project-only work without confusing delivery files with shared-kernel responsibilities.
+- Next step: start the first real cleanup slices against mixed hotspots and presentation chaos using the new boundary map.
+

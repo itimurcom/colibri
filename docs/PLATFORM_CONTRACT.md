@@ -184,3 +184,28 @@ This stage keeps the historical shared-kernel model intact and hardens the runti
 - `CMS_RUNTIME_LOG_FILE` defaults to `public/logs/php-runtime.log`
 
 These defaults can be overridden by config secrets files or environment variables without changing the shared-core contract.
+
+
+## Explicit shared/project boundaries (M0 / P3)
+
+This stage keeps the historical layout intact and makes the ownership split explicit.
+
+### New declarative files
+- `SKEL80/kernel/runtime_boundaries.php` — shared boundary map, modern aliases, dependency rules and path-owner helper
+- `public/engine/overlay_contract.php` — Colibri project overlay manifest
+
+### Boundary model
+- `SKEL80/*` remains the shared platform kernel
+- `public/config.php` and `public/engine/*` are the project overlay contract
+- `public/index.php`, `public/mvc/*`, `public/themes/*`, `public/languages/*` are the project delivery surface
+
+### Dependency rule
+- shared core may call into the project only through declared extension points
+- project overlay may depend on shared core
+- delivery layer may depend on both shared core and project overlay
+
+### Why this matters
+This allows further modernization to target concrete seam lines:
+- mixed runtime hotspots (`run.php`, `core.php`, `config.php`, `kernel.php`)
+- project-first hooks vs shared fallback hooks
+- delivery cleanup without confusing delivery files with shared platform responsibilities
