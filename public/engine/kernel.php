@@ -14,6 +14,11 @@ define('ENGINE_VERSION',ENGINE_VERSION_VAL." ".ENGINE_VERSION_DATE);
 // require "engine/core/skeleton/run.php";
 require "../SKEL80/run.php";
 
+if (function_exists('skel80_runtime_enter_phase'))
+	{
+	skel80_runtime_enter_phase('kernel.postrun.overlay');
+	}
+
 // установим данные email для отправки
 define ('DEFAULT_ADMIN_EMAIL', $_SETTINGS['SITE_ADMIN_EMAIL']['value']);
 define ('DEFAULT_ADMIN_NAME', "admin<".DEFAULT_ADMIN_EMAIL.">");
