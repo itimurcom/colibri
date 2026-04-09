@@ -9,7 +9,7 @@
 //..............................................................................
 class itRouter
 	{
-	public $data, $path, $lang, $controller, $view, $rec_id;
+	public $data, $path, $lang, $controller, $view, $rec_id, $table_name;
 	private $o_lang;
 
 

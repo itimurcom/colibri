@@ -1,5 +1,13 @@
 # Project patch log
 
+## M0 / P4 startup deprecation hotfix bundle
+- Fixed the first real PHP 8.2+ startup deprecation wave reported during Colibri bootstrap instead of adding another architecture-only micro patch.
+- Declared legacy runtime properties explicitly in `SKEL80/classes/system/itRouter.class.php`, `SKEL80/classes/system/itSettings.class.php`, `SKEL80/classes/user/itUser.class.php`, and `SKEL80/classes/system/itFocus.class.php` to stop dynamic-property deprecations in hot startup paths.
+- Preserved both `user_id` and `id_of_user` in `itSettings` so the historical settings object keeps its current semantics while becoming compatible with modern PHP.
+- Hardened `SKEL80/classes/system/itMySQL.class.php` by routing DB value decoding through a NULL-safe helper before `html_entity_decode()`.
+- Expected result: repeated deprecation spam from `itRouter`, `itMySQL`, `itSettings`, `itUser`, and `itFocus` should disappear on bootstrap while keeping the shared-kernel runtime model untouched.
+- Next step: continue with the next deprecation bundle from real runtime logs, not architecture-only placeholder patches.
+
 ## M0 / P2 runtime compatibility baseline
 - Kept the historical shared-kernel + project-overlay model intact and hardened runtime behavior for modern PHP.
 - Added `SKEL80/kernel/runtime_compat.php` and wired it into `SKEL80/run.php` to apply runtime settings and install error/deprecation/fatal logging handlers.

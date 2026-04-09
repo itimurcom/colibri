@@ -9,7 +9,7 @@
 //..............................................................................
 Class itUser
 	{
-	public $table_name, $rec_id, $data, $is_logged, $hash;
+	public $table_name, $rec_id, $data, $is_logged, $hash, $db_prefix, $onerror, $user_agent, $user_ip, $session_row, $need_check;
 
 	//..............................................................................
 	// Конструктор класса, создаем объект проверяя условия

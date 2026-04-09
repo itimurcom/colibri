@@ -74,6 +74,19 @@ class itMySQL
 		}
 
 	//..............................................................................
+	// безопасно декодирует значение из базы, сохраняя NULL как NULL
+	//..............................................................................
+	private function decode_db_value($value=NULL)
+		{
+		if ($value===NULL)
+			{
+			return NULL;
+			}
+
+		return html_entity_decode((string)$value, ENT_QUOTES, 'UTF-8');
+		}
+
+	//..............................................................................
 	// деструктор класса - закрывает соединение, открытое в базе
 	//..............................................................................
 	public	function __destruct()
@@ -143,7 +156,7 @@ class itMySQL
 			{
 			foreach ($request_row as $key=>$row)
 				{
-				$value = !empty($row) ? html_entity_decode($row, ENT_QUOTES, 'UTF-8') : $row;
+				$value = $this->decode_db_value($row);
 				if (!doubleval($value) and ($value_rec = json_decode($value, true)))
 					{
 					$result[$key] = $value_rec;
@@ -201,7 +214,7 @@ class itMySQL
 			{
 			foreach ($row as $key=>$value_row)
 				{
-				$value = html_entity_decode ($value_row, ENT_QUOTES, 'UTF-8');
+				$value = $this->decode_db_value($value_row);
 				if (!doubleval($value) and ($value_rec = json_decode($value, true)))
 					{
 					$result[$key] = $value_rec;
@@ -366,7 +379,7 @@ class itMySQL
 				{
 				foreach ($row as $key=>$row)
 					{
-					$value = html_entity_decode ($row, ENT_QUOTES, 'UTF-8');
+					$value = $this->decode_db_value($row);
 					if (!doubleval($value) and ($value_rec = json_decode($value, true)))
 						{
 						$line[$key] = $value_rec;

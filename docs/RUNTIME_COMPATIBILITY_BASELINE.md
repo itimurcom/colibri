@@ -51,3 +51,13 @@ The platform keeps its original authorial model:
 - function-first extension.
 
 At the same time, the runtime becomes easier to run and debug on modern PHP without relying on hidden server settings like `short_open_tag` or deprecated `each()` support.
+
+## Startup deprecation hotfix follow-up
+
+The runtime startup hotfix bundle now also addresses the first PHP 8.2+ deprecation wave seen during real Colibri boot:
+
+- declared legacy runtime properties explicitly in `itRouter`, `itSettings`, `itUser` and `itFocus` instead of relying on dynamic property creation;
+- preserved both `user_id` and `id_of_user` on `itSettings` so the historical settings model keeps its current semantics while stopping the PHP deprecation noise;
+- normalized DB value decoding in `itMySQL` so `NULL` no longer reaches `html_entity_decode()` and triggers startup warnings.
+
+Expected result: the repeated startup deprecations reported from `itRouter`, `itSettings`, `itUser`, `itFocus` and `itMySQL` should disappear without changing the shared-kernel + project-overlay architecture.
