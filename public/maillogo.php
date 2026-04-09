@@ -1,4 +1,4 @@
-<?
+<?php 
 define('NO_PREPARED_ARR', 1);
 include ("engine/kernel.php");
 

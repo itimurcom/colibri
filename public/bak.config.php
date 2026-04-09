@@ -1,4 +1,4 @@
-<?
+<?php 
 
 // установки сервера и базы данных
 define('CMS_DB_SERVER', 'localhost');

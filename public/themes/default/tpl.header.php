@@ -1,4 +1,4 @@
-<?
+<?php 
 global $_LDJSON, $_RDFA, $_SCHEMA;
 $o_org = new itMarkOrg([
 	'logo'	=> SERVER_HTTP_DEBUG."/themes/default/images/top_left_logo.png",
@@ -21,7 +21,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <?=$_LDJSON?>
 	<?=minify_css(get_background_css());?>
 	</head>
-<?
+<?php 
 
 ?>
 <body class='boxed'>

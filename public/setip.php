@@ -1,4 +1,4 @@
-<?
+<?php 
 include ("engine/kernel.php");
 $ip = get_user_ip();
 

@@ -89,12 +89,13 @@ class itMailer
 
 		$smptmail = new PHPMailer;
 		$smptmail->CharSet = 'utf-8';
-		$smptmail->SMTPDebug = 1;
+		$smptmail->SMTPDebug = defined('DEFAULT_SMTP_DEBUG') ? DEFAULT_SMTP_DEBUG : 0;
+		$smptmail->Debugoutput = 'error_log';
 		// $smptmail->isSMTP(); 
 		$smptmail->Host = DEFAULT_SMTP_HOST;
 		$smptmail->SMTPAuth = true; 
-		$smptmail->Username =  trim($_SETTINGS['SITE_SMTP_USER']['value']);
-		$smptmail->Password = trim($_SETTINGS['SITE_SMTP_PASSWORD']['value']);
+		$smptmail->Username = trim(isset($_SETTINGS['SITE_SMTP_USER']['value']) ? $_SETTINGS['SITE_SMTP_USER']['value'] : '');
+		$smptmail->Password = trim(isset($_SETTINGS['SITE_SMTP_PASSWORD']['value']) ? $_SETTINGS['SITE_SMTP_PASSWORD']['value'] : '');
 
 //$smptmail->SMTPSecure = 'ssl'; 
 		$smptmail->Port = DEFAULT_SMTP_PORT;
@@ -110,7 +111,9 @@ class itMailer
 			}
 */
 
-		$smptmail->setFrom($row['from'], CMS_NAME); // Ваш Email
+		$from_email = !empty($row['from']) ? $row['from'] : (defined('DEFAULT_ADMIN_EMAIL') ? DEFAULT_ADMIN_EMAIL : trim(isset($_SETTINGS['SITE_ADMIN_EMAIL']['value']) ? $_SETTINGS['SITE_ADMIN_EMAIL']['value'] : ''));
+		$from_name = defined('CMS_NAME') ? CMS_NAME : (defined('SITE_NAME') ? SITE_NAME : 'SKEL80');
+		$smptmail->setFrom($from_email, $from_name); // Ваш Email
 		$smptmail->addAddress($row['to']); // Email получателя
 
 
@@ -136,7 +139,7 @@ class itMailer
 				itMail::status($row['id'],'ERROR');
 				itMail::code($row['id'], $smptmail->ErrorInfo);
 				}
-		unset($smtpmail);
+		unset($smptmail);
 		}
 
 

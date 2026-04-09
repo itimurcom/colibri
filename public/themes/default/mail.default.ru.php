@@ -6,5 +6,5 @@ $link = HTTP_PATH.CMS_LANG."/";
 <div style='padding:.8em 0;'>
 [CODE]
 </div>
-<? include "tpl.mail.footer.php";?>
+<?php  include "tpl.mail.footer.php";?>
 </div>

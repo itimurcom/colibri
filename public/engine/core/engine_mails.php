@@ -1,4 +1,4 @@
-<?
+<?php 
 define('SEND_USER_MAILS', 0);
 //define('DEFAULT_ORDER_TABLE', 'orders');
 

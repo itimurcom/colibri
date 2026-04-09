@@ -63,8 +63,13 @@ The historical runtime is now named as a deterministic phase pipeline.
 21. `user.bootstrap` — build `itUser`
 22. `custom.user.post` — apply `public/engine/ini/custom.*.php` and `public/engine/kernel.customs.php`
 23. `prepared_arrays.finalize` — prepare moderator arrays when available
-24. `kernel.postrun.overlay` — continue executing `public/engine/kernel.php` after `require "../SKEL80/run.php"`
+24. `kernel.postrun.overlay` — continue executing `public/engine/kernel.php` after shared runtime handoff
 25. `site.compile` — `public/index.php` runs `itSite::compile()`
+
+Runtime compatibility baseline additionally introduces:
+
+- `runtime.compat.settings` — apply PHP 8+ runtime settings from config/env
+- `runtime.compat.handlers` — install logging, deprecation and fatal-shutdown handlers
 
 ## Official overlay points
 
@@ -154,3 +159,28 @@ Shared functions are skipped when a project function with the same name already 
 - no deprecation cleanup yet
 
 Those belong to the next steps of `M0 / P1` after the contract is fixed and explicit.
+
+## Runtime compatibility baseline (M0 / P2)
+
+This stage keeps the historical shared-kernel model intact and hardens the runtime for modern PHP.
+
+### Included in this baseline
+- short open tags migrated from `<?` to `<?php` across the runtime PHP surface
+- deprecated `each()` removed from legacy PHPMailer sources bundled in `SKEL80/classes/mailer/`
+- `public/config.php` now supports optional `config.secrets.php` / `config.secrets.local.php` overlays and environment-variable overrides
+- runtime error reporting, display/log policy and log file path are now driven from config/env instead of hard-coded suppression in `public/engine/kernel.php`
+- runtime logging baseline added via `SKEL80/kernel/runtime_compat.php`
+- shared-kernel handoff in `public/engine/kernel.php` now uses a normalized absolute path instead of a fragile relative include
+
+### New config overlay files
+- `public/config.secrets.php` — ignored, optional secret/project-local overrides
+- `public/config.secrets.local.php` — ignored, optional machine-local overrides
+- `public/config.secrets.example.php` — documented template with placeholders
+
+### Default runtime behavior
+- `CMS_ERROR_REPORTING` defaults to `E_ALL`
+- `CMS_DISPLAY_ERRORS` defaults to `1` in `dev`, `0` in `prod`
+- `CMS_LOG_ERRORS` defaults to `1`
+- `CMS_RUNTIME_LOG_FILE` defaults to `public/logs/php-runtime.log`
+
+These defaults can be overridden by config secrets files or environment variables without changing the shared-core contract.

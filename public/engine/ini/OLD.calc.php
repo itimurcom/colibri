@@ -1,4 +1,4 @@
-<?
+<?php 
 global $_SETTINGS;
 $calc_cat['ITEM_CALC']['fields']['quantity'] = array
 	(

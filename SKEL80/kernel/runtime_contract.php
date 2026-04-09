@@ -39,6 +39,16 @@ function skel80_runtime_contract()
 				'owner' => 'overlay',
 				'file' => 'public/config.php',
 			],
+			'runtime.compat.settings' => [
+				'title' => 'Apply runtime compatibility settings',
+				'owner' => 'mixed',
+				'file' => 'SKEL80/kernel/runtime_compat.php + public/config.php',
+			],
+			'runtime.compat.handlers' => [
+				'title' => 'Install runtime logging and error handlers',
+				'owner' => 'core',
+				'file' => 'SKEL80/kernel/runtime_compat.php',
+			],
 			'paths.user' => [
 				'title' => 'Resolve user/project paths',
 				'owner' => 'mixed',

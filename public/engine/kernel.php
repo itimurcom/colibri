@@ -1,8 +1,4 @@
 <?php
-ini_set('error_reporting', E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED);
-error_reporting(E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED);
-
-//ini_set('display_errors', 1);
 set_time_limit(600);
 
 define ('ENGINE_VERSION_VAL','0.2.135.01.beta');
@@ -12,7 +8,7 @@ define('ENGINE_VERSION',ENGINE_VERSION_VAL." ".ENGINE_VERSION_DATE);
 
 // путь к SKELETON
 // require "engine/core/skeleton/run.php";
-require "../SKEL80/run.php";
+require dirname(__DIR__, 2).'/SKEL80/run.php';
 
 if (function_exists('skel80_runtime_enter_phase'))
 	{

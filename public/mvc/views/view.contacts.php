@@ -1,1 +1,1 @@
-<?include "./themes/".CMS_THEME."/tpl.default.php"?>
+<?php include "./themes/".CMS_THEME."/tpl.default.php"?>

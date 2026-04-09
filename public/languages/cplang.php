@@ -1,4 +1,4 @@
-<?
+<?php 
 chdir($_SERVER['DOCUMENT_ROOT']);
 include('engine/kernel.php');
 chdir(dirname(__FILE__));

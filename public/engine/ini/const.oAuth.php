@@ -1,4 +1,4 @@
-<?
+<?php 
 // define('RECAPTCHA_KEY', '6LfKwREUAAAAAIHp44SOVRNu67U9cYPwBmhCn4qZ');
 // define('RECAPTCHA_SECRET', '6LfKwREUAAAAAGZdkXFfxyfknRmvI_im6rVmUvno');
 

@@ -1,4 +1,4 @@
-<?
+<?php 
 //настройки параметров сессии
 define('SESSION_PREFIX','COLIBRI_');
 

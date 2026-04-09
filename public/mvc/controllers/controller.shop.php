@@ -1,4 +1,4 @@
-<?
+<?php 
 $_CONTENT['admin'] = get_admin_button_set();
 global $cat_cat, $cat_more;
 $_CONTENT['widgets'] = get_widgets_set();

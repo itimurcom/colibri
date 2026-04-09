@@ -1,4 +1,4 @@
-<?
+<?php 
 $_CONTENT['admin'] = get_admin_button_set();
 $data = itEditor::_redata();
 global $_SETTINGS;

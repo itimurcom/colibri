@@ -10,6 +10,7 @@
 //
 //-----------------------------------------------------------------------------
 require_once 'kernel/runtime_contract.php';
+require_once 'kernel/runtime_compat.php';
 
 skel80_runtime_enter_phase('core.primitives');
 require_once 'kernel/core.php';
@@ -54,6 +55,11 @@ foreach (array_unique($config_candidates) as $config_file)
 		break;
 		}
 	}
+
+skel80_runtime_enter_phase('runtime.compat.settings');
+skel80_runtime_apply_bootstrap_settings();
+skel80_runtime_enter_phase('runtime.compat.handlers');
+skel80_runtime_install_error_handlers();
 
 skel80_runtime_enter_phase('paths.user');
 set_skeleton_user_ways();
