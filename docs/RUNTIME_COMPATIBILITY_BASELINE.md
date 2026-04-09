@@ -61,3 +61,13 @@ The runtime startup hotfix bundle now also addresses the first PHP 8.2+ deprecat
 - normalized DB value decoding in `itMySQL` so `NULL` no longer reaches `html_entity_decode()` and triggers startup warnings.
 
 Expected result: the repeated startup deprecations reported from `itRouter`, `itSettings`, `itUser`, `itFocus` and `itMySQL` should disappear without changing the shared-kernel + project-overlay architecture.
+
+
+## M0 / P6 feed and JSON deprecation bundle
+- `SKEL80/classes/blocks/itFeed.class.php`
+  - declared explicit legacy runtime properties used during feed assembly to avoid PHP 8.2+ dynamic property deprecations
+  - added NULL-safe JSON handling for one-field feed decoding
+- `SKEL80/kernel/events/cheking/isJson.func.php`
+  - made `isJson()` NULL-safe and empty-string-safe before `json_decode()`
+- `SKEL80/classes/system/itMySQL.class.php`
+  - added centralized NULL-safe JSON decoding helper for DB result normalization

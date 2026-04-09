@@ -9,9 +9,24 @@
 //..............................................................................
 function isJson($json_string)
 	{
-	if (is_array($json_string)) {
+	if (is_array($json_string) OR is_object($json_string)) {
 		return false;
 		}
-	return is_object(json_decode($json_string)) OR is_array(json_decode($json_string));
+
+	if ($json_string===NULL) {
+		return false;
+		}
+
+	$json_string = trim((string)$json_string);
+	if ($json_string==='') {
+		return false;
+		}
+
+	$decoded = json_decode($json_string, true);
+	if (json_last_error()!==JSON_ERROR_NONE) {
+		return false;
+		}
+
+	return is_array($decoded) OR is_object($decoded);
 	}
 ?>

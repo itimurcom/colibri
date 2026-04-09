@@ -15,7 +15,8 @@ class itFeed
 	public 	$table_name, $prefix, $fields, $condition, $group, $order, 
 		$sql, $request, $code, $rows, $weight, $query, $async,
 		$start, $fewer, $loop, $appear, $rotate, $nodiv, $func,
-		$COUNTALL;
+		$COUNTALL, $limit, $element_id, $name, $position, $onefield,
+		$field, $params, $MAXINBLOCK, $WASRESET, $COUNTAL, $field_rec;
 
 	//..............................................................................
 	// конструктор класса - создает блок и кнопку с параметрами из запроса
@@ -170,7 +171,8 @@ class itFeed
 		if ($record = mysqli_fetch_assoc($this->request))
 			{
 //			$this->field_rec = json_decode(ready_val($record[$this->field]), JSON_ALLOWED);				
-			$this->field_rec = is_array($record[$this->field]) ? $record[$this->field] : json_decode($record[$this->field] ,JSON_ALLOWED);
+			$field_source = ready_val($record[$this->field], NULL);
+			$this->field_rec = is_array($field_source) ? $field_source : (($field_source===NULL or $field_source==='') ? NULL : json_decode((string)$field_source ,JSON_ALLOWED));
 			while ($i<=$this->MAXINBLOCK)
 				{
 				if ($field_row = ready_val($this->field_rec[$this->position]))
