@@ -1,4 +1,4 @@
-<?php
+<?
 define('SEND_USER_MAILS', 0);
 //define('DEFAULT_ORDER_TABLE', 'orders');
 
@@ -203,7 +203,7 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 		'from'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),	
 		'to'		=> trim($_SETTINGS['SITE_ADMIN_EMAIL']['value']),
 		'reply'		=> trim($_REQUEST['email']),
-		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)",strtotime($now), CMS_LANG)." {$subject_admin}",
+		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".strftime("[ %d %b %Y ] (%a)",strtotime($now))." {$subject_admin}",
 		'message'	=> $admin_mail['result'],
 		'user'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
 		'password'	=> trim($_SETTINGS['SITE_SMTP_PASSWORD']['value']),
@@ -219,7 +219,7 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 	return
 		(!is_null($subject_of_user)
 			? 	TAB."<div class='tit'>".
-				CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)",strtotime($now), CMS_LANG).
+				CMS_NAME." (".CMS_LANG.") : ".strftime("[ %d %b %Y ] (%a)",strtotime($now)).
 				$subject_of_user.
 				"</div>" 
 			: NULL).
@@ -232,6 +232,9 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 //..............................................................................
 function mailing_history_panel($email=NULL)
 	{
+	$mailing_feed_numbers = unserialize(FEED_NUMBER);
+	$mailing_feed_limit = intval(ready_val($mailing_feed_numbers['mailing_history'], DEFAULT_FEED_NUM));
+
 	$o_feed = new itFeed([
 		'table'			=> DEFAULT_MAIL_TABLE,
 		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` NOT IN('DELETED','SPAM')".NOT_PINCODE,
@@ -239,6 +242,7 @@ function mailing_history_panel($email=NULL)
 		'order'			=> "`id` DESC",
 		'async'			=> true,
 		'appear'		=> false,
+		'limit'		=> $mailing_feed_limit,
 		]);
 	$o_feed->compile();
 	$mailpanel = $o_feed->count_all() ? $o_feed->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
@@ -251,6 +255,7 @@ function mailing_history_panel($email=NULL)
 		'order'			=> "`id` DESC",
 		'async'			=> true,
 		'appear'		=> false,
+		'limit'		=> $mailing_feed_limit,
 		]);
 	$o_feed->compile();
 	$pinpanel = $o_feed->count_all() ? $o_feed->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
@@ -263,6 +268,7 @@ function mailing_history_panel($email=NULL)
 		'order'			=> "`id` DESC",
 		'async'			=> true,
 		'appear'		=> false,
+		'limit'		=> $mailing_feed_limit,
 		]);
 	$o_spam->compile();
 	$spampanel = $o_spam->count_all() ? $o_spam->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
@@ -275,6 +281,7 @@ function mailing_history_panel($email=NULL)
 		'order'			=> "`id` DESC",
 		'async'			=> true,
 		'appear'		=> false,
+		'limit'		=> $mailing_feed_limit,
 		]);
 	$o_deleted->compile();
 	$deletedpanel = $o_deleted->count_all() ? $o_deleted->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";

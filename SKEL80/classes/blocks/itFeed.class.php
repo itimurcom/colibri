@@ -29,8 +29,8 @@ class itFeed
 		// побробуем кстановить текс запроса
 		$this->sql	= ready_val($options['sql']);
 		$this->order 	= ready_val($options['order']);
-		$this->limit_explicit = is_array($options) && array_key_exists('limit', $options);
-		$this->limit	= $this->limit_explicit ? intval(ready_val($options['limit'], 0)) : intval(get_const('FEED_LIMIT'));
+		$this->limit	= ready_val($options['limit'], get_const('FEED_LIMIT'));
+		$this->limit_explicit = is_array($options) && array_key_exists('limit', $options) && !is_null($options['limit']);
 		
 		// если не установлен sql код
 		if (is_null($options['sql']))		
@@ -84,40 +84,58 @@ class itFeed
 			$this->COUNTALL = $this->onefield ? 100 : (is_array($this->request) ? count($this->request) : 0);
 			} else {
 				// иначе - создадим запрос к базе данных
-				$position = intval($this->position);
-				$queryLimit = $this->resolve_query_limit();
-
-				$this->query = (is_null($this->sql))
-				
-					?	"SELECT {$this->fields} FROM {$this->prefix}{$this->table_name} ".
-						"WHERE ( {$this->condition} )".
-						(($this->group!='') ? " GROUP BY " : '').$this->group.
-						(($this->order!='') ? " ORDER BY " : '').$this->order.
-						((!is_null($this->position) AND !$this->onefield) ? " LIMIT {$position}".(($queryLimit>0) ? ",{$queryLimit}" : "") : "")
-						
-					:	$this->sql.
-						(($this->group!='') ? " GROUP BY " : '').$this->group.
-						(($this->order!='') ? " ORDER BY " : '').$this->order.
-						((!is_null($this->position) AND !$this->onefield) ? " LIMIT {$position}".(($queryLimit>0) ? ",{$queryLimit}" : "") : "");
+				$this->query = $this->build_feed_query(true);
 
 				if ($this->fewer) $this->reverse_order();
 				$this->request = itMySQL::_request($this->query, false); 	// важно - указать чтобы возврат был не массив!
-				$this->COUNTALL = $this->onefield ? 100 : mysqli_num_rows($this->request);
+				$this->COUNTALL = $this->onefield ? 100 : $this->resolve_total_count();
 				}
 		}
 
 	//..............................................................................
-	// возвращает лимит SQL выборки: явный для ленты, иначе глобальный fallback
+	// строит sql-запрос для ленты
+	//..............................................................................
+	private function build_feed_query($apply_limit=true, $apply_order=true)
+		{
+		if (is_null($this->sql))
+			{
+			$query = "SELECT {$this->fields} FROM {$this->prefix}{$this->table_name} ".
+					"WHERE ( {$this->condition} )".
+					(($this->group!='') ? " GROUP BY " : '').$this->group.
+					(($apply_order AND $this->order!='') ? " ORDER BY " : '').(($apply_order) ? $this->order : '');
+			}
+		else
+			{
+			$query = $this->sql.
+					(($this->group!='') ? " GROUP BY " : '').$this->group.
+					(($apply_order AND $this->order!='') ? " ORDER BY " : '').(($apply_order) ? $this->order : '');
+			}
+
+		if ($apply_limit AND !is_null($this->position) AND !$this->onefield)
+			{
+			$limit = $this->resolve_query_limit();
+			$query .= " LIMIT {$this->position}".((intval($limit)>0) ? ",{$limit}" : '');
+			}
+
+		return $query;
+		}
+
+	//..............................................................................
+	// определяет limit выборки для sql ленты
 	//..............................................................................
 	private function resolve_query_limit()
 		{
-		if ($this->limit_explicit)
-			{
-			return intval($this->limit);
-			}
+		return intval($this->limit_explicit ? $this->limit : get_const('FEED_LIMIT'));
+		}
 
-		$globalLimit = intval(get_const('FEED_LIMIT'));
-		return ($globalLimit > 0) ? $globalLimit : 0;
+	//..............................................................................
+	// считает общее количество строк в sql-ленте без LIMIT
+	//..............................................................................
+	private function resolve_total_count()
+		{
+		$count_query = "SELECT COUNT(*) AS count FROM (".$this->build_feed_query(false, false).") skel80_feed_count";
+		$count_request = itMySQL::_request($count_query);
+		return isset($count_request[0]['count']) ? intval($count_request[0]['count']) : 0;
 		}
 
 	//..............................................................................
@@ -549,26 +567,12 @@ class itFeed
 		{
 		if (!is_null($this->func))
 			{
-			$result = count($this->request);
+			$this->COUNTALL = count($this->request);
 			}
-		else 	{
-/*			$this->query = (is_null($this->sql))
-				?	"SELECT COUNT(`id`) AS count FROM {$this->prefix}{$this->table_name} ".
-					"WHERE ( {$this->condition} )".
-					(($this->group!='') ? " GROUP BY " : '').$this->group.
-//					(!is_null($this->position) ? " LIMIT {$this->position}, ".FEED_LIMIT : "").
-					""
-				:	str_replace("SELECT ", "SELECT COUNT(`id`) AS count,", $this->sql).
-//					"SELECT COUNT(`id`) AS count FROM ({$this->sql} ".
-					(!empty($this->group) ? " GROUP BY {$this->group}" : '').
-//					(!is_null($this->position) ? " LIMIT {$this->position}, ".FEED_LIMIT : "").
-//					") res".
-					"";
-				
-			if ($this->fewer) $this->reverse_order();
-			$request = itMySQL::_request($this->query);
-			$result = isset($request[0]) ? $request[0]['count'] : 0;
-*/			}
+		else
+			{
+			$this->COUNTALL = $this->onefield ? 100 : $this->resolve_total_count();
+			}
 
 		return $this->COUNTALL;
 		}
