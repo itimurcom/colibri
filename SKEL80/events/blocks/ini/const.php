@@ -25,7 +25,7 @@ definition([
 	// itFeed
 	'DEFAULT_FEED_NUM' 	=> 5,
 	'FEED_VALUE'		=> 'feed_data',
-	'FEED_LIMIT' 		=> 10000,
+	'FEED_LIMIT' 		=> 100,
 	'FEED_START'		=> serialize(['contents' => 5]),
 	'FEED_NUMBER'		=> serialize(['contents' => 5]),
 	'FEED_LOOP'		=> serialize(['contents' => 0]),
