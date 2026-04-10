@@ -11,7 +11,7 @@ $button_counter = (function_exists('rand_id')) ? rand_id() : 0;
 //..............................................................................
 class itButton
 	{
-	public $code;
+	public $code, $ajax;
 	private $title, $type, $color, $options, $element_id, $target;
 
 	//..............................................................................

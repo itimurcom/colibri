@@ -83,7 +83,8 @@ class itForm2
 		$form_id, $element_id, $title_xml, $ed_xml, $buttons_xml, $hiddens_xml,
 		$state,
 		$edclass,
-		$debug;
+		$debug,
+		$error, $class, $field, $column, $accepted, $code, $button_xml;
 		
 	public $fields_xml;
 	//..............................................................................

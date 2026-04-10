@@ -13,7 +13,7 @@ $modal_count = (function_exists('rand_id')) ? rand_id() : time();
 //..............................................................................
 class itModal
 	{
-	public $code, $fields;
+	public $code, $fields, $ajax;
 	private $size, $form_id, $animation;
 
 	//..............................................................................
@@ -31,6 +31,7 @@ class itModal
 		$this->form_id 	= $form_id;
 		$this->size		= DEFAULT_MODAL_SIZE;
 		$this->animation        = DEFAULT_MODAL_ANIMATION;
+		$this->fields		= [];
 		$this->ajax		= NULL;
 		}
 
@@ -56,9 +57,9 @@ class itModal
 	//..............................................................................
 	// устанавливает размер модального окна по ширине
 	//..............................................................................	
-	public function set_animation($animation=DEFAULT_MODAL_SIZE)
+	public function set_animation($animation=DEFAULT_MODAL_ANIMATION)
 		{
-		$this->$animation = $animation;
+		$this->animation = $animation;
 		}
 
 	//..............................................................................
