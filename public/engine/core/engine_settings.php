@@ -37,13 +37,6 @@ function get_settings_panel()
 		'more'		=> false,
 		]);
 
-	$o_form->add_input([
-		'label'		=> 'Курс USD в Рублях',
-		'name'		=> 'RUR',
-		'value'		=> itSettings::get('RUR'),
-		'compact'	=> true,
-		'more'		=> false,
-		]);
 		
 	$o_form->add_input([
 		'label'		=> 'Стандартный налог, %',

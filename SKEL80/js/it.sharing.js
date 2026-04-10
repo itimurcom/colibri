@@ -32,25 +32,11 @@ function social_popup (type, url)
 			win_w = 520;
 			break;
 			}
-		case 'l-ok' : {
-			share_link = 'https://connect.ok.ru/offer?'
-			+ '&url=' + p_link
-			+ '&title=' + p_title
-			+ '&description=' + p_desc
-			+ '&imageUrl=' + p_img;
-			win_w = 520;
-			break;
-			}
-		case 'l-vk' : {
-			share_link = 'https://vk.com/share.php'
-			+ '?url=' + p_link
-			+ '&title=' + p_title
-			+ '&image=' + p_img
-			+ '&text=' + p_desc
-			+ '&noparse=true';
-			win_w = 520;
-			break;
+		default : {
+			return false;
 			}
 		}
+
+	if (typeof share_link === 'undefined' || !share_link) return false;
         window.open(share_link,'','toolbar=0,status=0,width='+ win_w +',height='+win_h);
    	}

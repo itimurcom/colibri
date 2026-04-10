@@ -43,3 +43,10 @@
 - Removed the premature `skel80_runtime_configure()` call from `public/engine/kernel.php`.
 - The runtime compatibility/bootstrap layer is now initialized only from `SKEL80/run.php`, after helper functions are loaded.
 - Expected result: Colibri bootstrap no longer fatals with `Call to undefined function skel80_runtime_configure()` before the shared kernel starts.
+## M0 / P14 vk ok and ruble removal bundle
+- Removed VK and OK OAuth providers from `public/engine/ini/ini.oAuth.php`.
+- Removed VK and OK share handlers from `SKEL80/js/it.sharing.js` and their CSS selectors from `SKEL80/css/class.itSharer.css`.
+- Removed VK and OK social page settings from `public/engine/kernel.customs.php` and from `public/ed_field.php` settings save whitelist.
+- Removed VK and OK rendering from `public/engine/core/units/users/engine_social.php`.
+- Removed ruble/RUR runtime settings and labels from `public/engine/kernel.customs.php`, `public/engine/core/engine_settings.php`, `public/ed_field.php` and `public/engine/ini/OLD.calc.php`.
+- Added remove manifest for unused `open_vk.png` and `open_ok.png` assets.

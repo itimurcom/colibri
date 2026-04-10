@@ -145,78 +145,7 @@ $soc_net['IG'] = array
 	);
 
 
-//..............................................................................
-// для сети "google+"
-//..............................................................................
-$soc_net['OK'] = array
-	(
-	'title'		=> 'Одноклассники',
-	'login'		=> 'odnoklassniki',
-	'button'	=> array (
-			'link'	=> 'http://www.odnoklassniki.ru/oauth/authorize',
-			'title'	=> 'OPENLOGIN_OK_TITLE',
-			'class'	=> 'odnoklassniki',
-			),
-
-	'token' 	=> array (
-			'param'	=> array (
-			        'client_id' 	=> '1234034688',
-				'scope'		=>  'GET_EMAIL',
-				'response_type'	=> 'code',
-	        		'redirect_uri' 	=> REDIRECT_URI_SCRIPT."?".SOCIAL_SELECTOR."=OK",
-				'state'		=> '',
-				),
-			'link'	=> 'https://api.odnoklassniki.ru/oauth/token.do',
-			),
-
-	'user'		=> array (
-			'public_key' 	=> 'CBABOOIKEBABABABA',
-	        	'client_secret' => 'DC65FA9AB4B0C6A46D517C05',
-			'link'	=> 'http://api.odnoklassniki.ru/fb.do',
-			),
-
-	'post'		=> array (
-			'link'	=> NULL,
-			),
-
-	'enable'	=> 0,
-	);
 
 
-//..............................................................................
-// для сети "в контакте"
-//..............................................................................
-$soc_net['VK'] = array
-	(
-	'title'		=> 'ВКонтакте',
-	'login'		=> 'vkontakte',
-	'button'	=> array (
-			'link'	=> 'https://oauth.vk.com/authorize',
-			'title'	=> 'OPENLOGIN_VK_TITLE',
-			'class'	=> 'vkontakte',
-			),
-
-
-	'token' 	=> array (
-			'param'	=> array (
-			        'client_id' 	=> '5300570',
-        			'client_secret' => 'TE3dbtxie9x6TqA95G0B',
-				'response_type'	=> 'code',
-				'scope' 	=> 'email,wall,offline',
-	        		'redirect_uri' 	=> REDIRECT_URI_SCRIPT."?".SOCIAL_SELECTOR."=VK",
-				),
-			'link'	=> 'https://oauth.vk.com/access_token',
-			),
-
-	'user'		=> array (
-			'link'	=> 'https://api.vk.com/method/users.get',
-			),
-
-	'post'		=> array (
-			'link'	=> 'https://api.vk.com/method/wall.post',
-			),
-
-	'enable'	=> 0,
-	);
 
 ?>

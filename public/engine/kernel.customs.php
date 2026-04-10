@@ -47,16 +47,6 @@ global $_USER, $_SETTINGS;
 		);
 	$_SETTINGS['FB_PAGE']['value'] = itSettings::get('FB_PAGE', NULL);	
 
-	// страница В контакте
-	//.............................................................................
-	define('VK_PAGE_DEFAULT', '');
-	$_SETTINGS['VK_PAGE'] = array (
-		'name'		=> 'VK_PAGE',
-		'title'		=> 'VK_PAGE_TITLE',
-		'type'		=> 'text',
-		'default'	=> VK_PAGE_DEFAULT
-		);
-	$_SETTINGS['VK_PAGE']['value'] = itSettings::get('VK_PAGE', NULL);	
 
 	// страница Инстаграм
 	//.............................................................................
@@ -69,16 +59,6 @@ global $_USER, $_SETTINGS;
 		);
 	$_SETTINGS['IG_PAGE']['value'] = itSettings::get('IG_PAGE', NULL);	
 
-	// страница Одноклассники
-	//.............................................................................
-	define('OK_PAGE_DEFAULT', '');
-	$_SETTINGS['OK_PAGE'] = array (
-		'name'		=> 'OK_PAGE',
-		'title'		=> 'OK_PAGE_TITLE',
-		'type'		=> 'text',
-		'default'	=> IG_PAGE_DEFAULT
-		);
-	$_SETTINGS['OK_PAGE']['value'] = itSettings::get('OK_PAGE', NULL);	
 
 	// страница Твиттер
 	//.............................................................................
@@ -123,14 +103,6 @@ global $_USER, $_SETTINGS;
 		];
 	$_SETTINGS['UAH']['value'] = itSettings::get('UAH', NULL);
 
-	define('RUR_DEFAULT', "-");
-	$_SETTINGS['RUR'] = [
-		'name'		=> 'RUR',
-		'title'		=> 'RUR_TITLE',
-		'type'		=> 'number',
-		'default'	=> 28
-		];
-	$_SETTINGS['RUR']['value'] = itSettings::get('RUR', NULL);
 
 	define('TAX_DEFAULT', 0);
 	$_SETTINGS['TAX'] = [

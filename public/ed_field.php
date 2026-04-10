@@ -142,10 +142,9 @@ if (isset($_REQUEST['op']))
 							'USD'	=> '$',
 							'EUR'	=> '€',
 							'UAH'	=> 'грн',
-							'RUR'	=> 'руб',
 							];
 						
-						if (isset($_REQUEST[$row['name']]))
+						if (isset($_REQUEST[$row['name']]) AND isset($rates[$_REQUEST[$row['name']]]))
 							{
 							$rate_val = isset($_SETTINGS[$_REQUEST[$row['name']]]['value']) ? $_SETTINGS[$_REQUEST[$row['name']]]['value'] : 1;
 							$rate_sym = $rates[$_REQUEST[$row['name']]];							
@@ -403,7 +402,7 @@ if ($_USER->is_logged())
 			break;
 			}
 		case 'settings' : {
-			foreach(explode(",", "DISCOUNT,EUR,UAH,RUR,TAX,SITE_ADMIN_EMAIL,SITE_SMTP_USER,SITE_SMTP_PASSWORD,FB_PAGE,IG_PAGE,TW_PAGE,VK_PAGE,OK_PAGE") as $VAR)
+			foreach(explode(",", "DISCOUNT,EUR,UAH,TAX,SITE_ADMIN_EMAIL,SITE_SMTP_USER,SITE_SMTP_PASSWORD,FB_PAGE,IG_PAGE,TW_PAGE") as $VAR)
 				if (isset($_REQUEST[$VAR]))
 					itSettings::set($VAR, str_replace(",",".",$_REQUEST[$VAR]));
 			cms_redirect_page("$url");

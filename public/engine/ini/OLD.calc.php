@@ -214,7 +214,7 @@ $calc_cat['ITEM_CALC']['fields']['rate'] = array
 	'title' 	=> CALC_ITEM_RATE,
 	'type' 		=> 'select',
 	'options'	=> FORM_VALUE_RATES,
-	'values'        => 'USD,EUR,UAH,RUR',
+	'values'        => 'USD,EUR,UAH',
 	'default'	=> '0',
 	'show'		=> 1
 	);

@@ -6,7 +6,7 @@ function social_links_panel()
 	{
 	global $_SETTINGS;
 	$social_str = NULL;
-	if (is_array($social_arr = explode(',', 'FB,IG,TW,VK,OK')))
+	if (is_array($social_arr = explode(',', 'FB,IG,TW')))
 	foreach($social_arr as $social)
 		{
 		if (isset($_SETTINGS[$social.'_PAGE']) AND !empty($link = $_SETTINGS[$social.'_PAGE']['value']))
@@ -36,7 +36,7 @@ function get_social_links_panel()
 		'op'		=> 'settings',
 		]);
 		
-	if (is_array($social_arr = explode(',', 'FB,IG,TW,VK,OK')))
+	if (is_array($social_arr = explode(',', 'FB,IG,TW')))
 	foreach($social_arr as $social)
 		{
 		$o_form->add_input([

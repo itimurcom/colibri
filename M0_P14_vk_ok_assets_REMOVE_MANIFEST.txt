@@ -1,0 +1,2 @@
+public/themes/default/images/open_vk.png
+public/themes/default/images/open_ok.png
