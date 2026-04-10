@@ -7,3 +7,4 @@
 5. Treat `SKEL80/` as shared platform code unless the boundary docs explicitly say otherwise.
 6. Treat `public/engine/` as the first legal place for Colibri-specific runtime behavior.
 7. Treat `public/mvc/`, `public/themes/`, `public/languages/` as delivery/presentation territory.
+8. Do not call shared runtime helpers from `public/engine/kernel.php` before `SKEL80/run.php` is required; the shared kernel owns runtime helper initialization.

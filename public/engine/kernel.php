@@ -1,5 +1,5 @@
 <?php
-skel80_runtime_configure();
+// shared runtime configuration is initialized inside SKEL80/run.php after bootstrap helpers are loaded
 
 if (function_exists('set_time_limit'))
 	{

@@ -37,3 +37,9 @@
 - Added boundary manifests directly inside key directories so a developer can open a folder and immediately see ownership.
 - Updated `SKEL80/run.php` to load and expose boundary/contract data during bootstrap.
 - Added Stage 3 docs: platform contract, boundary map, extension points and mixed hotzones.
+
+
+## M0 / P13 hotfix bootstrap order for overlay kernel
+- Removed the premature `skel80_runtime_configure()` call from `public/engine/kernel.php`.
+- The runtime compatibility/bootstrap layer is now initialized only from `SKEL80/run.php`, after helper functions are loaded.
+- Expected result: Colibri bootstrap no longer fatals with `Call to undefined function skel80_runtime_configure()` before the shared kernel starts.
