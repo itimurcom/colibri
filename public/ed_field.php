@@ -12,6 +12,113 @@ if (isset($_SERVER['HTTP_REFERER']))
 	$url = $_SERVER['HTTP_REFERER'];
 	} else $url = '/';
 
+
+function ed_field_json($payload=[])
+	{
+	return skel80_json_response($payload);
+	}
+
+function ed_field_calculator_rates()
+	{
+	return [
+		'USD'	=> '$',
+		'EUR'	=> '€',
+		'UAH'	=> 'грн',
+		'RUR'	=> 'руб',
+	];
+	}
+
+function ed_field_handle_item_calc($data=[])
+	{
+	global $_SETTINGS;
+	$rate_sym = '$';
+	$rate_val = 1;
+	$quantity = 1;
+
+	$form = new itForm2([
+		'table_name'	=> $data['form_name'],
+		'rec_id'	=> $data['form_id'],
+		]);
+
+	$result = $data['price'];
+	$rates = ed_field_calculator_rates();
+	foreach ($form->fields_xml as $row)
+		{
+		if (!isset($row['name']))
+			{
+			continue;
+			}
+
+		switch ($row['name'])
+			{
+			case 'quantity' :
+				$quantity = isset($_REQUEST[$row['name']]) ? $_REQUEST[$row['name']] : 1;
+				break;
+			case 'rate' :
+				if (isset($_REQUEST[$row['name']]) && isset($rates[$_REQUEST[$row['name']]]))
+					{
+					$rate_val = isset($_SETTINGS[$_REQUEST[$row['name']]]['value']) ? $_SETTINGS[$_REQUEST[$row['name']]]['value'] : 1;
+					$rate_sym = $rates[$_REQUEST[$row['name']]];
+					}
+				break;
+			default :
+				if (isset($_REQUEST[$row['name']]))
+					{
+					$multi = isset($_REQUEST[$row['name']."-multi"]) ? $_REQUEST[$row['name']."-multi"] : 1;
+					$result += doubleval($_REQUEST[$row['name']])*$multi;
+					}
+				break;
+			}
+		}
+
+	$result *= $quantity;
+	$result_str = round($result*$rate_val, 2)." ".$rate_sym.
+		(($rate_sym!='$') ? "&nbsp;<small class=\"green\">( {$result} $ )</small>" : NULL);
+
+	unset($form);
+	return ed_field_json([
+		'result' => 1,
+		'show' => false,
+		'type' => 'ajax',
+		'value' => "$('#calculator-result-{$data['form_id']}').html('{$result_str}');",
+	]);
+	}
+
+function ed_field_handle_mail_status_operation($operation, $data, $url)
+	{
+	$mail_id = skel80_request_mail_id($data);
+	if (!$mail_id)
+		{
+		cms_redirect_page($url);
+		}
+
+	if ($mail = itMySQL::_get_rec_from_db('mails', $mail_id))
+		{
+		switch ($operation)
+			{
+			case 'spam':
+				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='SPAM' WHERE `reply` = '{$mail['reply']}'");
+				break;
+			case 'spam_x':
+				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='NOSPAM' WHERE `reply` = '{$mail['reply']}'");
+				break;
+			case 'mail_x':
+				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='DELETED' WHERE `id` = '{$mail['id']}'");
+				break;
+			case 'mail_not_x':
+				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='NOSPAM' WHERE `id` = '{$mail['id']}'");
+				break;
+			}
+		}
+
+	cms_redirect_page($url);
+	}
+
+function ed_field_settings_keys()
+	{
+	return ['DISCOUNT','EUR','UAH','RUR','TAX','SITE_ADMIN_EMAIL','SITE_SMTP_USER','SITE_SMTP_PASSWORD','FB_PAGE','IG_PAGE','TW_PAGE','VK_PAGE','OK_PAGE'];
+	}
+
 if (DEBUG_ON==1)
 	{
 //	write_log(NULL,'--request.log'); 
@@ -117,61 +224,7 @@ if (isset($_REQUEST['op']))
 			}
 			
 		case 'item_calc' : {
-			$rate_sym = "$";
-			$rate_val = 1;
-			$quantity	= 1;
-			
-			$form = new itForm2([
-				'table_name' 	=> $data['form_name'],
-				'rec_id'	=> $data['form_id'],
-				]);
-
-
-			$result = $data['price'];
-			foreach ($form->fields_xml as $row)
-				{
-				if (isset($row['name']))
-				switch ($row['name'])
-					{
-					case 'quantity' : {
-						$quantity = isset($_REQUEST[$row['name']]) ? $_REQUEST[$row['name']] : 1;
-						break;
-						}
-					case 'rate' : {
-						$rates = [
-							'USD'	=> '$',
-							'EUR'	=> '€',
-							'UAH'	=> 'грн',
-							];
-						
-						if (isset($_REQUEST[$row['name']]) AND isset($rates[$_REQUEST[$row['name']]]))
-							{
-							$rate_val = isset($_SETTINGS[$_REQUEST[$row['name']]]['value']) ? $_SETTINGS[$_REQUEST[$row['name']]]['value'] : 1;
-							$rate_sym = $rates[$_REQUEST[$row['name']]];							
-							}
-						break;
-						}
-					default : {
-						if (isset($_REQUEST[$row['name']]))
-							{
-							$multi = isset($_REQUEST[$row['name']."-multi"]) ? $_REQUEST[$row['name']."-multi"] : 1;
-							$result += doubleval($_REQUEST[$row['name']])*$multi;
-							}
-						break;
-						}
-					}
-				}
-
-			// умножим на количество
-			$result *= $quantity;
-
-
-			// определим курс и установим единицы
-			$result_str = round($result*$rate_val, 2)." ".$rate_sym.
-				( ($rate_sym!="$" ) ? "&nbsp;<small class=\"green\">( {$result} $ )</small>" : NULL);
-
-			unset($form);
-			return print json_encode(['result' => 1, 'show'=>false, 'type'=>'ajax', 'value' => "$('#calculator-result-{$data['form_id']}').html('{$result_str}');"], JSON_ALLOWED);
+			return ed_field_handle_item_calc($data);
 			break;
 			}
 						
@@ -294,37 +347,21 @@ if ($_USER->is_logged())
 	switch ($_REQUEST['op'])
 		{
 		case 'spam' :	{
-			if ($mail = itMySQL::_get_rec_from_db('mails', $data['mail_id']))
-				{
-				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='SPAM' WHERE `reply` = '{$mail['reply']}'");
-				}
-			cms_redirect_page("$url");
+			ed_field_handle_mail_status_operation('spam', $data, $url);
 			break;
 			}
 		case 'spam_x' :	{
-			if ($mail = itMySQL::_get_rec_from_db('mails', $data['mail_id']))
-				{
-				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='NOSPAM' WHERE `reply` = '{$mail['reply']}'");
-				}
-			cms_redirect_page("$url");
+			ed_field_handle_mail_status_operation('spam_x', $data, $url);
 			break;
 			}
 
 		case 'mail_x' :	{
-			if ($mail = itMySQL::_get_rec_from_db('mails', $data['mail_id']))
-				{
-				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='DELETED' WHERE `id` = '{$mail['id']}'");
-				}
-			cms_redirect_page("$url");
+			ed_field_handle_mail_status_operation('mail_x', $data, $url);
 			break;
 			}
 
 		case 'mail_not_x' :	{
-			if ($mail = itMySQL::_get_rec_from_db('mails', $data['mail_id']))
-				{
-				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='NOSPAM' WHERE `id` = '{$mail['id']}'");
-				}
-			cms_redirect_page("$url");
+			ed_field_handle_mail_status_operation('mail_not_x', $data, $url);
 			break;
 			}
 
@@ -402,7 +439,7 @@ if ($_USER->is_logged())
 			break;
 			}
 		case 'settings' : {
-			foreach(explode(",", "DISCOUNT,EUR,UAH,TAX,SITE_ADMIN_EMAIL,SITE_SMTP_USER,SITE_SMTP_PASSWORD,FB_PAGE,IG_PAGE,TW_PAGE") as $VAR)
+			foreach(ed_field_settings_keys() as $VAR)
 				if (isset($_REQUEST[$VAR]))
 					itSettings::set($VAR, str_replace(",",".",$_REQUEST[$VAR]));
 			cms_redirect_page("$url");

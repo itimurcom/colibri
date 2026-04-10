@@ -130,6 +130,56 @@ function skel80_strftime_compat($format, $time=NULL, $lang=NULL)
 //..............................................................................
 // для генерации случайной строки длиной HASH_LEN
 //..............................................................................
+
+
+//..............................................................................
+// safely decodes encrypted serialized request payload into array
+//..............................................................................
+function skel80_decode_encrypted_array($payload=NULL, $default=[])
+	{
+	if (is_null($payload) || $payload==='')
+		{
+		return is_array($default) ? $default : [];
+		}
+
+	$decoded = @simple_decrypt($payload);
+	if (!is_string($decoded) || $decoded==='')
+		{
+		return is_array($default) ? $default : [];
+		}
+
+	$unserialized = @unserialize($decoded, ['allowed_classes' => false]);
+	if (!is_array($unserialized))
+		{
+		$unserialized = @unserialize($decoded);
+		}
+
+	return is_array($unserialized)
+		? $unserialized
+		: (is_array($default) ? $default : []);
+	}
+
+//..............................................................................
+// unified json response output for ajax/runtime handlers
+//..............................................................................
+function skel80_json_response($payload=[])
+	{
+	return print json_encode($payload, JSON_ALLOWED);
+	}
+
+//..............................................................................
+// resolves mail id from encrypted payload or direct request fallback
+//..............................................................................
+function skel80_request_mail_id($payload=[])
+	{
+	if (is_array($payload) && isset($payload['mail_id']))
+		{
+		return $payload['mail_id'];
+		}
+
+	return isset($_REQUEST['mail_id']) ? $_REQUEST['mail_id'] : NULL;
+	}
+
 function generate_hash($hashlen=HASH_LEN)
 	{
 	$chars 	= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

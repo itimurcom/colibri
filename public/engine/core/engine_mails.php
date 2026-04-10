@@ -203,7 +203,7 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 		'from'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),	
 		'to'		=> trim($_SETTINGS['SITE_ADMIN_EMAIL']['value']),
 		'reply'		=> trim($_REQUEST['email']),
-		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".strftime("[ %d %b %Y ] (%a)",strtotime($now))." {$subject_admin}",
+		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)",strtotime($now), CMS_LANG)." {$subject_admin}",
 		'message'	=> $admin_mail['result'],
 		'user'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
 		'password'	=> trim($_SETTINGS['SITE_SMTP_PASSWORD']['value']),
@@ -219,7 +219,7 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 	return
 		(!is_null($subject_of_user)
 			? 	TAB."<div class='tit'>".
-				CMS_NAME." (".CMS_LANG.") : ".strftime("[ %d %b %Y ] (%a)",strtotime($now)).
+				CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)",strtotime($now), CMS_LANG).
 				$subject_of_user.
 				"</div>" 
 			: NULL).
@@ -230,143 +230,119 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 //..............................................................................
 // строка истории сообщений на выбранный email
 //..............................................................................
+function get_mailing_history_feed_options($email=NULL)
+	{
+	$base = !is_null($email) ? "`to`='$email'" : '1';
+	return [
+		'inbox' => [
+			'title' => 'Входящие',
+			'condition' => $base." AND `status` NOT IN('DELETED','SPAM')".NOT_PINCODE,
+		],
+		'pin' => [
+			'title' => 'Pin',
+			'condition' => $base." AND `status` NOT IN('DELETED','SPAM')".HAS_PINCODE,
+		],
+		'spam' => [
+			'title' => 'Спам',
+			'condition' => $base." AND `status` = 'SPAM'",
+		],
+		'deleted' => [
+			'title' => 'Удаленные',
+			'condition' => $base." AND `status` = 'DELETED'",
+		],
+	];
+	}
+
+function render_mailing_history_feed_panel($name, $title, $condition)
+	{
+	$o_feed = new itFeed([
+		'table'			=> DEFAULT_MAIL_TABLE,
+		'condition'		=> $condition,
+		'name'			=> 'mailing_history',
+		'order'			=> "`id` DESC",
+		'async'			=> true,
+		'appear'		=> false,
+		]);
+	$o_feed->compile();
+	$result = $o_feed->count_all() ? $o_feed->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
+	unset($o_feed);
+	return [
+		'name' => $name,
+		'title' => $title,
+		'code' => $result,
+	];
+	}
+
+//..............................................................................
+// panel for sent forms and mails history
+//..............................................................................
 function mailing_history_panel($email=NULL)
 	{
-	$mailing_feed_numbers = unserialize(FEED_NUMBER);
-	$mailing_feed_limit = intval(ready_val($mailing_feed_numbers['mailing_history'], DEFAULT_FEED_NUM));
+	$panels = [];
+	foreach (get_mailing_history_feed_options($email) as $name => $options)
+		{
+		$panels[] = render_mailing_history_feed_panel($name, $options['title'], $options['condition']);
+		}
 
-	$o_feed = new itFeed([
-		'table'			=> DEFAULT_MAIL_TABLE,
-		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` NOT IN('DELETED','SPAM')".NOT_PINCODE,
-		'name'			=> 'mailing_history',
-		'order'			=> "`id` DESC",
-		'async'			=> true,
-		'appear'		=> false,
-		'limit'		=> $mailing_feed_limit,
-		'need_total'	=> false,
-		]);
-	$o_feed->compile();
-	$mailpanel = $o_feed->count_all() ? $o_feed->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
-	unset ($o_feed);
-
-	$o_feed = new itFeed([
-		'table'			=> DEFAULT_MAIL_TABLE,
-		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` NOT IN('DELETED','SPAM')".HAS_PINCODE,
-		'name'			=> 'mailing_history',
-		'order'			=> "`id` DESC",
-		'async'			=> true,
-		'appear'		=> false,
-		'limit'		=> $mailing_feed_limit,
-		'need_total'	=> false,
-		]);
-	$o_feed->compile();
-	$pinpanel = $o_feed->count_all() ? $o_feed->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
-	unset ($o_feed);
-
-	$o_spam = new itFeed([
-		'table'			=> DEFAULT_MAIL_TABLE,
-		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` = 'SPAM'",
-		'name'			=> 'mailing_history',
-		'order'			=> "`id` DESC",
-		'async'			=> true,
-		'appear'		=> false,
-		'limit'		=> $mailing_feed_limit,
-		'need_total'	=> false,
-		]);
-	$o_spam->compile();
-	$spampanel = $o_spam->count_all() ? $o_spam->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
-	unset ($o_spam);
-
-	$o_deleted = new itFeed([
-		'table'			=> DEFAULT_MAIL_TABLE,
-		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` = 'DELETED'",
-		'name'			=> 'mailing_history',
-		'order'			=> "`id` DESC",
-		'async'			=> true,
-		'appear'		=> false,
-		'limit'		=> $mailing_feed_limit,
-		'need_total'	=> false,
-		]);
-	$o_deleted->compile();
-	$deletedpanel = $o_deleted->count_all() ? $o_deleted->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
-	unset ($o_deleted);
-	
-	
 	$o_tabs = new itTabs([
-		'tab_id'	=> 1,		
-		]);
-		
-	$o_tabs->add([
-		'title'	=> 'Входящие',
-		'name'	=> 'inbox',
-		'code'	=> $mailpanel,
+		'tab_id'	=> 1,
 		]);
 
-	$o_tabs->add([
-		'title'	=> 'Pin',
-		'name'	=> 'pin',
-		'code'	=> $pinpanel,
-		]);
+	foreach ($panels as $panel)
+		{
+		$o_tabs->add([
+			'title'	=> $panel['title'],
+			'name'	=> $panel['name'],
+			'code'	=> $panel['code'],
+			]);
+		}
 
-	$o_tabs->add([
-		'title'	=> 'Спам',
-		'name'	=> 'spam',
-		'code'	=> $spampanel,
-		]);
-
-	$o_tabs->add([
-		'title'	=> 'Удаленные',
-		'name'	=> 'deleted',
-		'code'	=> $deletedpanel,
-		]);
-
-		
 	$o_tabs->compile();
  	$result = $o_tabs->code();
 	unset($o_tabs);
-	
-	return 
+
+	return
 		TAB."<div class='siterow boxed'>".
 		TAB."<div class='block boxed'>".
 		TAB."<div class='tit'>Заполненные формы и отправленные письма</div>".
 		TAB."<div class='list admin'>".
 		$result.
+		get_mailing_history_shared_modal().
 		TAB."</div>".
 		TAB."</div>".
-		TAB."</div>";	
+		TAB."</div>";
 	}
-	
+
 //..............................................................................
-// одна строка панели истории сообщений 
+// one row of mails history panel
 //..............................................................................
 function get_mailing_history_feed_row($row)
 	{
 	global $mailers, $_MEASURMENT;
 	if (empty($row['status'])) $row['status'] = 'ERROR';
-	
+
 	if (empty($client_emails = $row['reply']))
 		{
 		preg_match_all("/[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i", $row['message'], $matches);
 		$client_emails = (is_array($matches)) ? implode(', ',array_column($matches,'0')) : '----';
 		}
-	
-	$subject = 
+
+	$subject =
 		mstr_replace([
 		'Мерки'		=> "<b class='green'><br/>Мерки</b>",
 		'тип 1'		=> "<big class='".$_MEASURMENT[FORM2_MEASUREMENT]['color']."'>тип 1</big>",
 		'тип 2'		=> "<big class='".$_MEASURMENT[FORM2_MEASUREMENT2]['color']."'>тип 2</big>",
 		'тип 3'		=> "<big class='".$_MEASURMENT[FORM2_MEASUREMENT3]['color']."'>тип 3</big>",
-		'тип 4'		=> "<big class='".$_MEASURMENT[FORM2_MEASUREMENT4]['color']."'>тип 4</big>",		
-		'тип 5'		=> "<big class='".$_MEASURMENT[FORM2_MEASUREMENT5]['color']."'>тип 5</big>",		
+		'тип 4'		=> "<big class='".$_MEASURMENT[FORM2_MEASUREMENT4]['color']."'>тип 4</big>",
+		'тип 5'		=> "<big class='".$_MEASURMENT[FORM2_MEASUREMENT5]['color']."'>тип 5</big>",
 		'новый заказ'	=> "новый <b class='blue'>заказ</b>",
 		'сообщение'	=> "<b class='blue'>сообщение</b>",
 		'Заказ из магазина' => "<br/><b class='red'>Заказ</b> из магазина",
 		],$row['subject']);
-			
-	$status = $row['code'];
-	return	
-		TAB."<div class='row paylist'>".
 
+	$status = $row['code'];
+	return
+		TAB."<div class='row paylist'>".
 			TAB."<div class='field p1 left'>".
 			TAB."#{$row['id']}".
 			TAB."</div>".
@@ -378,7 +354,6 @@ function get_mailing_history_feed_row($row)
 			TAB."<div class='field p5 left'>".
 			TAB."<small>от:</small>&nbsp;<span class='blue'>{$client_emails}</span>".
 			TAB."</div>".
-
 
 			TAB."<div class='field p7 left'>".
 			TAB."<small>{$subject}</small>".
@@ -393,100 +368,88 @@ function get_mailing_history_feed_row($row)
 			TAB."</div>".
 
 			TAB."<div class='field p2 left'>".
-			TAB."<small title='{$status}' class='{$mailers[$row['status']]['color']}'>".get_const($mailers[$row['status']]['title'])."</small>".
+			TAB."<small title='{$status}' class='".$mailers[$row['status']]['color']."'>".get_const($mailers[$row['status']]['title'])."</small>".
 			TAB."</div>".
-		TAB."</div>";		
+		TAB."</div>";
 	}
-	
+
 //..............................................................................
-// предосмотр сообщения
-//..............................................................................	
+// lightweight launcher for shared preview modal
+//..............................................................................
 function get_mail_preview_event($row=NULL)
 	{
-// 	$message = ($row = itMySQL::_get_rec_from_db('mails', $mail_id)) ? itMailings::_strip_logo($row['message']) : NULL;
+	$mail_id = intval($row['id']);
+	$status = htmlspecialchars($row['status'], ENT_QUOTES);
+	return TAB."<a href='#/' data-reveal-id='mail-history-modal' class='green' onclick='return skel80OpenMailHistoryModal(this);' data-mail-id='{$mail_id}' data-mail-status='{$status}'>👁</a>";
+	}
 
+//..............................................................................
+// one shared modal for all mail history rows
+//..............................................................................
+function get_mailing_history_shared_modal()
+	{
+	$ok_label = get_const('BUTTON_OK');
+	$spam_label = get_const('BUTTON_SPAM');
+	$spam_x_label = get_const('BUTTON_SPAM_X');
+	$remove_label = get_const('BUTTON_REMOVE');
 
-	global $_USER;
-	$o_modal = new itModal();
-	$o_modal->set_size('large');
-	$o_modal->set_animation('fadeAndPop');
-	
-	$o_modal->add_field(
-/*
-		TAB."<div class='mailpattern boxed'>".
-		$message.
-		TAB."</div>"
-*/
-		TAB."<iframe src='/mail/{$row['id']}' class='mailpattern boxed'></iframe>"
-		);
- 	
- 	if ($row['status']!='SPAM')
- 		{
-		$o_spam = new itForm2();
-		$o_spam->add_data([
-			'mail_id'	=> $row['id'],
-			'op'		=> 'spam',
-			]);
-		$o_spam->compile();
-		$spam_frm = $o_spam->code();
-	
-		$o_spam_btn = new itButton(get_const('BUTTON_SPAM'), 'submit', ['form'=>$o_spam->form_id()], 'brown');
-		$spam_btn = $o_spam_btn->code();
-		} else	{
-			$o_spam = new itForm2();
-			$o_spam->add_data([
-				'mail_id'	=> $row['id'],
-				'op'		=> 'spam_x',
-				]);
-			$o_spam->compile();
-			$spam_frm = $o_spam->code();
-		
-			$o_spam_btn = new itButton(get_const('BUTTON_SPAM_X'), 'submit', ['form'=>$o_spam->form_id()], 'green');
-			$spam_btn = $o_spam_btn->code();
-			}
-
- 	if ($row['status']!='DELETED')
- 		{
-		$o_remove = new itForm2();
-		$o_remove->add_data([
-			'mail_id'	=> $row['id'],
-			'op'		=> 'mail_x',
-			]);
-		$o_remove->compile();
-		$remove_frm = $o_remove->code();
-	
-		$o_remove_btn = new itButton(get_const('BUTTON_REMOVE'), 'submit', ['form'=>$o_remove->form_id()], 'red');
-		$remove_btn = $o_remove_btn->code();
-		} else 	{
-			$o_remove = new itForm2();
-			$o_remove->add_data([
-				'mail_id'	=> $row['id'],
-				'op'		=> 'mail_not_x',
-				]);
-			$o_remove->compile();
-			$remove_frm = $o_remove->code();
-		
-			$o_remove_btn = new itButton(get_const('BUTTON_SPAM_X'), 'submit', ['form'=>$o_remove->form_id()], 'green');
-			$remove_btn = $o_remove_btn->code();
-			}
-
-
-	$ok_button = new itButton(get_const('BUTTON_OK'), 'close', ['form'=>$o_modal->form_id()], 'blue ok');
-	$ok_btn = $ok_button->code();
-	
-	$o_modal->add_field(
-		$spam_frm.
-		$remove_frm.
+	return
+		TAB."<div class='reveal-modal large' id='mail-history-modal' data-animation='fade'>".
+		TAB."<iframe id='mail-history-frame' src='about:blank' class='mailpattern boxed'></iframe>".
+		TAB."<form id='mail-history-spam-form' action='/ed_field.php' method='POST' accept-charset='utf-8'>".
+		TAB."<input type='hidden' name='mail_id' id='mail-history-spam-mail-id' value=''>".
+		TAB."<input type='hidden' name='op' id='mail-history-spam-op' value='spam'>".
+		TAB."</form>".
+		TAB."<form id='mail-history-remove-form' action='/ed_field.php' method='POST' accept-charset='utf-8'>".
+		TAB."<input type='hidden' name='mail_id' id='mail-history-remove-mail-id' value=''>".
+		TAB."<input type='hidden' name='op' id='mail-history-remove-op' value='mail_x'>".
+		TAB."</form>".
 		TAB."<div class='buttons_div'>".
-		$ok_btn.
-		$spam_btn.
-		$remove_btn.
-		TAB."</div>");
-
- 	$o_modal->compile();		
-	$o_button = new itButton("👁", 'textmodal', ['form' => $o_modal->form_id()], 'green' );
-	$result = $o_button->code().$o_modal->code();
-	return $result;
+		TAB."<span class='itButton bg_blue ok close-reveal-modal' id='mail-history-ok'>{$ok_label}</span>".
+		TAB."<span class='itButton submit bg_brown' id='mail-history-spam-button' onclick='document.getElementById(&quot;mail-history-spam-form&quot;).submit();'>{$spam_label}</span>".
+		TAB."<span class='itButton submit bg_red' id='mail-history-remove-button' onclick='document.getElementById(&quot;mail-history-remove-form&quot;).submit();'>{$remove_label}</span>".
+		TAB."</div>".
+		TAB."<div class='close-reveal-modal corner'></div>".
+		TAB."</div>".
+		TAB."<script>
+".
+		"function skel80OpenMailHistoryModal(node){
+".
+		"  var mailId = node.getAttribute('data-mail-id');
+".
+		"  var status = node.getAttribute('data-mail-status');
+".
+		"  var spamOp = (status === 'SPAM') ? 'spam_x' : 'spam';
+".
+		"  var removeOp = (status === 'DELETED') ? 'mail_not_x' : 'mail_x';
+".
+		"  var spamLabel = (status === 'SPAM') ? ".json_encode($spam_x_label)." : ".json_encode($spam_label).";
+".
+		"  var removeLabel = (status === 'DELETED') ? ".json_encode($spam_x_label)." : ".json_encode($remove_label).";
+".
+		"  var removeClass = (status === 'DELETED') ? 'itButton submit bg_green' : 'itButton submit bg_red';
+".
+		"  document.getElementById('mail-history-frame').src = '/mail/' + mailId;
+".
+		"  document.getElementById('mail-history-spam-mail-id').value = mailId;
+".
+		"  document.getElementById('mail-history-spam-op').value = spamOp;
+".
+		"  document.getElementById('mail-history-remove-mail-id').value = mailId;
+".
+		"  document.getElementById('mail-history-remove-op').value = removeOp;
+".
+		"  document.getElementById('mail-history-spam-button').innerHTML = spamLabel;
+".
+		"  document.getElementById('mail-history-remove-button').innerHTML = removeLabel;
+".
+		"  document.getElementById('mail-history-remove-button').className = removeClass;
+".
+		"  return true;
+".
+		"}
+".
+		"</script>";
 	}
 
 ?>

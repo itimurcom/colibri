@@ -13,27 +13,14 @@
 - Expected result: repeated toggles no longer try to write an empty string into integer DB columns like `colibri_items.is_replicant`.
 - Next step: if another toggle fails similarly, inspect that endpoint for boolean-to-string persistence before touching DB helpers again.
 
-## M0 / P10 feed limit performance hotfix
-- Reduced global `FEED_LIMIT` from `10000` to `100` in `SKEL80/events/blocks/ini/const.php`.
-- Reason: legacy `itFeed` main SQL path still uses global `FEED_LIMIT` for DB batching, so pages with several feeds could request far more rows than the UI actually shows.
-- Expected result: initial loading of feed-heavy screens, especially `Письма`, should stop pulling oversized MySQL batches.
-- No files were deleted. No routing, rendering, or feed business logic was rewritten.
-- Next step: if performance is still not acceptable, move from global cap to per-feed SQL limit using `itFeed::$limit`.
+- M0 / P15 mail console and date compatibility bundle
+  - fixed `itModal`, `itButton`, `itForm2` dynamic property deprecations affecting the mail section and price calculator
+  - added `strftime()` compatibility helpers in `SKEL80/kernel/engine_functions.php`
+  - replaced deprecated `strftime()` usage in `public/engine/core/engine_mails.php`
 
-## M0 / P16 real feed total count bundle
-- Fixed `SKEL80/classes/blocks/itFeed.class.php` so SQL feeds now load limited result rows but calculate `count_all()` from a separate count query without `LIMIT`.
-- Added explicit limit handling with fallback to global `FEED_LIMIT` only when a feed does not define its own `limit`.
-- Updated `public/engine/core/engine_mails.php` so `mailing_history` feeds pass their explicit limit from `FEED_NUMBER`.
-- Expected result: feed-heavy screens such as `Письма` keep limited row loading while total counts and pagination logic stop collapsing to the current batch size.
-
-## M0 / P17 feed need_total project opt-out bundle
-- added `need_total` flag to `itFeed` with default `true`
-- when `need_total=false`, feed skips expensive SQL total count and keeps only loaded-row count
-- propagated `need_total` through more/fewer serialized feed payloads
-- set `need_total=false` in all active project-side `new itFeed([...])` initializations
-- note: places using `count_all()` now receive loaded/current batch count when `need_total=false`
-
-## M0 / P17a feed lazy total correction
-- corrected `itFeed` so `need_total=false` disables only eager total counting during startup
-- restored real total counting for `count_all()` / `collect_all()` via lazy on-demand calculation
-- prevented batch-size values from replacing total counts in feed consumers
+- M0 / P18 mixed-hotspot reduction bundle
+  - reduced coupling in `itFeed` by adding explicit limit/need_total/query helpers and lazy-safe total count behavior
+  - refactored `public/more.php` into named-operation dispatch + safe feed payload render path
+  - replaced per-row mail history modal/forms with one shared preview modal in `engine_mails.php`
+  - extracted calculator/mail-status helper handlers in `public/ed_field.php`
+  - added shared runtime helpers for encrypted payload decode and JSON responses
