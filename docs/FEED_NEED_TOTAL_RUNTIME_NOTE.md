@@ -10,3 +10,8 @@
 
 ## Важно
 Это ускоряет загрузку feed-блоков, но там, где код вызывает `count_all()`, значение больше не является полным total-count. При `need_total=false` это count текущего загруженного batch/result set.
+
+
+## Follow-up correction
+- `need_total=false` now disables only the **eager** total-count query during `start_feed()`.
+- `count_all()` and `collect_all()` still calculate the real total on demand, so counters and summaries do not fall back to the current batch size.

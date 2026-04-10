@@ -32,3 +32,8 @@
 - propagated `need_total` through more/fewer serialized feed payloads
 - set `need_total=false` in all active project-side `new itFeed([...])` initializations
 - note: places using `count_all()` now receive loaded/current batch count when `need_total=false`
+
+## M0 / P17a feed lazy total correction
+- corrected `itFeed` so `need_total=false` disables only eager total counting during startup
+- restored real total counting for `count_all()` / `collect_all()` via lazy on-demand calculation
+- prevented batch-size values from replacing total counts in feed consumers

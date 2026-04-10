@@ -91,7 +91,7 @@ class itFeed
 				$this->request = itMySQL::_request($this->query, false); 	// важно - указать чтобы возврат был не массив!
 				$this->COUNTALL = $this->onefield
 					? 100
-					: ($this->need_total ? $this->resolve_total_count() : $this->resolve_loaded_count());
+					: ($this->need_total ? $this->resolve_total_count() : NULL);
 				}
 		}
 
@@ -577,6 +577,11 @@ class itFeed
 	//..............................................................................	
 	public function count_all()
 		{
+		if (is_null($this->COUNTALL))
+			{
+			$this->collect_all();
+			}
+
 		return $this->COUNTALL;
 		}
 
@@ -591,7 +596,7 @@ class itFeed
 			}
 		else
 			{
-			$this->COUNTALL = $this->onefield ? 100 : ($this->need_total ? $this->resolve_total_count() : $this->resolve_loaded_count());
+			$this->COUNTALL = $this->onefield ? 100 : $this->resolve_total_count();
 			}
 
 		return $this->COUNTALL;
