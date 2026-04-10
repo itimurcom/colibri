@@ -15,7 +15,7 @@ $plug_css[] = 'class.itSettings.css';
 //..............................................................................
 class itSettings
 	{
-	public $table_name, $rec_id, $name, $user_id, $id_of_user, $value, $default;
+	public $table_name, $rec_id, $name, $id_of_user, $user_id, $value, $default;
 
 	//..............................................................................
 	// конструктор класса - создает представление настройки
@@ -45,13 +45,10 @@ class itSettings
 			$this->rec_id 	= $request[0]['id'];
 			$this->name 	= $request[0]['name'];
 			$this->user_id 	= $request[0]['user_id'];
-			$this->id_of_user = $request[0]['user_id'];
 			$this->value 	= $request[0]['value'];
 			} else 
 				{
 				$request[0] = itSettings::create($name, $id_of_user, $this->default);
-				$this->user_id = $id_of_user;
-				$this->id_of_user = $id_of_user;
 				$this->value = $this->default;
 				}
 		}

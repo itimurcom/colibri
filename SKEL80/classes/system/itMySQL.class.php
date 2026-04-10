@@ -74,33 +74,6 @@ class itMySQL
 		}
 
 	//..............................................................................
-	// безопасно декодирует значение из базы, сохраняя NULL как NULL
-	//..............................................................................
-	private function decode_db_value($value=NULL)
-		{
-		if ($value===NULL)
-			{
-			return NULL;
-			}
-
-		return html_entity_decode((string)$value, ENT_QUOTES, 'UTF-8');
-		}
-
-	//..............................................................................
-	// безопасно декодирует JSON-строку, не передавая NULL/пустые строки в json_decode
-	//..............................................................................
-	private function decode_db_json_value($value=NULL)
-		{
-		if ($value===NULL OR $value==='')
-			{
-			return NULL;
-			}
-
-		$decoded = json_decode((string)$value, true);
-		return (json_last_error()===JSON_ERROR_NONE) ? $decoded : NULL;
-		}
-
-	//..............................................................................
 	// деструктор класса - закрывает соединение, открытое в базе
 	//..............................................................................
 	public	function __destruct()
@@ -170,8 +143,8 @@ class itMySQL
 			{
 			foreach ($request_row as $key=>$row)
 				{
-				$value = $this->decode_db_value($row);
-				if (!doubleval($value) and ($value_rec = $this->decode_db_json_value($value)))
+				$value = !empty($row) ? html_entity_decode($row, ENT_QUOTES, 'UTF-8') : $row;
+				if (!doubleval($value) and ($value_rec = json_decode($value, true)))
 					{
 					$result[$key] = $value_rec;
 					} else 	{
@@ -228,8 +201,8 @@ class itMySQL
 			{
 			foreach ($row as $key=>$value_row)
 				{
-				$value = $this->decode_db_value($value_row);
-				if (!doubleval($value) and ($value_rec = $this->decode_db_json_value($value)))
+				$value = html_entity_decode ($value_row, ENT_QUOTES, 'UTF-8');
+				if (!doubleval($value) and ($value_rec = json_decode($value, true)))
 					{
 					$result[$key] = $value_rec;
 					} else 	{
@@ -378,6 +351,40 @@ class itMySQL
 		}
 
 	//..............................................................................
+	// нормализует одно значение из БД для PHP 8+: HTML decode + NULL-safe JSON
+	//..............................................................................
+	private function normalize_db_value($value)
+		{
+		if (is_null($value))
+			{
+			return NULL;
+			}
+
+		if (is_bool($value) || is_int($value) || is_float($value))
+			{
+			return $value;
+			}
+
+		$value = html_entity_decode((string)$value, ENT_QUOTES, 'UTF-8');
+		$trimmed = trim($value);
+		if ($trimmed === '')
+			{
+			return $value;
+			}
+
+		if (!doubleval($value) && isJson($trimmed))
+			{
+			$decoded = json_decode($trimmed, true, 512, JSON_BIGINT_AS_STRING);
+			if (json_last_error() === JSON_ERROR_NONE)
+				{
+				return $decoded;
+				}
+			}
+
+		return $value;
+		}
+
+	//..............................................................................
 	// возвращает массив результатов по запрсу MySQL
 	//..............................................................................
 	public function request($query=NULL, $array = true, &$counter=NULL)
@@ -393,13 +400,7 @@ class itMySQL
 				{
 				foreach ($row as $key=>$row)
 					{
-					$value = $this->decode_db_value($row);
-					if (!doubleval($value) and ($value_rec = $this->decode_db_json_value($value)))
-						{
-						$line[$key] = $value_rec;
-						} else 	{
-							$line[$key] = $value;
-							}
+					$line[$key] = $this->normalize_db_value($row);
 					}
 
 				$result[] = $line;

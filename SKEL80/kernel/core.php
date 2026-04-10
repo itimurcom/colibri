@@ -11,26 +11,40 @@
 //-----------------------------------------------------------------------------
 
 //..............................................................................
+// возвращает отсортированный список файлов/папок для стабильной загрузки
+//..............................................................................
+function skel80_glob_sorted($pattern, $flags = 0)
+	{
+	$result = glob($pattern, $flags);
+	if (!is_array($result))
+		{
+		return [];
+		}
+	sort($result, SORT_STRING);
+	return $result;
+	}
+
+//..............................................................................
 // подключает функции пользовательского движка
 //..............................................................................
 function register_skleton_engine($path)
 	{
-	foreach (glob($path."engine_*.php") as $partical)
+	foreach (skel80_glob_sorted($path."engine_*.php") as $partical)
 		{
-		include $partical;
+		include_once $partical;
 		}
 
-		if (is_array($dir_arr = glob($path."*", GLOB_ONLYDIR)))
+		if ($dir_arr = skel80_glob_sorted($path."*", GLOB_ONLYDIR))
 		{
 		foreach ($dir_arr as $folder)
 			{
-			foreach ( ($dirs = glob($folder. '/*', GLOB_ONLYDIR)) as $dirname) 
+			foreach (skel80_glob_sorted($folder.'/*', GLOB_ONLYDIR) as $dirname) 
 				{
 				register_skleton_engine($dirname);
 				}
-				foreach (glob("{$folder}/engine_*.php") as $filename) 
+				foreach (skel80_glob_sorted("{$folder}/engine_*.php") as $filename) 
 					{
-					include $filename;
+					include_once $filename;
 					}
 			}
 		}
@@ -41,11 +55,11 @@ function register_skleton_engine($path)
 //..............................................................................
 function register_skeleton_user_ini($path)
 	{
-	if (is_dir($path) AND is_array($dir_arr = glob($path."ini.*.php")))
+	if (is_dir($path) AND ($dir_arr = skel80_glob_sorted($path."ini.*.php")))
 		{
 		foreach ($dir_arr as $ini)
 			{
-			include $ini;
+			include_once $ini;
 			}
 		}
 	}	
@@ -55,11 +69,11 @@ function register_skeleton_user_ini($path)
 //..............................................................................
 function register_skeleton_user_custom($path)
 	{
-	if (is_dir($path) AND is_array($dir_arr = glob($path."custom.*.php")))
+	if (is_dir($path) AND ($dir_arr = skel80_glob_sorted($path."custom.*.php")))
 		{
 		foreach ($dir_arr as $ini)
 			{
-			include $ini;
+			include_once $ini;
 			}
 		}
 	}	
@@ -70,13 +84,13 @@ function register_skeleton_user_custom($path)
 //..............................................................................
 function register_skeleton_core_ini($path)
 	{
-	if (is_array($dir_arr = glob($path."*", GLOB_ONLYDIR)))
+	if ($dir_arr = skel80_glob_sorted($path."*", GLOB_ONLYDIR))
 		{
 		foreach ($dir_arr as $folder)
 			{
 			if (file_exists($ini = $folder."/ini/ini.php"))
 				{
-				include $ini;
+				include_once $ini;
 				}
 			}
 		}
@@ -87,13 +101,13 @@ function register_skeleton_core_ini($path)
 //..............................................................................
 function register_skeleton_core_const($path)
 	{
-	if (is_array($dir_arr = glob($path."*", GLOB_ONLYDIR)))
+	if ($dir_arr = skel80_glob_sorted($path."*", GLOB_ONLYDIR))
 		{
 		foreach ($dir_arr as $folder)
 			{
 			if (file_exists($const = $folder."/ini/const.php"))
 				{
-				include $const;
+				include_once $const;
 				}
 			}
 		}
@@ -104,11 +118,11 @@ function register_skeleton_core_const($path)
 //..............................................................................
 function register_skeleton_user_const($path)
 	{
-	if (is_dir($path) AND is_array($dir_arr = glob($path."const.*.php")))
+	if (is_dir($path) AND ($dir_arr = skel80_glob_sorted($path."const.*.php")))
 		{
 		foreach ($dir_arr as $const)
 			{
-			include $const;
+			include_once $const;
 			}
 		}
 	}
@@ -118,20 +132,20 @@ function register_skeleton_user_const($path)
 //..............................................................................
 function register_events_folder($path)	
 	{
-    	if (is_array($dir_arr = glob($path."*", GLOB_ONLYDIR)))
+    	if ($dir_arr = skel80_glob_sorted($path."*", GLOB_ONLYDIR))
     		{
 	    	foreach ($dir_arr as $folder)
 			{
-			foreach ( ($dirs = glob($folder. '/*', GLOB_ONLYDIR)) as $dirname) 
+			foreach (skel80_glob_sorted($folder.'/*', GLOB_ONLYDIR) as $dirname) 
 				{
 				register_events_folder($dirname);
 				}
-			foreach (glob("{$folder}/*.func.php") as $filename) 
+			foreach (skel80_glob_sorted("{$folder}/*.func.php") as $filename) 
 				{
 				$func = str_replace('.func.php', '', basename($filename));
 				if (!function_exists($func))
 					{
-					include $filename;
+					include_once $filename;
 					}
 				}
 			}
@@ -148,7 +162,7 @@ function register_classes_folder($path)
 		{
 		$res_path .=  PATH_SEPARATOR.$path;
 		// в подкаталогах
-		if (is_array($dir_arr = glob($path."*", GLOB_MARK | GLOB_ONLYDIR)))
+		if ($dir_arr = skel80_glob_sorted($path."*", GLOB_MARK | GLOB_ONLYDIR))
 			{
 			$res_path .= PATH_SEPARATOR.implode(PATH_SEPARATOR, array_values($dir_arr));
 			}
@@ -167,8 +181,9 @@ function register_classes_autoload()
 	// Use default autoload implementation
     	spl_autoload_register(function ($class)
 		{
-		if ( (include "{$class}.class.php")==false)
+		if ((@include_once "{$class}.class.php") === false)
 			{
+			error_log('SKEL80 autoload error: '.$class);
 			echo ("<font color=red>Error loading class : <b>{$class}</b></font><br/>");die;
 			} 
 		});
@@ -261,8 +276,8 @@ function pprint_r($var)
 // рекурсивный glob для списка файлов
 //..............................................................................
 function rglob($pattern, $flags = 0) {
-    $files = glob($pattern, $flags); 
-    foreach (glob(dirname($pattern).'/*', GLOB_ONLYDIR|GLOB_NOSORT) as $dir) {
+    $files = skel80_glob_sorted($pattern, $flags); 
+    foreach (skel80_glob_sorted(dirname($pattern).'/*', GLOB_ONLYDIR) as $dir) {
         $files = array_merge($files, rglob($dir.'/'.basename($pattern), $flags));
     }
     return $files;
@@ -354,13 +369,13 @@ function set_skeleton_user_ways()
 //..............................................................................
 function register_skeleton_core_common($path)
 	{
-	if (is_array($dir_arr = glob($path."*", GLOB_ONLYDIR)))
+	if ($dir_arr = skel80_glob_sorted($path."*", GLOB_ONLYDIR))
 		{
 		foreach ($dir_arr as $folder)
 			{
 			if (file_exists($default = $folder."/ini/common.php"))
 				{
-				include $default;
+				include_once $default;
 				}
 			}
 		}

@@ -41,10 +41,10 @@ class itDate2
 
 		$time = strtotime($this->value);
 		$this->value_mysql = ($this->time) ? get_mysql_datetime($time) : get_mysql_date($time);
-		$this->title = strftime("%d %B %Y", $time).(($this->time) ? " ".get_time_str($this->value) : "");				
+		$this->title = skel80_strftime_compat("%d %B %Y", $time).(($this->time) ? " ".get_time_str($this->value) : "");				
 
-		$this->hour = empty($this->value) ? 0 : strftime("%H", strtotime($this->value));
-		$this->minute = empty($this->value) ? 0 : strftime("%M", strtotime($this->value));
+		$this->hour = empty($this->value) ? 0 : skel80_strftime_compat("%H", strtotime($this->value), "en");
+		$this->minute = empty($this->value) ? 0 : skel80_strftime_compat("%M", strtotime($this->value), "en");
 		$this->compile();
 		}
 

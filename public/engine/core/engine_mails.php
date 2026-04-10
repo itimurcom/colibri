@@ -203,7 +203,7 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 		'from'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),	
 		'to'		=> trim($_SETTINGS['SITE_ADMIN_EMAIL']['value']),
 		'reply'		=> trim($_REQUEST['email']),
-		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".strftime("[ %d %b %Y ] (%a)",strtotime($now))." {$subject_admin}",
+		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)", strtotime($now))." {$subject_admin}",
 		'message'	=> $admin_mail['result'],
 		'user'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
 		'password'	=> trim($_SETTINGS['SITE_SMTP_PASSWORD']['value']),
@@ -219,7 +219,7 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 	return
 		(!is_null($subject_of_user)
 			? 	TAB."<div class='tit'>".
-				CMS_NAME." (".CMS_LANG.") : ".strftime("[ %d %b %Y ] (%a)",strtotime($now)).
+				CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)", strtotime($now)).
 				$subject_of_user.
 				"</div>" 
 			: NULL).

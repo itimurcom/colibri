@@ -9,20 +9,19 @@
 //	ЗАЖИГАНИЕ : плавный запуск ядра фреймворка SKELETON
 //
 //-----------------------------------------------------------------------------
-require_once 'kernel/runtime_contract.php';
-require_once 'kernel/runtime_compat.php';
-
-skel80_runtime_enter_phase('core.primitives');
 require_once 'kernel/core.php';
-skel80_runtime_enter_phase('session.bootstrap');
+require_once 'kernel/runtime_compat.php';
+skel80_runtime_configure();
 // Запускаем сессию
-if (!session_start())
+if (session_status() !== PHP_SESSION_ACTIVE)
 	{
-	session_regenerate_id();
-	session_start();
+	if (!session_start())
+		{
+		@session_regenerate_id(true);
+		session_start();
+		}
 	}
 
-skel80_runtime_enter_phase('constants.bootstrap');
 definition([
 	'TAB'		=> "\n\t",
 	'BR'		=> "<br/>",
@@ -46,7 +45,6 @@ if (isset($inc_arr[1]) AND strpos($inc_arr[1], 'kernel.php') !== false)
 	$config_candidates[] = dirname(dirname($inc_arr[1])).'/config.php';
 	}
 
-skel80_runtime_enter_phase('config.resolve');
 foreach (array_unique($config_candidates) as $config_file)
 	{
 	if (is_file($config_file))
@@ -56,21 +54,16 @@ foreach (array_unique($config_candidates) as $config_file)
 		}
 	}
 
-skel80_runtime_enter_phase('runtime.compat.settings');
-skel80_runtime_apply_bootstrap_settings();
-skel80_runtime_enter_phase('runtime.compat.handlers');
-skel80_runtime_install_error_handlers();
+skel80_runtime_configure();
+skel80_runtime_register_handlers();
 
-skel80_runtime_enter_phase('paths.user');
 set_skeleton_user_ways();
-skel80_runtime_enter_phase('paths.core');
 set_skeleton_core_ways();
 
 // настраиваем пути пользователя
 if (file_exists(USER_ENGINE_PATH.'kernel.path.php'))
 	include USER_ENGINE_PATH.'kernel.path.php';
 
-skel80_runtime_enter_phase('paths.runtime_defaults');
 // Настраиваем пути
 definition([
 	'SERVER_ROOT_DEBUG'	=> $_SERVER['DOCUMENT_ROOT'],
@@ -81,25 +74,19 @@ definition([
 //register_skeleton_images_ways();
 
 //зарегистрируем последовательность поиска классов
-skel80_runtime_enter_phase('classes.register');
 register_classes_folder(USER_CLASSES_PATH);			// движка
 register_classes_folder(SKELETON_CLASSES_PATH);			// ядра
 register_classes_autoload();
 
 // задекларируем функции
-skel80_runtime_enter_phase('engine.register');
 register_skleton_engine(USER_CORE_PATH); 			// подключаем пользовательский движок
-skel80_runtime_enter_phase('events.core.pre');
 register_events_folder(SKELETON_CORE_PATH."kernel/events/");	// системные
 
 // установим константы
-skel80_runtime_enter_phase('const.user.pre');
 register_skeleton_user_const(USER_ENGINE_PATH."ini/");		// пред-константы пользователя
-skel80_runtime_enter_phase('const.core.post');
 register_skeleton_core_const(SKELETON_EVENTS_PATH);		// пост-константы ядра
 
 // попробуем настроить основные константы если их нет в движке
-skel80_runtime_enter_phase('defaults.core');
 definition([
 	'ENCRYPT_PHRASE'	=> 'Hy6J7SCDFg771A1z',
 
@@ -120,38 +107,28 @@ definition([
 
 
 // соберем все установки по проекту
-skel80_runtime_enter_phase('ini.core');
 register_skeleton_core_ini(SKELETON_EVENTS_PATH);		// настройки ядра
-skel80_runtime_enter_phase('ini.user.post');
 register_skeleton_user_ini(USER_ENGINE_PATH."ini/");		// пост-настройки пользователя
 
 // TOFIX: временно!!!
-skel80_runtime_enter_phase('functions.core.compat');
 include (SKELETON_CORE_PATH."kernel/engine_functions.php");
 
-skel80_runtime_enter_phase('events.user');
 register_events_folder(USER_EVENTS_PATH);			// движка
-skel80_runtime_enter_phase('events.core.post');
 register_events_folder(SKELETON_EVENTS_PATH);			// ядра
 
 // запускаем роутер
-skel80_runtime_enter_phase('router.bootstrap');
 $o_router = new itRouter(); 	// в itLang подключаются kernel.customs.php перед языками
 unset($o_router);
 
 // стандартные языковые настройки
-skel80_runtime_enter_phase('common.core');
 register_skeleton_core_common(SKELETON_EVENTS_PATH);
 
 global $_USER;
 // подключим проверку пользователя
-skel80_runtime_enter_phase('user.bootstrap');
 $_USER = new itUser();
 
-skel80_runtime_enter_phase('custom.user.post');
 register_skeleton_user_custom(USER_ENGINE_PATH."ini/");		// пост-настройки пользователя
 
 // подготовим массивы для работы модератора
-skel80_runtime_enter_phase('prepared_arrays.finalize');
 if (!defined('NO_PREPARED_ARR') AND function_exists('prepare_global_arrays')) prepare_global_arrays();
 ?>

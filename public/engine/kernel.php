@@ -1,5 +1,10 @@
 <?php
-set_time_limit(600);
+skel80_runtime_configure();
+
+if (function_exists('set_time_limit'))
+	{
+	@set_time_limit(600);
+	}
 
 define ('ENGINE_VERSION_VAL','0.2.135.01.beta');
 define ('ENGINE_VERSION_DATE','25 May 2021');
@@ -8,13 +13,12 @@ define('ENGINE_VERSION',ENGINE_VERSION_VAL." ".ENGINE_VERSION_DATE);
 
 // путь к SKELETON
 // require "engine/core/skeleton/run.php";
-require_once __DIR__.'/overlay_contract.php';
-require dirname(__DIR__, 2).'/SKEL80/run.php';
-
-if (function_exists('skel80_runtime_enter_phase'))
+$skel80RunPath = dirname(__DIR__, 2).'/SKEL80/run.php';
+if (!is_file($skel80RunPath))
 	{
-	skel80_runtime_enter_phase('kernel.postrun.overlay');
+	die('Shared SKEL80 runtime not found: '.$skel80RunPath);
 	}
+require $skel80RunPath;
 
 // установим данные email для отправки
 define ('DEFAULT_ADMIN_EMAIL', $_SETTINGS['SITE_ADMIN_EMAIL']['value']);

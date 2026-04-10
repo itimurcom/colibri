@@ -12,26 +12,7 @@ global $_LDJSON, $_RDFA, $_SCHEMA;
 //..............................................................................
 class itMarkUp
 	{
-	public $image = array();
-	public $name = '';
-	public $brand = '';
-	public $description = '';
-	public $offers = NULL;
-	public $url = '';
-	public $price = '0.00';
-	public $currency = 'USD';
-	public $condition = 'NewCondition';
-	public $availability = 'InStock';
-	public $expire = '';
-	public $seller = '';
-	public $sku = '';
-	public $mpn = '';
-	public $review = array(
-		'count' => 1,
-		'value' => 5,
-		'author' => ''
-	);
-
+	public $image, $name, $brand, $description, $offers, $url, $price, $currency, $condition, $availability, $expire, $seller, $sku, $mpn, $review;
 	//..............................................................................
 	// конструктор класса (ему можно передать конкретные данные)
 	//..............................................................................

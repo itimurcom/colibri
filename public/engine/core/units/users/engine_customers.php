@@ -66,7 +66,7 @@ function create_pin($customer=NULL)
 			'[PIN]'		=> $pincode,
 			'[PINREG]'	=> "https://{$_SERVER['HTTP_HOST']}/".CMS_LANG."/register/pin/",
 			], get_const('PIN_DESC')),
-		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".strftime(" %d %b %Y  (%a)",strtotime('now'))." PIN CODE",
+		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat(" %d %b %Y  (%a)", strtotime('now'))." PIN CODE",
 		];
 
 	itMailTemplate::_code($m_code, false);

@@ -18,3 +18,14 @@
 - Fixed `itFeed` SQL limit behavior: an explicit feed `limit` is now used in database queries, while global `FEED_LIMIT` remains only a fallback when no explicit limit is provided.
 - `mailing_history_panel()` now passes an explicit limit based on `FEED_NUMBER['mailing_history']`, so the mails section stops over-fetching rows from the database.
 - No feed rendering logic was removed; the patch changes only query-limit resolution and the mailing-history feed wiring.
+
+
+## M0 / P12 runtime stabilization bundle
+- Added runtime bootstrap compatibility layer with file logging, timezone baseline, safer session start, and shutdown/deprecation handling.
+- Switched `public/config.php` to layered configuration defaults with optional local/secret overlays and environment overrides.
+- Made runtime discovery deterministic in `SKEL80/kernel/core.php` by sorting glob results and using safer include/autoload behavior.
+- Replaced deprecated `strftime()` hot spots with a compatibility formatter across the shared kernel and project overlay mail/date paths.
+- Replaced legacy `each()` loops in bundled mailer dependencies.
+- Added NULL-safe JSON/HTML decode handling in `itMySQL` and `isJson()`.
+- Converted legacy short tags in SKEL80/public PHP files to `<?php` so runtime no longer depends on `short_open_tag`.
+- Added explicit properties for frequently hit dynamic-property legacy classes used during runtime.

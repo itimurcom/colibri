@@ -67,72 +67,7 @@ function restore_login_reqest()
 //..............................................................................
 function get_mysql_time_str($time)
 	{
-	return date("Y-m-d H:i:s", (int)$time);
-	}
-
-//..............................................................................
-// совместимый локализованный форматтер даты вместо deprecated strftime
-//..............................................................................
-function skel80_datetime_from_timestamp($time = 0)
-	{
-	$timestamp = is_numeric($time) ? (int)$time : 0;
-	$datetime = new DateTime("@{$timestamp}");
-	$datetime->setTimezone(new DateTimeZone(date_default_timezone_get()));
-	return $datetime;
-	}
-
-//..............................................................................
-// возвращает локальные названия месяцев и дней для совместимого форматирования
-//..............................................................................
-function skel80_locale_date_tokens($lang = NULL)
-	{
-	$lang = empty($lang) ? (defined('CMS_LANG') ? CMS_LANG : 'en') : $lang;
-
-	$tokens = [
-		'en' => [
-			'month_short' => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-			'month_full' => ['January','February','March','April','May','June','July','August','September','October','November','December'],
-			'day_short' => ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
-		],
-		'ru' => [
-			'month_short' => ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'],
-			'month_full' => ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],
-			'day_short' => ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],
-		],
-		'ua' => [
-			'month_short' => ['січ','лют','бер','кві','тра','чер','лип','сер','вер','жов','лис','гру'],
-			'month_full' => ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'],
-			'day_short' => ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'],
-		],
-	];
-
-	return isset($tokens[$lang]) ? $tokens[$lang] : $tokens['en'];
-	}
-
-//..............................................................................
-// совместимая замена strftime для используемых форматов ядра
-//..............................................................................
-function skel80_strftime_compat($format, $time = 0, $lang = NULL)
-	{
-	$datetime = skel80_datetime_from_timestamp($time);
-	$locale = skel80_locale_date_tokens($lang);
-
-	$monthIndex = max(0, ((int)$datetime->format('n')) - 1);
-	$dayIndex = (int)$datetime->format('w');
-
-	$replace = [
-		'%B' => $locale['month_full'][$monthIndex],
-		'%b' => $locale['month_short'][$monthIndex],
-		'%a' => $locale['day_short'][$dayIndex],
-		'%Y' => $datetime->format('Y'),
-		'%m' => $datetime->format('m'),
-		'%d' => $datetime->format('d'),
-		'%H' => $datetime->format('H'),
-		'%M' => $datetime->format('i'),
-		'%S' => $datetime->format('s'),
-	];
-
-	return strtr($format, $replace);
+	return skel80_strftime_compat("%Y-%m-%d %H:%M:%S", $time, "en");
 	}
 
 //..............................................................................
@@ -364,6 +299,85 @@ function parse_path($url=NULL)
 
 
 //..............................................................................
+// совместимый аналог strftime() для ограниченного набора runtime-форматов
+//..............................................................................
+function skel80_datetime_from_timestamp($time = NULL)
+	{
+	if ($time instanceof DateTimeInterface)
+		{
+		return clone $time;
+		}
+
+	if (is_null($time))
+		{
+		$timestamp = time();
+		}
+	elseif (is_numeric($time))
+		{
+		$timestamp = intval($time);
+		}
+	else
+		{
+		$timestamp = strtotime($time);
+		if ($timestamp === false)
+			{
+			$timestamp = time();
+			}
+		}
+
+	$dt = new DateTime('@'.$timestamp);
+	$dt->setTimezone(new DateTimeZone(date_default_timezone_get()));
+	return $dt;
+	}
+
+function skel80_locale_date_tokens($lang = NULL)
+	{
+	$lang = strtolower(ready_val($lang, defined('CMS_LANG') ? CMS_LANG : ready_val(DEFAULT_LANG, 'en')));
+
+	$map = [
+		'en' => [
+			'months_full' => ['January','February','March','April','May','June','July','August','September','October','November','December'],
+			'months_short' => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+			'weekdays_short' => ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+		],
+		'ru' => [
+			'months_full' => ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'],
+			'months_short' => ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'],
+			'weekdays_short' => ['Вс','Пн','Вт','Ср','Чт','Пт','Сб'],
+		],
+		'ua' => [
+			'months_full' => ['січня','лютого','березня','квітня','травня','червня','липня','серпня','вересня','жовтня','листопада','грудня'],
+			'months_short' => ['січ','лют','бер','кві','тра','чер','лип','сер','вер','жов','лис','гру'],
+			'weekdays_short' => ['Нд','Пн','Вт','Ср','Чт','Пт','Сб'],
+		],
+	];
+
+	return isset($map[$lang]) ? $map[$lang] : $map['en'];
+	}
+
+function skel80_strftime_compat($format, $time = NULL, $lang = NULL)
+	{
+	$dt = skel80_datetime_from_timestamp($time);
+	$tokens = skel80_locale_date_tokens($lang);
+	$monthIndex = intval($dt->format('n')) - 1;
+	$weekIndex = intval($dt->format('w'));
+
+	$replacements = [
+		'%Y' => $dt->format('Y'),
+		'%m' => $dt->format('m'),
+		'%d' => $dt->format('d'),
+		'%H' => $dt->format('H'),
+		'%M' => $dt->format('i'),
+		'%S' => $dt->format('s'),
+		'%B' => $tokens['months_full'][$monthIndex],
+		'%b' => $tokens['months_short'][$monthIndex],
+		'%a' => $tokens['weekdays_short'][$weekIndex],
+	];
+
+	return strtr($format, $replacements);
+	}
+
+//..............................................................................
 // возвращает массив, в котором все элементы декодированы из JSON в array
 //..............................................................................
 function decode_json_values(&$array)
@@ -433,7 +447,7 @@ function get_local_datetime_str($data, $s_month=false, $s_dname=false, $s_year=t
 		return get_const('LOCAL_DATE_YESTERDAY')." ".$time_str;
 		} 
 
-	return skel80_strftime_compat("{$weekday}%d {$month}{$year} {$time_str}", $time);
+	return skel80_strftime_compat("{$weekday}%d {$month}{$year}", $time)." {$time_str}";
 	}
 
 //..............................................................................
@@ -442,7 +456,7 @@ function get_local_datetime_str($data, $s_month=false, $s_dname=false, $s_year=t
 function get_time_str($data, $sec=false)
 	{
 	$time = strtotime($data);
-	return skel80_strftime_compat("%H:%M".(($sec) ? ":%S" : ""), $time);
+	return skel80_strftime_compat("%H:%M".(($sec) ? ":%S" : ""), $time, "en");
 	}
 
 
@@ -481,7 +495,7 @@ function dateDiff ($d1=NULL, $d2=NULL)
 //..............................................................................
 function get_mysql_date($time)
 	{
-	return date("Y-m-d", (int)$time);
+	return skel80_strftime_compat("%Y-%m-%d", $time, "en");
 	}
 
 //..............................................................................
@@ -489,7 +503,7 @@ function get_mysql_date($time)
 //..............................................................................
 function get_mysql_datetime($time)
 	{
-	return date("Y-m-d H:i:s", (int)$time);
+	return skel80_strftime_compat("%Y-%m-%d %H:%M:%S", $time, "en");
 	}
 
 

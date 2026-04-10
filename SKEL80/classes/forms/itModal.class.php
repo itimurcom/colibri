@@ -57,7 +57,7 @@ class itModal
 	//..............................................................................
 	// устанавливает размер модального окна по ширине
 	//..............................................................................	
-	public function set_animation($animation=DEFAULT_MODAL_ANIMATION)
+	public function set_animation($animation=DEFAULT_MODAL_SIZE)
 		{
 		$this->animation = $animation;
 		}

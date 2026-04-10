@@ -48,7 +48,7 @@ class itDate
 		if (!is_null($value))
 			{
 			$this->value = $value;
-			$this->title = strftime("%d %B %Y",$time).(($this->time) ? " ".get_time_str($this->value) : "");
+			$this->title = skel80_strftime_compat("%d %B %Y", $time).(($this->time) ? " ".get_time_str($this->value) : "");
 			$this->value_mysql = ($this->time) ? get_mysql_datetime($time) : get_mysql_date($time);
 			} else	{
 				$this->value = NULL;
@@ -56,8 +56,8 @@ class itDate
 				}
 
 		
-		$this->hour = empty($value) ? 0 : strftime("%H",strtotime($this->value));
-		$this->minute = empty($value) ? 0 : strftime("%M",strtotime($this->value));
+		$this->hour = empty($value) ? 0 : skel80_strftime_compat("%H", strtotime($this->value), "en");
+		$this->minute = empty($value) ? 0 : skel80_strftime_compat("%M", strtotime($this->value), "en");
 		$this->compile();
 		}
 
