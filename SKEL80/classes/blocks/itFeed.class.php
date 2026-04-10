@@ -15,8 +15,8 @@ class itFeed
 	public 	$table_name, $prefix, $fields, $condition, $group, $order, 
 		$sql, $request, $code, $rows, $weight, $query, $async,
 		$start, $fewer, $loop, $appear, $rotate, $nodiv, $func,
-		$COUNTALL, $limit, $element_id, $name, $position, $onefield,
-		$field, $params, $MAXINBLOCK, $WASRESET, $COUNTAL, $field_rec;
+		$COUNTALL, $limit, $limit_explicit, $element_id, $name, $position,
+		$onefield, $field, $params, $MAXINBLOCK, $WASRESET, $COUNTAL, $field_rec;
 
 	//..............................................................................
 	// конструктор класса - создает блок и кнопку с параметрами из запроса
@@ -29,7 +29,8 @@ class itFeed
 		// побробуем кстановить текс запроса
 		$this->sql	= ready_val($options['sql']);
 		$this->order 	= ready_val($options['order']);
-		$this->limit	= ready_val($options['limit'], get_const('FEED_LIMIT'));
+		$this->limit_explicit = is_array($options) && array_key_exists('limit', $options);
+		$this->limit	= $this->limit_explicit ? intval(ready_val($options['limit'], 0)) : intval(get_const('FEED_LIMIT'));
 		
 		// если не установлен sql код
 		if (is_null($options['sql']))		
@@ -83,23 +84,40 @@ class itFeed
 			$this->COUNTALL = $this->onefield ? 100 : (is_array($this->request) ? count($this->request) : 0);
 			} else {
 				// иначе - создадим запрос к базе данных
+				$position = intval($this->position);
+				$queryLimit = $this->resolve_query_limit();
+
 				$this->query = (is_null($this->sql))
 				
 					?	"SELECT {$this->fields} FROM {$this->prefix}{$this->table_name} ".
 						"WHERE ( {$this->condition} )".
 						(($this->group!='') ? " GROUP BY " : '').$this->group.
 						(($this->order!='') ? " ORDER BY " : '').$this->order.
-						((!is_null($this->position) AND !$this->onefield) ? " LIMIT {$this->position}".((intval(FEED_LIMIT)>0) ? ",".FEED_LIMIT : "") : "")
+						((!is_null($this->position) AND !$this->onefield) ? " LIMIT {$position}".(($queryLimit>0) ? ",{$queryLimit}" : "") : "")
 						
 					:	$this->sql.
 						(($this->group!='') ? " GROUP BY " : '').$this->group.
 						(($this->order!='') ? " ORDER BY " : '').$this->order.
-						((!is_null($this->position) AND !$this->onefield) ? " LIMIT {$this->position}".((intval(FEED_LIMIT)>0) ? ",".FEED_LIMIT : "") : "");
+						((!is_null($this->position) AND !$this->onefield) ? " LIMIT {$position}".(($queryLimit>0) ? ",{$queryLimit}" : "") : "");
 
 				if ($this->fewer) $this->reverse_order();
 				$this->request = itMySQL::_request($this->query, false); 	// важно - указать чтобы возврат был не массив!
 				$this->COUNTALL = $this->onefield ? 100 : mysqli_num_rows($this->request);
 				}
+		}
+
+	//..............................................................................
+	// возвращает лимит SQL выборки: явный для ленты, иначе глобальный fallback
+	//..............................................................................
+	private function resolve_query_limit()
+		{
+		if ($this->limit_explicit)
+			{
+			return intval($this->limit);
+			}
+
+		$globalLimit = intval(get_const('FEED_LIMIT'));
+		return ($globalLimit > 0) ? $globalLimit : 0;
 		}
 
 	//..............................................................................
@@ -171,8 +189,7 @@ class itFeed
 		if ($record = mysqli_fetch_assoc($this->request))
 			{
 //			$this->field_rec = json_decode(ready_val($record[$this->field]), JSON_ALLOWED);				
-			$field_source = ready_val($record[$this->field], NULL);
-			$this->field_rec = is_array($field_source) ? $field_source : (($field_source===NULL or $field_source==='') ? NULL : json_decode((string)$field_source ,JSON_ALLOWED));
+			$this->field_rec = is_array($record[$this->field]) ? $record[$this->field] : json_decode($record[$this->field] ,JSON_ALLOWED);
 			while ($i<=$this->MAXINBLOCK)
 				{
 				if ($field_row = ready_val($this->field_rec[$this->position]))

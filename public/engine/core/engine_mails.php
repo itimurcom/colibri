@@ -1,4 +1,4 @@
-<?php 
+<?php
 define('SEND_USER_MAILS', 0);
 //define('DEFAULT_ORDER_TABLE', 'orders');
 
@@ -232,11 +232,14 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 //..............................................................................
 function mailing_history_panel($email=NULL)
 	{
+	$mailing_feed_limit = intval(ready_val(unserialize(FEED_NUMBER)['mailing_history'], DEFAULT_FEED_NUM));
+
 	$o_feed = new itFeed([
 		'table'			=> DEFAULT_MAIL_TABLE,
 		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` NOT IN('DELETED','SPAM')".NOT_PINCODE,
 		'name'			=> 'mailing_history',
 		'order'			=> "`id` DESC",
+		'limit'			=> $mailing_feed_limit,
 		'async'			=> true,
 		'appear'		=> false,
 		]);
@@ -249,6 +252,7 @@ function mailing_history_panel($email=NULL)
 		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` NOT IN('DELETED','SPAM')".HAS_PINCODE,
 		'name'			=> 'mailing_history',
 		'order'			=> "`id` DESC",
+		'limit'			=> $mailing_feed_limit,
 		'async'			=> true,
 		'appear'		=> false,
 		]);
@@ -261,6 +265,7 @@ function mailing_history_panel($email=NULL)
 		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` = 'SPAM'",
 		'name'			=> 'mailing_history',
 		'order'			=> "`id` DESC",
+		'limit'			=> $mailing_feed_limit,
 		'async'			=> true,
 		'appear'		=> false,
 		]);
@@ -273,6 +278,7 @@ function mailing_history_panel($email=NULL)
 		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` = 'DELETED'",
 		'name'			=> 'mailing_history',
 		'order'			=> "`id` DESC",
+		'limit'			=> $mailing_feed_limit,
 		'async'			=> true,
 		'appear'		=> false,
 		]);

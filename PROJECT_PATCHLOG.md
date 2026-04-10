@@ -13,9 +13,8 @@
 - Expected result: repeated toggles no longer try to write an empty string into integer DB columns like `colibri_items.is_replicant`.
 - Next step: if another toggle fails similarly, inspect that endpoint for boolean-to-string persistence before touching DB helpers again.
 
-## M0 / P10 feed limit performance hotfix
-- Reduced global `FEED_LIMIT` from `10000` to `100` in `SKEL80/events/blocks/ini/const.php`.
-- Reason: legacy `itFeed` main SQL path still uses global `FEED_LIMIT` for DB batching, so pages with several feeds could request far more rows than the UI actually shows.
-- Expected result: initial loading of feed-heavy screens, especially `Письма`, should stop pulling oversized MySQL batches.
-- No files were deleted. No routing, rendering, or feed business logic was rewritten.
-- Next step: if performance is still not acceptable, move from global cap to per-feed SQL limit using `itFeed::$limit`.
+
+## M0 / P11 feed query limit explicit override
+- Fixed `itFeed` SQL limit behavior: an explicit feed `limit` is now used in database queries, while global `FEED_LIMIT` remains only a fallback when no explicit limit is provided.
+- `mailing_history_panel()` now passes an explicit limit based on `FEED_NUMBER['mailing_history']`, so the mails section stops over-fetching rows from the database.
+- No feed rendering logic was removed; the patch changes only query-limit resolution and the mailing-history feed wiring.
