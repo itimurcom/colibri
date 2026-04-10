@@ -1,4 +1,4 @@
-<?
+<?php
 define('SEND_USER_MAILS', 0);
 //define('DEFAULT_ORDER_TABLE', 'orders');
 
@@ -243,6 +243,7 @@ function mailing_history_panel($email=NULL)
 		'async'			=> true,
 		'appear'		=> false,
 		'limit'		=> $mailing_feed_limit,
+		'need_total'	=> false,
 		]);
 	$o_feed->compile();
 	$mailpanel = $o_feed->count_all() ? $o_feed->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
@@ -256,6 +257,7 @@ function mailing_history_panel($email=NULL)
 		'async'			=> true,
 		'appear'		=> false,
 		'limit'		=> $mailing_feed_limit,
+		'need_total'	=> false,
 		]);
 	$o_feed->compile();
 	$pinpanel = $o_feed->count_all() ? $o_feed->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
@@ -269,6 +271,7 @@ function mailing_history_panel($email=NULL)
 		'async'			=> true,
 		'appear'		=> false,
 		'limit'		=> $mailing_feed_limit,
+		'need_total'	=> false,
 		]);
 	$o_spam->compile();
 	$spampanel = $o_spam->count_all() ? $o_spam->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";
@@ -282,6 +285,7 @@ function mailing_history_panel($email=NULL)
 		'async'			=> true,
 		'appear'		=> false,
 		'limit'		=> $mailing_feed_limit,
+		'need_total'	=> false,
 		]);
 	$o_deleted->compile();
 	$deletedpanel = $o_deleted->count_all() ? $o_deleted->code() : TAB."<div class='field p1 center gray'>".get_const('NO_DATA')."</div>";

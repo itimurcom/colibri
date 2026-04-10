@@ -1,4 +1,4 @@
-<?php 
+<?php
 $_CONTENT['admin'] = get_admin_button_set();
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
@@ -8,6 +8,7 @@ $o_feed = new itFeed([
 	'condition'	=> "`id`='".BLOCK_FEED_ABOUT."'",
 	'onefield'	=> true,
 	'name'		=> 'about',
+	'need_total'	=> false,
 	'params'	=> ['rec_id' => BLOCK_FEED_ABOUT],		
 	]);
 $o_feed->compile();

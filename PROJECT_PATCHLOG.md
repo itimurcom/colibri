@@ -25,3 +25,10 @@
 - Added explicit limit handling with fallback to global `FEED_LIMIT` only when a feed does not define its own `limit`.
 - Updated `public/engine/core/engine_mails.php` so `mailing_history` feeds pass their explicit limit from `FEED_NUMBER`.
 - Expected result: feed-heavy screens such as `Письма` keep limited row loading while total counts and pagination logic stop collapsing to the current batch size.
+
+## M0 / P17 feed need_total project opt-out bundle
+- added `need_total` flag to `itFeed` with default `true`
+- when `need_total=false`, feed skips expensive SQL total count and keeps only loaded-row count
+- propagated `need_total` through more/fewer serialized feed payloads
+- set `need_total=false` in all active project-side `new itFeed([...])` initializations
+- note: places using `count_all()` now receive loaded/current batch count when `need_total=false`

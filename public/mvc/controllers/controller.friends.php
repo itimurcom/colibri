@@ -1,4 +1,4 @@
-<?php 
+<?php
 $_CONTENT['admin'] = get_admin_button_set();
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
@@ -12,6 +12,7 @@ $o_feed = new itFeed([
 	'onefield'	=> true,
 	'position'	=> 0,
 	'name'		=> 'friends',
+	'need_total'	=> false,
 	'params'	=> ['rec_id'=>BLOCK_FRIENDS],
 	]);
 

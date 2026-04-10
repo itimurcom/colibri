@@ -374,6 +374,7 @@ function get_items_feed()
 		'weight'	=> false,
 		'nodiv'		=> true,
 		'appear'	=> false,
+		'need_total'	=> false,
 		]);
 	$o_feed->compile();
 
@@ -392,6 +393,7 @@ function get_items_feed()
 			'fewer'		=> true,
 			'order'		=> "`id` ASC",	// по возрастанию вверх!
 			'nodiv'		=> true,			
+			'need_total'	=> false,
 			);
 		$o_fewer = new itFeed($options);
 		$o_fewer->compile();
@@ -514,6 +516,7 @@ function get_item_serie_feed($row=NULL)
 		'async'		=> false,
 		'order'		=> "CONVERT(`version`, decimal)",		// по убыванию вниз!
 		'weight'	=> false,
+		'need_total'	=> false,
 		]);
 	$o_feed->compile();
 	

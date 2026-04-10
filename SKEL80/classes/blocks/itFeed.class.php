@@ -15,7 +15,7 @@ class itFeed
 	public 	$table_name, $prefix, $fields, $condition, $group, $order, 
 		$sql, $request, $code, $rows, $weight, $query, $async,
 		$start, $fewer, $loop, $appear, $rotate, $nodiv, $func,
-		$COUNTALL, $limit, $limit_explicit, $element_id, $name, $position,
+		$COUNTALL, $limit, $limit_explicit, $need_total, $element_id, $name, $position,
 		$onefield, $field, $params, $MAXINBLOCK, $WASRESET, $COUNTAL, $field_rec;
 
 	//..............................................................................
@@ -31,6 +31,7 @@ class itFeed
 		$this->order 	= ready_val($options['order']);
 		$this->limit	= ready_val($options['limit'], get_const('FEED_LIMIT'));
 		$this->limit_explicit = is_array($options) && array_key_exists('limit', $options) && !is_null($options['limit']);
+		$this->need_total = ready_val($options['need_total'], true);
 		
 		// если не установлен sql код
 		if (is_null($options['sql']))		
@@ -81,14 +82,16 @@ class itFeed
 			{
 			// получим массив данных от внешней функции
 			$this->request = call_user_func($this->func, $this->params);
-			$this->COUNTALL = $this->onefield ? 100 : (is_array($this->request) ? count($this->request) : 0);
+			$this->COUNTALL = $this->onefield ? 100 : $this->resolve_loaded_count();
 			} else {
 				// иначе - создадим запрос к базе данных
 				$this->query = $this->build_feed_query(true);
 
 				if ($this->fewer) $this->reverse_order();
 				$this->request = itMySQL::_request($this->query, false); 	// важно - указать чтобы возврат был не массив!
-				$this->COUNTALL = $this->onefield ? 100 : $this->resolve_total_count();
+				$this->COUNTALL = $this->onefield
+					? 100
+					: ($this->need_total ? $this->resolve_total_count() : $this->resolve_loaded_count());
 				}
 		}
 
@@ -126,6 +129,19 @@ class itFeed
 	private function resolve_query_limit()
 		{
 		return intval($this->limit_explicit ? $this->limit : get_const('FEED_LIMIT'));
+		}
+
+	//..............................................................................
+	// считает количество уже загруженных строк текущей выборки
+	//..............................................................................
+	private function resolve_loaded_count()
+		{
+		if (!is_null($this->func))
+			{
+			return is_array($this->request) ? count($this->request) : 0;
+			}
+
+		return ($this->request instanceof mysqli_result) ? intval(mysqli_num_rows($this->request)) : 0;
 		}
 
 	//..............................................................................
@@ -313,7 +329,7 @@ class itFeed
 			} else	{
 				if ($this->fewer)
 					{
-					$this->rows['fewer'] = ($this->position>=$this->COUNTALL) ? $this->fewer_begin_text() : NULL;
+					$this->rows['fewer'] = ($this->need_total && $this->position>=$this->COUNTALL) ? $this->fewer_begin_text() : NULL;
 					}
 				}
 		}                                        
@@ -357,6 +373,7 @@ class itFeed
 					'appear'	=> (is_null($this->appear) ? true : $this->appear),
 					'func'		=> $this->func,						
 					'params'	=> $this->params,					
+					'need_total'	=> $this->need_total,
 					)));
 			} else	{
 				$feed_code	= simple_encrypt(serialize(array(
@@ -378,6 +395,7 @@ class itFeed
 					'appear'	=> (is_null($this->appear) ? true : $this->appear),
 					'func'		=> $this->func,						
 					'params'	=> $this->params,					
+					'need_total'	=> $this->need_total,
 					)));
 				}
 
@@ -432,6 +450,7 @@ class itFeed
 					'appear'	=> (is_null($this->appear) ? true : $this->appear),
 					'func'		=> $this->func,						
 					'params'	=> $this->params,											
+					'need_total'	=> $this->need_total,
 					)));
 			} else	{
 				$feed_code	= simple_encrypt(serialize(array(
@@ -451,6 +470,7 @@ class itFeed
 					'appear'	=> (is_null($this->appear) ? true : $this->appear),
 					'func'		=> $this->func,						
 					'params'	=> $this->params,					
+					'need_total'	=> $this->need_total,
 					)));
 				}
 
@@ -567,11 +587,11 @@ class itFeed
 		{
 		if (!is_null($this->func))
 			{
-			$this->COUNTALL = count($this->request);
+			$this->COUNTALL = $this->resolve_loaded_count();
 			}
 		else
 			{
-			$this->COUNTALL = $this->onefield ? 100 : $this->resolve_total_count();
+			$this->COUNTALL = $this->onefield ? 100 : ($this->need_total ? $this->resolve_total_count() : $this->resolve_loaded_count());
 			}
 
 		return $this->COUNTALL;
