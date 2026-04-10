@@ -80,11 +80,16 @@ class itForm2
 	{
 	public $ed_rec, $data, $rec_id, $table_name,
 		$action, $method, $reCaptcha,
-		$form_id, $element_id, $title_xml, $ed_xml, $buttons_xml, $button_xml, $hiddens_xml,
+		$form_id, $element_id, $title_xml, $ed_xml, $buttons_xml, $hiddens_xml,
 		$state,
 		$edclass,
 		$debug,
-		$error, $class, $field, $column, $accepted, $code;
+		$error,
+		$class,
+		$field,
+		$column,
+		$accepted,
+		$code;
 		
 	public $fields_xml;
 	//..............................................................................

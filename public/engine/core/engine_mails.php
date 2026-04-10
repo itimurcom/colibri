@@ -203,7 +203,7 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 		'from'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),	
 		'to'		=> trim($_SETTINGS['SITE_ADMIN_EMAIL']['value']),
 		'reply'		=> trim($_REQUEST['email']),
-		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)", strtotime($now))." {$subject_admin}",
+		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)",strtotime($now), CMS_LANG)." {$subject_admin}",
 		'message'	=> $admin_mail['result'],
 		'user'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
 		'password'	=> trim($_SETTINGS['SITE_SMTP_PASSWORD']['value']),
@@ -219,7 +219,7 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 	return
 		(!is_null($subject_of_user)
 			? 	TAB."<div class='tit'>".
-				CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)", strtotime($now)).
+				CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)",strtotime($now), CMS_LANG).
 				$subject_of_user.
 				"</div>" 
 			: NULL).
@@ -232,14 +232,11 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 //..............................................................................
 function mailing_history_panel($email=NULL)
 	{
-	$mailing_feed_limit = intval(ready_val(unserialize(FEED_NUMBER)['mailing_history'], DEFAULT_FEED_NUM));
-
 	$o_feed = new itFeed([
 		'table'			=> DEFAULT_MAIL_TABLE,
 		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` NOT IN('DELETED','SPAM')".NOT_PINCODE,
 		'name'			=> 'mailing_history',
 		'order'			=> "`id` DESC",
-		'limit'			=> $mailing_feed_limit,
 		'async'			=> true,
 		'appear'		=> false,
 		]);
@@ -252,7 +249,6 @@ function mailing_history_panel($email=NULL)
 		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` NOT IN('DELETED','SPAM')".HAS_PINCODE,
 		'name'			=> 'mailing_history',
 		'order'			=> "`id` DESC",
-		'limit'			=> $mailing_feed_limit,
 		'async'			=> true,
 		'appear'		=> false,
 		]);
@@ -265,7 +261,6 @@ function mailing_history_panel($email=NULL)
 		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` = 'SPAM'",
 		'name'			=> 'mailing_history',
 		'order'			=> "`id` DESC",
-		'limit'			=> $mailing_feed_limit,
 		'async'			=> true,
 		'appear'		=> false,
 		]);
@@ -278,7 +273,6 @@ function mailing_history_panel($email=NULL)
 		'condition'		=> (!is_null($email) ? "`to`='$email'" : '1')." AND `status` = 'DELETED'",
 		'name'			=> 'mailing_history',
 		'order'			=> "`id` DESC",
-		'limit'			=> $mailing_feed_limit,
 		'async'			=> true,
 		'appear'		=> false,
 		]);
