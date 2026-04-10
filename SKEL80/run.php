@@ -11,7 +11,11 @@
 //-----------------------------------------------------------------------------
 require_once 'kernel/core.php';
 require_once 'kernel/runtime_compat.php';
+require_once 'kernel/runtime_boundaries.php';
+require_once 'kernel/runtime_contract.php';
 skel80_runtime_configure();
+skel80_runtime_get_boundaries();
+skel80_runtime_get_contract();
 // Запускаем сессию
 if (session_status() !== PHP_SESSION_ACTIVE)
 	{
@@ -57,8 +61,12 @@ foreach (array_unique($config_candidates) as $config_file)
 skel80_runtime_configure();
 skel80_runtime_register_handlers();
 
+// PHASE: bootstrap.paths
 set_skeleton_user_ways();
 set_skeleton_core_ways();
+
+// PHASE: bootstrap.overlay.contract
+skel80_runtime_load_overlay_contract(USER_ENGINE_PATH);
 
 // настраиваем пути пользователя
 if (file_exists(USER_ENGINE_PATH.'kernel.path.php'))
@@ -73,15 +81,18 @@ definition([
 	]);
 //register_skeleton_images_ways();
 
+// PHASE: bootstrap.classes
 //зарегистрируем последовательность поиска классов
 register_classes_folder(USER_CLASSES_PATH);			// движка
 register_classes_folder(SKELETON_CLASSES_PATH);			// ядра
 register_classes_autoload();
 
+// PHASE: bootstrap.engine
 // задекларируем функции
 register_skleton_engine(USER_CORE_PATH); 			// подключаем пользовательский движок
 register_events_folder(SKELETON_CORE_PATH."kernel/events/");	// системные
 
+// PHASE: bootstrap.const
 // установим константы
 register_skeleton_user_const(USER_ENGINE_PATH."ini/");		// пред-константы пользователя
 register_skeleton_core_const(SKELETON_EVENTS_PATH);		// пост-константы ядра
@@ -106,27 +117,33 @@ definition([
 	]);
 
 
+// PHASE: bootstrap.ini
 // соберем все установки по проекту
 register_skeleton_core_ini(SKELETON_EVENTS_PATH);		// настройки ядра
 register_skeleton_user_ini(USER_ENGINE_PATH."ini/");		// пост-настройки пользователя
 
+// PHASE: bootstrap.functions
 // TOFIX: временно!!!
 include (SKELETON_CORE_PATH."kernel/engine_functions.php");
 
 register_events_folder(USER_EVENTS_PATH);			// движка
 register_events_folder(SKELETON_EVENTS_PATH);			// ядра
 
+// PHASE: bootstrap.router
 // запускаем роутер
 $o_router = new itRouter(); 	// в itLang подключаются kernel.customs.php перед языками
 unset($o_router);
 
+// PHASE: bootstrap.common
 // стандартные языковые настройки
 register_skeleton_core_common(SKELETON_EVENTS_PATH);
 
+// PHASE: bootstrap.user
 global $_USER;
 // подключим проверку пользователя
 $_USER = new itUser();
 
+// PHASE: bootstrap.customs
 register_skeleton_user_custom(USER_ENGINE_PATH."ini/");		// пост-настройки пользователя
 
 // подготовим массивы для работы модератора

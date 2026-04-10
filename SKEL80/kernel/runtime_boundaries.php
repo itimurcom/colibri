@@ -1,13 +1,176 @@
 <?php
-// Explicit shared-core / project-overlay boundary map for the historical
-// SKEL80 platform model. This file stays declarative and side-effect free so
-// it can be reused by docs, tooling and later runtime checks.
 
-if (!function_exists('skel80_runtime_project_root'))
+if (!function_exists('skel80_runtime_build_boundaries'))
 	{
-	function skel80_runtime_project_root()
+	function skel80_runtime_build_boundaries()
 		{
-		return dirname(__DIR__, 2);
+		return [
+			'zones' => [
+				'shared.core' => [
+					'label' => 'Shared platform core',
+					'roots' => [
+						'SKEL80/',
+					],
+					'alias' => [
+						'platform.kernel',
+						'platform.shared_core',
+					],
+					'responsibility' => [
+						'bootstrap lifecycle',
+						'class discovery and autoload',
+						'events/functions registration',
+						'cross-project primitives',
+					],
+					'allowed_dependencies' => [
+						'shared.core',
+					],
+				],
+				'project.bootstrap' => [
+					'label' => 'Project bootstrap surface',
+					'roots' => [
+						'public/index.php',
+						'public/config.php',
+						'public/config.local.php',
+						'public/config.secrets.php',
+						'public/config.secrets.local.php',
+					],
+					'alias' => [
+						'project.bootstrap',
+						'project.entrypoints',
+					],
+					'responsibility' => [
+						'project entrypoint',
+						'config layering',
+						'environment-specific overrides',
+					],
+					'allowed_dependencies' => [
+						'shared.core',
+						'project.overlay',
+					],
+				],
+				'project.overlay' => [
+					'label' => 'Project overlay',
+					'roots' => [
+						'public/engine/',
+					],
+					'alias' => [
+						'project.runtime_overlay',
+						'project.wiring_layer',
+					],
+					'responsibility' => [
+						'project constants and ini',
+						'engine wiring',
+						'project events and classes',
+						'legal platform overrides',
+					],
+					'allowed_dependencies' => [
+						'shared.core',
+						'project.overlay',
+					],
+				],
+				'project.delivery' => [
+					'label' => 'Project delivery surface',
+					'roots' => [
+						'public/mvc/',
+						'public/themes/',
+						'public/languages/',
+					],
+					'alias' => [
+						'project.presentation',
+						'project.delivery',
+					],
+					'responsibility' => [
+						'request preprocessors',
+						'page assembly responders',
+						'theme rendering',
+						'localization assets',
+					],
+					'allowed_dependencies' => [
+						'shared.core',
+						'project.overlay',
+						'project.delivery',
+					],
+				],
+				'mixed.hotspot' => [
+					'label' => 'Legacy mixed hotspot',
+					'roots' => [],
+					'alias' => [
+						'transitional.legacy_mixed_zone',
+					],
+					'responsibility' => [
+						'transitional compatibility zone',
+						'legacy cross-boundary behavior pending extraction',
+					],
+					'allowed_dependencies' => [
+						'shared.core',
+						'project.bootstrap',
+						'project.overlay',
+						'project.delivery',
+						'mixed.hotspot',
+					],
+				],
+			],
+			'path_map' => [
+				'SKEL80/' => 'shared.core',
+				'public/index.php' => 'project.bootstrap',
+				'public/config.php' => 'project.bootstrap',
+				'public/config.local.php' => 'project.bootstrap',
+				'public/config.secrets.php' => 'project.bootstrap',
+				'public/config.secrets.local.php' => 'project.bootstrap',
+				'public/engine/' => 'project.overlay',
+				'public/mvc/' => 'project.delivery',
+				'public/themes/' => 'project.delivery',
+				'public/languages/' => 'project.delivery',
+				'public/ed_field.php' => 'mixed.hotspot',
+				'public/more.php' => 'mixed.hotspot',
+				'SKEL80/kernel/engine_functions.php' => 'mixed.hotspot',
+			],
+			'mixed_hotspots' => [
+				[
+					'path' => 'SKEL80/kernel/engine_functions.php',
+					'why' => 'Shared helper surface also contains project-facing formatting, rendering and transport helpers.',
+				],
+				[
+					'path' => 'public/ed_field.php',
+					'why' => 'Legacy endpoint mixes editor transport, form handling, auth assumptions and business operations.',
+				],
+				[
+					'path' => 'public/more.php',
+					'why' => 'Feed transport endpoint mixes pagination, SQL-backed block assembly and HTML response generation.',
+				],
+				[
+					'path' => 'public/mvc/controllers/',
+					'why' => 'Historical controllers behave as preprocessors and may contain delivery decisions.',
+				],
+				[
+					'path' => 'public/mvc/views/',
+					'why' => 'Historical views also prepare data and perform inline assembly beyond pure rendering.',
+				],
+				[
+					'path' => 'public/engine/kernel.customs.php',
+					'why' => 'Late customization hook can reach across overlay, delivery and runtime state.',
+				],
+			],
+			'dependency_rules' => [
+				'shared.core must not depend on project.bootstrap, project.overlay or project.delivery',
+				'project.bootstrap may configure shared.core and project.overlay but should not contain business delivery logic',
+				'project.overlay may extend shared.core through legal hooks but should not mutate delivery templates directly',
+				'project.delivery may depend on shared.core and project.overlay but should not redefine platform bootstrap rules',
+				'mixed.hotspot is transitional and should be reduced over time, not expanded',
+			],
+		];
+		}
+	}
+
+if (!function_exists('skel80_runtime_get_boundaries'))
+	{
+	function skel80_runtime_get_boundaries()
+		{
+		if (!isset($GLOBALS['SKEL80_RUNTIME_BOUNDARIES']) || !is_array($GLOBALS['SKEL80_RUNTIME_BOUNDARIES']))
+			{
+			$GLOBALS['SKEL80_RUNTIME_BOUNDARIES'] = skel80_runtime_build_boundaries();
+			}
+		return $GLOBALS['SKEL80_RUNTIME_BOUNDARIES'];
 		}
 	}
 
@@ -15,161 +178,31 @@ if (!function_exists('skel80_runtime_normalize_path'))
 	{
 	function skel80_runtime_normalize_path($path)
 		{
-		$path = str_replace('\\', '/', (string) $path);
-		$path = preg_replace('~/+~', '/', $path);
+		$path = str_replace('\\', '/', (string)$path);
+		$path = preg_replace('~/{2,}~', '/', $path);
 
-		$project_root = str_replace('\\', '/', skel80_runtime_project_root());
-		if (strpos($path, $project_root.'/') === 0)
+		$roots = [];
+		if (defined('SKELETON_CORE_PATH'))
 			{
-			$path = substr($path, strlen($project_root) + 1);
+			$roots[] = ['prefix' => rtrim(str_replace('\\', '/', SKELETON_CORE_PATH), '/').'/', 'replace' => 'SKEL80/'];
+			}
+		if (isset($_SERVER['DOCUMENT_ROOT']) && $_SERVER['DOCUMENT_ROOT'])
+			{
+			$roots[] = ['prefix' => rtrim(str_replace('\\', '/', $_SERVER['DOCUMENT_ROOT']), '/').'/', 'replace' => 'public/'];
+			}
+		$project_root = dirname(__DIR__, 2);
+		$roots[] = ['prefix' => rtrim(str_replace('\\', '/', $project_root), '/').'/', 'replace' => ''];
+
+		foreach ($roots as $root)
+			{
+			if (strpos($path, $root['prefix']) === 0)
+				{
+				$path = $root['replace'].substr($path, strlen($root['prefix']));
+				break;
+				}
 			}
 
 		return ltrim($path, '/');
-		}
-	}
-
-if (!function_exists('skel80_runtime_overlay_contract_file'))
-	{
-	function skel80_runtime_overlay_contract_file()
-		{
-		$project_root = skel80_runtime_project_root();
-		$candidates = [
-			$project_root.'/public/engine/overlay_contract.php',
-			$project_root.'/engine/overlay_contract.php',
-		];
-
-		foreach ($candidates as $candidate)
-			{
-			if (is_file($candidate))
-				{
-				return $candidate;
-				}
-			}
-
-		return NULL;
-		}
-	}
-
-if (!function_exists('skel80_runtime_overlay_manifest'))
-	{
-	function skel80_runtime_overlay_manifest()
-		{
-		static $manifest = NULL;
-		if ($manifest !== NULL)
-			{
-			return $manifest;
-			}
-
-		$manifest = [];
-		$contract_file = skel80_runtime_overlay_contract_file();
-		if ($contract_file !== NULL)
-			{
-			include_once $contract_file;
-			if (function_exists('skel80_project_overlay_manifest'))
-				{
-				$loaded = skel80_project_overlay_manifest();
-				if (is_array($loaded))
-					{
-					$manifest = $loaded;
-					}
-				}
-			}
-
-		return $manifest;
-		}
-	}
-
-if (!function_exists('skel80_runtime_boundaries'))
-	{
-	function skel80_runtime_boundaries()
-		{
-		static $boundaries = NULL;
-		if ($boundaries !== NULL)
-			{
-			return $boundaries;
-			}
-
-		$boundaries = [
-			'principles' => [
-				'shared_core' => 'SKEL80 may own runtime primitives, shared classes, shared events, shared assets and shared defaults.',
-				'project_overlay' => 'The project overlay may define config, path overrides, engine bootstrap, project functions, project ini/customs and final post-run glue.',
-				'delivery_surface' => 'The deployable public surface may depend on both shared core and overlay, but it is not part of the shared kernel contract.',
-				'dependency_rule' => 'Shared core must not take direct hard dependencies on project delivery files; project code may depend on core through declared extension points.',
-			],
-			'owners' => [
-				'shared.core' => [
-					'paths' => [
-						'SKEL80/kernel',
-						'SKEL80/classes',
-						'SKEL80/events',
-						'SKEL80/css',
-						'SKEL80/js',
-						'SKEL80/sql',
-						'SKEL80/ver',
-					],
-					'role' => 'Platform kernel, shared lifecycle, shared class/event library and shared resources reused across projects.',
-				],
-				'project.overlay' => [
-					'paths' => [
-						'public/config.php',
-						'public/config.secrets.example.php',
-						'public/engine',
-						'public/logs',
-					],
-					'role' => 'Project-specific bootstrap, config precedence, feature wiring, project functions, project ini/customs and post-run overlay.',
-				],
-				'project.delivery' => [
-					'paths' => [
-						'public/index.php',
-						'public/mvc',
-						'public/themes',
-						'public/languages',
-						'public/login.php',
-						'public/logout.php',
-						'public/404.php',
-						'public/more.php',
-					],
-					'role' => 'Deployable request entry points, responders, presentation skin and localization resources of the project.',
-				],
-				'mixed.hotspot' => [
-					'paths' => [
-						'SKEL80/run.php',
-						'SKEL80/kernel/core.php',
-						'SKEL80/kernel/runtime_contract.php',
-						'public/engine/kernel.php',
-						'public/config.php',
-					],
-					'role' => 'Historical glue where shared kernel and project overlay meet and where future decoupling should stay explicit and controlled.',
-				],
-			],
-			'modern_aliases' => [
-				'public/mvc/controllers' => 'request handlers / preprocessors / actions',
-				'public/mvc/views' => 'responders / page assemblers',
-				'public/themes' => 'presentation skin',
-				'public/languages' => 'localization resources',
-				'public/engine/core/engine_*.php' => 'project bootstrap modules',
-				'public/engine/core/events/**/*.func.php' => 'project hooks and feature functions',
-			],
-			'extension_points' => [
-				'config.resolve' => 'public/config.php',
-				'paths.user' => 'public/engine/kernel.path.php',
-				'engine.register' => 'public/engine/core/engine_*.php',
-				'const.user.pre' => 'public/engine/ini/const.*.php',
-				'ini.user.post' => 'public/engine/ini/ini.*.php',
-				'events.user' => 'public/engine/core/events/**/*.func.php',
-				'custom.user.post' => 'public/engine/ini/custom.*.php + public/engine/kernel.customs.php',
-				'kernel.postrun.overlay' => 'public/engine/kernel.php',
-			],
-			'mixed_hotspots' => [
-				'SKEL80/run.php' => 'Shared phase runner with controlled calls into project extension points.',
-				'SKEL80/kernel/core.php' => 'Historical discovery primitives and include-time conventions used by both core and project layers.',
-				'public/config.php' => 'Project config resolved early by the shared kernel.',
-				'public/engine/kernel.php' => 'Final project glue after the shared runner hands control back to the project.',
-			],
-			'overlay_manifest' => skel80_runtime_overlay_manifest(),
-		];
-
-		return $boundaries;
 		}
 	}
 
@@ -177,21 +210,40 @@ if (!function_exists('skel80_runtime_path_owner'))
 	{
 	function skel80_runtime_path_owner($path)
 		{
-		$path = skel80_runtime_normalize_path($path);
-		$boundaries = skel80_runtime_boundaries();
+		$relative = skel80_runtime_normalize_path($path);
+		$boundaries = skel80_runtime_get_boundaries();
 
-		foreach ($boundaries['owners'] as $owner => $definition)
+		foreach ($boundaries['path_map'] as $prefix => $owner)
 			{
-			foreach ($definition['paths'] as $prefix)
+			if ($relative === $prefix)
 				{
-				$prefix = rtrim($prefix, '/');
-				if ($path === $prefix || strpos($path, $prefix.'/') === 0)
-					{
-					return $owner;
-					}
+				return $owner;
+				}
+			if (substr($prefix, -1) === '/' && strpos($relative, $prefix) === 0)
+				{
+				return $owner;
 				}
 			}
 
-		return 'unknown';
+		return 'mixed.hotspot';
+		}
+	}
+
+if (!function_exists('skel80_runtime_path_alias'))
+	{
+	function skel80_runtime_path_alias($path)
+		{
+		$owner = skel80_runtime_path_owner($path);
+		$boundaries = skel80_runtime_get_boundaries();
+		return ready_val($boundaries['zones'][$owner]['alias'], []);
+		}
+	}
+
+if (!function_exists('skel80_runtime_get_mixed_hotspots'))
+	{
+	function skel80_runtime_get_mixed_hotspots()
+		{
+		$boundaries = skel80_runtime_get_boundaries();
+		return ready_val($boundaries['mixed_hotspots'], []);
 		}
 	}

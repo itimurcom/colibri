@@ -1,73 +1,46 @@
 <?php
-// Declarative Colibri overlay contract. This file does not alter runtime
-// behavior; it makes the project overlay explicit for documentation, tooling
-// and future migration steps.
 
-if (!function_exists('skel80_project_overlay_manifest'))
-	{
-	function skel80_project_overlay_manifest()
-		{
-		static $manifest = NULL;
-		if ($manifest !== NULL)
-			{
-			return $manifest;
-			}
-
-		$manifest = [
-			'project' => [
-				'id' => 'colibri',
-				'entry_point' => 'public/index.php',
-				'config' => 'public/config.php',
-				'overlay_root' => 'public/engine',
-			],
-			'responsibilities' => [
-				'bootstrap' => [
-					'public/engine/kernel.php',
-					'public/engine/kernel.customs.php',
-					'public/engine/core/engine_*.php',
-				],
-				'project_ini' => [
-					'public/engine/ini/const.*.php',
-					'public/engine/ini/ini.*.php',
-					'public/engine/ini/custom.*.php',
-				],
-				'project_hooks' => [
-					'public/engine/core/events/**/*.func.php',
-				],
-				'project_assets' => [
-					'public/engine/js/*',
-					'public/themes/default/*',
-				],
-				'delivery' => [
-					'public/mvc/controllers/*',
-					'public/mvc/views/*',
-					'public/themes/*',
-					'public/languages/*',
-				],
-			],
-			'extension_points' => [
-				'config.resolve' => 'Project base config and runtime environment defaults.',
-				'paths.user' => 'Optional path overrides before user/core defaults are finalized.',
-				'engine.register' => 'Project engine bootstrap and feature wiring.',
-				'const.user.pre' => 'Project pre-constants before shared post-constants.',
-				'ini.user.post' => 'Project ini overrides after shared defaults.',
-				'events.user' => 'Project-first hooks and feature functions.',
-				'custom.user.post' => 'Project customization after router/user/language are available.',
-				'kernel.postrun.overlay' => 'Final project glue before site compilation.',
-			],
-			'modern_aliases' => [
-				'public/mvc/controllers' => 'request handlers / preprocessors / actions',
-				'public/mvc/views' => 'responders / page assemblers',
-				'public/themes' => 'presentation skin',
-				'public/languages' => 'localization resources',
-			],
-			'boundary_rules' => [
-				'overlay_may_depend_on_core' => true,
-				'core_may_depend_on_overlay_only_via_declared_extension_points' => true,
-				'delivery_may_depend_on_core_and_overlay' => true,
-			],
-		];
-
-		return $manifest;
-		}
-	}
+return [
+	'project' => [
+		'name' => 'Colibri',
+		'type' => 'project overlay',
+		'model' => 'project-specific overlay on top of shared SKEL80 runtime',
+	],
+	'responsibilities' => [
+		'configure project constants and ini precedence',
+		'register project engine parts under public/engine/core',
+		'register project classes and events under public/engine/core',
+		'provide late project customs through kernel.customs.php and custom.*.php',
+		'define delivery assets and project-level presentation hooks',
+	],
+	'extension_points' => [
+		['path' => 'public/engine/kernel.path.php', 'phase' => 'bootstrap.paths', 'purpose' => 'Project path overrides before class/event discovery.'],
+		['path' => 'public/engine/ini/const.*.php', 'phase' => 'bootstrap.const', 'purpose' => 'Project pre-constants before shared defaults are finalized.'],
+		['path' => 'public/engine/ini/ini.*.php', 'phase' => 'bootstrap.ini', 'purpose' => 'Project runtime and configuration overrides.'],
+		['path' => 'public/engine/core/engine_*.php', 'phase' => 'bootstrap.engine', 'purpose' => 'Project engine registration and cross-module orchestration.'],
+		['path' => 'public/engine/core/events/**/*.func.php', 'phase' => 'bootstrap.functions', 'purpose' => 'Project function/event extensions loaded through event discovery.'],
+		['path' => 'public/engine/ini/custom.*.php', 'phase' => 'bootstrap.customs', 'purpose' => 'Late customizations after router and user context are ready.'],
+		['path' => 'public/engine/kernel.customs.php', 'phase' => 'bootstrap.customs', 'purpose' => 'Legacy late customization hook kept as a legal overlay point.'],
+	],
+	'legal_override_points' => [
+		'public/config.php',
+		'public/config.local.php',
+		'public/config.secrets.php',
+		'public/config.secrets.local.php',
+		'public/engine/*',
+		'public/mvc/*',
+		'public/themes/*',
+		'public/languages/*',
+	],
+	'forbidden_project_locations' => [
+		'SKEL80/kernel/* for project-specific business rules',
+		'SKEL80/classes/* for project-only delivery behavior',
+		'SKEL80/events/* for project-only theme logic',
+	],
+	'mixed_hotspots' => [
+		['path' => 'public/ed_field.php', 'reason' => 'Legacy editor endpoint crosses overlay, auth, forms and content mutation.'],
+		['path' => 'public/more.php', 'reason' => 'Legacy feed endpoint crosses transport, block assembly and HTML rendering.'],
+		['path' => 'public/mvc/controllers/', 'reason' => 'Historical preprocessors still own request decisions plus some delivery branching.'],
+		['path' => 'public/mvc/views/', 'reason' => 'Historical responders still mix data preparation with markup.'],
+	],
+];

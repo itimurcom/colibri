@@ -29,3 +29,11 @@
 - Added NULL-safe JSON/HTML decode handling in `itMySQL` and `isJson()`.
 - Converted legacy short tags in SKEL80/public PHP files to `<?php` so runtime no longer depends on `short_open_tag`.
 - Added explicit properties for frequently hit dynamic-property legacy classes used during runtime.
+
+## M0 / P13 explicit core overlay boundaries bundle
+- Formalized runtime ownership model: shared core, project bootstrap, project overlay, project delivery, mixed hotspots.
+- Added runtime boundary map and lifecycle contract under `SKEL80/kernel/runtime_boundaries.php` and `SKEL80/kernel/runtime_contract.php`.
+- Added `public/engine/overlay_contract.php` with Colibri-specific responsibilities, extension points and hotspot declarations.
+- Added boundary manifests directly inside key directories so a developer can open a folder and immediately see ownership.
+- Updated `SKEL80/run.php` to load and expose boundary/contract data during bootstrap.
+- Added Stage 3 docs: platform contract, boundary map, extension points and mixed hotzones.

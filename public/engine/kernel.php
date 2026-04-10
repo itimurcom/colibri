@@ -11,6 +11,9 @@ define ('ENGINE_VERSION_DATE','25 May 2021');
 
 define('ENGINE_VERSION',ENGINE_VERSION_VAL." ".ENGINE_VERSION_DATE);
 
+// project overlay contract is declared in public/engine/overlay_contract.php
+// it is loaded by SKEL80/run.php after USER_ENGINE_PATH is resolved
+
 // путь к SKELETON
 // require "engine/core/skeleton/run.php";
 $skel80RunPath = dirname(__DIR__, 2).'/SKEL80/run.php';
