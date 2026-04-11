@@ -1,4 +1,4 @@
-<?php 
+<?php
 global $_SETTINGS;
 $calc_cat['ITEM_CALC']['fields']['quantity'] = array
 	(
@@ -11,12 +11,6 @@ $calc_cat['ITEM_CALC']['fields']['quantity'] = array
 	'show'		=> 1
 	);
 
-//..........
-// кристалы 
-//..........
-
-// Стразы SWAROVSKI (Австрия )
-// Crystal (10.00 $/100шт)
 $calc_cat['ITEM_CALC']['fields']['swarowski_crystal'] = array
 	(
 	'name'		=> 'swarowski_crystal',
@@ -39,8 +33,6 @@ $calc_cat['ITEM_CALC']['fields']['swarowski_crystal'] = array
 	'show'		=> 1
 	);
 
-// Стразы SWAROVSKI (Австрия)
-// AB и цветные (12.00 $/100шт)
 $calc_cat['ITEM_CALC']['fields']['swarowski_ab'] = array
 	(
 	'name'		=> 'swarowski_ab',
@@ -63,8 +55,6 @@ $calc_cat['ITEM_CALC']['fields']['swarowski_ab'] = array
 	'show'		=> 1
 	);
 
-// Средние стразы SWAROVSKI
-// Форма, капля, овал, круг, восьмигранник (1.00$/шт)
 $calc_cat['ITEM_CALC']['fields']['swarowski_middle'] = array
 	(
 	'name'		=> 'swarowski_middle',
@@ -76,9 +66,6 @@ $calc_cat['ITEM_CALC']['fields']['swarowski_middle'] = array
 	'show'		=> 1
 	);
 
-
-// Большие стразы SWAROVSKI
-// Форма ромб, капля, овал, треугольник, прямоугольник (2.00 $/шт)
 $calc_cat['ITEM_CALC']['fields']['swarowski_big'] = array
 	(
 	'name'		=> 'swarowski_big',
@@ -90,8 +77,6 @@ $calc_cat['ITEM_CALC']['fields']['swarowski_big'] = array
 	'show'		=> 1
 	);
 
-// DMS
-// ss16\ss20 хрустальные (4.00 $/шт)
 $calc_cat['ITEM_CALC']['fields']['dms_hrustal'] = array
 	(
 	'name'		=> 'dms_hrustal',
@@ -114,8 +99,6 @@ $calc_cat['ITEM_CALC']['fields']['dms_hrustal'] = array
 	'show'		=> 1
 	);
 
-// DMS
-// ss16\ss20 AB или цвет (5.00 $/шт)
 $calc_cat['ITEM_CALC']['fields']['dms_ab'] = array
 	(
 	'name'		=> 'dms_ab',
@@ -138,8 +121,6 @@ $calc_cat['ITEM_CALC']['fields']['dms_ab'] = array
 	'show'		=> 1
 	);
 
-// ЗЕРКАЛА
-// Пришиваемые акриловые зеркала – Малые = 0,5$
 $calc_cat['ITEM_CALC']['fields']['acrylic_small'] = array
 	(
 	'name'		=> 'acrylic_small',
@@ -151,7 +132,6 @@ $calc_cat['ITEM_CALC']['fields']['acrylic_small'] = array
 	'show'		=> 1
 	);
 
-// Пришиваемые акриловые зеркала – Большие = 1$
 $calc_cat['ITEM_CALC']['fields']['acrylic_large'] = array
 	(
 	'name'		=> 'acrylic_large',
@@ -163,9 +143,6 @@ $calc_cat['ITEM_CALC']['fields']['acrylic_large'] = array
 	'show'		=> 1
 	);
 
-
-// Декорирование жемчугом 
-// Разного диаметра (4.00 $/100шт)
 $calc_cat['ITEM_CALC']['fields']['swarowski_zhemch'] = array
 	(
 	'name'		=> 'swarowski_zhemch',
@@ -188,10 +165,6 @@ $calc_cat['ITEM_CALC']['fields']['swarowski_zhemch'] = array
 	'show'		=> 1
 	);
 
-
-//.................
-// способ доставки
-//.................
 $calc_cat['ITEM_CALC']['fields']['delivery'] = array
 	(
 	'name'		=> 'delivery',
@@ -205,9 +178,6 @@ $calc_cat['ITEM_CALC']['fields']['delivery'] = array
 	'show'		=> 0
 	);
 
-//........
-// валюта
-//........
 $calc_cat['ITEM_CALC']['fields']['rate'] = array
 	(
 	'name'		=> 'rate',

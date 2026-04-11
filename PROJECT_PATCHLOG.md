@@ -24,3 +24,9 @@
   - replaced per-row mail history modal/forms with one shared preview modal in `engine_mails.php`
   - extracted calculator/mail-status helper handlers in `public/ed_field.php`
   - added shared runtime helpers for encrypted payload decode and JSON responses
+
+- M0 / P20 itForm2 cleanup refactor bundle
+  - removed legacy comment noise and dead commented code from `SKEL80/classes/f2/itForm2.class.php`
+  - introduced shared helpers for field/button collection insert/sort/move logic inside `itForm2`
+  - reformatted alias wrapper methods for cleaner visual structure
+  - fixed `_reCaptcha()` session key lookup and corrected button collection move/insert behavior

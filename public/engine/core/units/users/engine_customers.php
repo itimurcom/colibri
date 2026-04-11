@@ -1,7 +1,4 @@
-<?php 
-//..............................................................................
-// функция проверки email на вхождение
-//..............................................................................
+<?php
 function customer_by_email($email=NULL, $table_name=DEFAULT_USER_TABLE, $db_prefix=DB_PREFIX)
 	{
 	if (empty($email)) return;
@@ -10,9 +7,6 @@ function customer_by_email($email=NULL, $table_name=DEFAULT_USER_TABLE, $db_pref
 		: false;
 	}
 
-//..............................................................................
-// функция проверки phone на вхождение
-//..............................................................................
 function customer_by_phone($phone=NULL, $table_name=DEFAULT_USER_TABLE, $db_prefix=DB_PREFIX)
 	{
 	if (empty($phone)) return;
@@ -25,12 +19,9 @@ function customer_by_phone($phone=NULL, $table_name=DEFAULT_USER_TABLE, $db_pref
 	$sql = "SELECT * FROM `{$db_prefix}{$table_name}` WHERE `phone`='{$phone}' OR `phone`='+{$phone}' LIMIT 1";
 	return is_array($request = itMySQL::_request($sql))
 		? $request[0]
-		: false;		
+		: false;
 	}
 
-//..............................................................................
-// вход через pin код
-//..............................................................................
 function user_by_pin($pincode=NULL, $table_name=DEFAULT_PIN_TABLE, $db_prefix=DB_PREFIX)
 	{
 	return  (is_array($request = itMySQL::_request("SELECT * FROM `{$db_prefix}{$table_name}` WHERE `pin`='{$pincode}' LIMIT 1")))
@@ -40,14 +31,11 @@ function user_by_pin($pincode=NULL, $table_name=DEFAULT_PIN_TABLE, $db_prefix=DB
 		: NULL;
 	}
 
-//..............................................................................
-// вход через pin код
-//..............................................................................
 function create_pin($customer=NULL)
 	{
 	if (!defined('HTTP_PATH'))
 		define('HTTP_PATH', 'https://'.$_SERVER['HTTP_HOST'].'/');
-		
+
 	global $_SETTINGS;
 
 	$pincode = rand_id();
@@ -56,9 +44,8 @@ function create_pin($customer=NULL)
 		'expire'	=> get_mysql_datetime(strtotime('+5 min')),
 		'pin'		=> $pincode,
 		];
-	
-	itMySQL::_insert_rec('pins', $values_arr);
 
+	itMySQL::_insert_rec('pins', $values_arr);
 
 	$m_code = [
 		'prepared'	=> mstr_replace([
@@ -72,7 +59,7 @@ function create_pin($customer=NULL)
 	itMailTemplate::_code($m_code, false);
 
 	$mails[] =[
-	'from'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),	
+	'from'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
 	'to'		=> trim($customer['email']),
 	'reply'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
 	'subject'	=> $m_code['subject'],
@@ -85,13 +72,10 @@ function create_pin($customer=NULL)
 
 	$o_mailer = new itMailer();
 	unset($o_mailer);
-	
+
 	return $pincode;
 	}
 
-//..............................................................................
-// добавляем нового пользователя
-//..............................................................................
 function register_customer()
 	{
 	$values_arr = [
@@ -104,31 +88,24 @@ function register_customer()
 		'status'	=> 'NOACTIVE',
 		'data'		=> $_REQUEST,
 		];
-	
+
 	$values_arr['id'] = itMySQL::_insert_rec('users', $values_arr);
 	return $values_arr;
 	}
 
-//..............................................................................
-// добавляем нового пользователя
-//..............................................................................
 function update_customer($id_of_user=NULL)
 	{
 	$id_of_user = !is_null($id_of_user) ? $id_of_user : $_REQUEST['rec_id'];
 	$values_arr = [
-// 		'email'		=> $_REQUEST['email'],
 		'phone'		=> $_REQUEST['phone'],
 		'name'		=> $_REQUEST['name'],
 		'social'	=> $_REQUEST['address'],
 		'description'	=> ready_val($_REQUEST['select10']),
 		];
-	
+
 	itMySQL::_update_db_rec($_REQUEST['table_name'], $id_of_user, $values_arr);
 	}
-	
-//..............................................................................
-// javascript данных пользователя в форму
-//..............................................................................
+
 function js_replace_userdata()
 	{
 	global $_USER;
@@ -138,9 +115,9 @@ function js_replace_userdata()
 		'phone'		=> $_USER->data['phone'],
 		'email'		=> $_USER->data['email'],
 		'address' 	=> $_USER->data['social'],
-		'country' 	=> $_USER->data['social'],				
+		'country' 	=> $_USER->data['social'],
 		];
-	
+
 	if (is_array($_USER->data['data']))
 		foreach($_USER->data['data'] as $key=>$row)
 			{
@@ -156,12 +133,9 @@ function js_replace_userdata()
 			$do_replace .= "update_f2_input('{$key}', '{$value}');\n";
 			}
 	$do_replace .= "} upd_user();";
-	
+
 	return $do_replace;
 	}
-//..............................................................................
-// javascript данных пользователя в форму - PHP версия
-//..............................................................................
 function update_userdata_script()
 	{
 	global $_USER;

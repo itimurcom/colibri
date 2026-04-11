@@ -1,16 +1,12 @@
-<?php 
-//..............................................................................
-// возвращает список желаний
-//..............................................................................
+<?php
 function transfer_wishlist()
 	{
 	global $_USER;
-	
+
 	if($_USER->is_logged('ANY'))
 		{
 		if (isset($_SESSION['wishlist']) AND is_array($_SESSION['wishlist']))
 			{
-			// трансфер
 			if (is_array($wish_list =  load_wishlist($_USER->data['id'])))
 				{
 				$wish_list = array_unique(array_values(array_merge($wish_list, $_SESSION['wishlist'])));
@@ -23,9 +19,6 @@ function transfer_wishlist()
 		}
 	}
 
-//..............................................................................
-// функция загружает из базы список желаний для пользователя
-//..............................................................................
 function load_wishlist($id_of_user=NULL)
 	{
 	return (is_array($wish_list = itMySQL::_request("SELECT * FROM `colibri_wishlist` WHERE `user_id`='{$id_of_user}'")))
@@ -33,9 +26,6 @@ function load_wishlist($id_of_user=NULL)
 		: [];
 	}
 
-//..............................................................................
-// функция сохраняет в базу список желаний для пользователя
-//..............................................................................
 function store_wishlist($id_of_user=NULL, $wish_arr=NULL)
 	{
 	if (is_array($wish_list = itMySQL::_request("SELECT * FROM `colibri_wishlist` WHERE `user_id`='{$id_of_user}'")))
@@ -49,9 +39,6 @@ function store_wishlist($id_of_user=NULL, $wish_arr=NULL)
 			}
 	}
 
-//..............................................................................
-// возвращает список желаний
-//..............................................................................
 function wishlist($forced=false)
 	{
 	if (!$forced AND !in_array($_REQUEST['controller'], str_getcsv(get_const('ALOW_WISHLIST')))) return;
@@ -61,28 +48,25 @@ function wishlist($forced=false)
 			TAB."<div class='title'>".get_const('ITEM_WHISHLIST').BR.
 				"<small>( ".str_replace('[VALUE]', $counter, get_const('PROPOSITONS_TITLE'))." )</small>".
 				TAB."</div>".
-			get_wishlist_event().			
+			get_wishlist_event().
 			$result.
 			TAB."</div>"
 		: NULL;
 	}
 
-//..............................................................................
-// тело списка желаний
-//..............................................................................
 function wishlist_body(&$counter)
 	{
 	global $_USER, $prepared_arr;
 	$result = NULL;
 	$counter = 0;
-	
+
 	$wish_arr = $_USER->is_logged('ANY')
 		? $prepared_arr['wishlist']
 		: ( (isset($_SESSION['wishlist']) AND is_array($_SESSION['wishlist']))
 			? $_SESSION['wishlist']
 			: NULL
 		);
-		
+
 	if (is_array($wish_arr))
 		{
 		$id = 0;
@@ -96,26 +80,20 @@ function wishlist_body(&$counter)
 				}
 			}
 		}
-	return $result;	
+	return $result;
 	}
 
-//..............................................................................
-// возвращает списко желаний
-//..............................................................................
 function wish_btn($row)
 	{
 	$data = itEditor::event_data([
 		'rec_id'	=> $row['id'],
 		'op'		=> 'wish',
 		]);
-	
+
 	$on = is_wish($row['id']) ? " on" : NULL;
-	
+
 	return TAB."<div class='wish shadow{$on}' rel='{$row['id']}' data='{$data}' onclick='add_whishlist(this);'></div>";
 	}
-//..............................................................................
-// добавляет товар в список желаний
-//..............................................................................
 function wish($data)
 	{
 	global $_USER, $prepared_arr;
@@ -131,7 +109,7 @@ function wish($data)
 			} else	{
 				 $prepared_arr['wishlist'] = [$data['rec_id']];
 				}
-			
+
 		store_wishlist($_USER->data['id'],  $prepared_arr['wishlist']);
 		} else {
 			if (($key = array_search($data['rec_id'], $_SESSION['wishlist'])) !== false) {
@@ -143,25 +121,19 @@ function wish($data)
 			}
 	}
 
-//..............................................................................
-// проверка или в списке желаний
-//..............................................................................
 function is_wish($item_id=NULL)
 	{
 	global $_USER, $prepared_arr;
-	
+
 	if ($_USER->is_logged('ANY'))
 		{
 		return(is_array($prepared_arr['wishlist']) AND in_array($item_id, $prepared_arr['wishlist']));
 		} else {
 			return (array_search($item_id, $_SESSION['wishlist'])!==false);
 			}
-		
+
 	}
 
-//..............................................................................
-// удаляет товар из списока желаний
-//..............................................................................
 function wishlist_x($data)
 	{
 	global $_USER;
@@ -176,23 +148,17 @@ function wishlist_x($data)
 			}
 	}
 
-//..............................................................................
-// событие очищает список желаний
-//..............................................................................
 function get_wishlist_event()
 	{
 	$o_button = new itButton(get_const('BUTTON_CLEAR'), 'a', ['class' => 'lastseen', 'ajax' => 'clearwhish();'], 'white', 'clearwish');
 	$result = $o_button->code();
 	unset($o_button);
-	return 
+	return
 		TAB."<div class='ls_btn'>".
 		$result.
 		TAB."</div>";
 	}
-	
-//..............................................................................
-// функция очищает список желаний
-//..............................................................................
+
 function clear_wishlist()
 	{
 	global $_USER;

@@ -1,7 +1,4 @@
 <?php
-//..............................................................................
-// модифицирует фильтр цвета для пользователей
-//..............................................................................
 function set_color_filter($color=NULL)
 	{
 	if ($color=='NULL')
@@ -12,33 +9,29 @@ function set_color_filter($color=NULL)
 		{
 		unset($_SESSION['filter']['colors'][$color]);
 		} else $_SESSION['filter']['colors'][$color] = 1;
-		
+
 	if (empty($_SESSION['filter']['colors']))
 		{
 		unset($_SESSION['filter']['colors']);
 		}
 	}
-	
-//..............................................................................
-// возвращает поле выборки по цвету
-//..............................................................................
+
 function filter_color_selector()
 	{
 	global $item_colors, $color_seq;
-	
+
 	$color_seq = 0;
-	
+
 	if (is_array($item_colors))
 		{
 		$result = TAB."<div class='col_selector boxed' data-sequence='35'>".
-//			TAB."<span class='col_sel_title'>".get_const('SELECT_COLOR')." : </span>".
 			TAB."<div class='color_set'>";
-		
+
 		foreach ($item_colors as $key=>$row)
 			{
 			$result .= get_color_selector_row($row);
 			}
-			
+
 		$color_seq++;
 		$result .= TAB."<span class='col_sel no_shadow rounded' data-id='{$color_seq}' title='".get_const('CLEAR_COLOR')."' onclick=\"select_filter('NULL','');\"></span>".
 			TAB."</div>".
@@ -46,10 +39,7 @@ function filter_color_selector()
 		}
 	return $result;
 	}
-	
-//..............................................................................
-// возвращает одно поле селектора фильтра цветов
-//..............................................................................
+
 function get_color_selector_row($row)
 	{
 	global $color_seq;
@@ -58,13 +48,10 @@ function get_color_selector_row($row)
 	return ($row['show']==1) ? TAB."<span class='col_sel{$selected} rounded' data-id='{$color_seq}' title='".get_const($row['title'])."' style='background:{$row['color']};' onclick=\"select_filter('{$row['value']}', '');\"></span>" : "";
 	}
 
-//..............................................................................
-// возвращает поле выборки по цвету для товара
-//..............................................................................
 function filter_item_color_selector($item_rec)
 	{
 	global $_USER, $item_colors;
-	
+
 	$result = NULL;
 
 	if ($_USER->is_logged())
@@ -73,9 +60,8 @@ function filter_item_color_selector($item_rec)
 			{
 			$result =
 				TAB."<div class='col_selector boxed'>".
-//				TAB."<span class='col_sel_title'>".get_const('SELECT_COLOR')." : </span>".
 				TAB."<div class='color_set'>";
-		
+
 			foreach ($item_colors as $key=>$row)
 				{
 				$selected = (is_array($item_rec['filter_xml']) and in_array($row['value'], $item_rec['filter_xml'])) ? " selected" : "";
@@ -98,13 +84,12 @@ function filter_item_color_selector($item_rec)
 				TAB."</div>";
 			}
 		} else	{
-			// это посетитель - просто покажем выбранные цвета
 			if (is_array($item_rec['filter_xml']))
 				{
 				$result =
 					TAB."<div class='col_selector item'>".
 					TAB."<div class='subselect'>".get_const('COLOR_SELECTOR')." :</div>".
-					TAB."<div class='color_set'>";					
+					TAB."<div class='color_set'>";
 				foreach ($item_rec['filter_xml'] as $key=>$row)
 					{
 					if (isset($item_colors[$row]))
@@ -113,7 +98,7 @@ function filter_item_color_selector($item_rec)
 						$result .= "<span class='col_sel rounded small' title='".get_const($item_colors[$row]['title'])."' style='background:{$item_colors[$row]['color']};' {$onclick});\"></span>";
 						}
 					}
-				$result .= 
+				$result .=
 					TAB."</div>".
 					TAB."</div>";
 				}
@@ -124,19 +109,15 @@ function filter_item_color_selector($item_rec)
 			TAB."</div>"
 		: NULL;
 	}
-	
-//..............................................................................
-// возвращает поле цветовой гаммы товара
-//..............................................................................
+
 function item_color_selector($item_rec)
 	{
 	global $_USER, $item_colors;
-		
+
 	$result = '';
-	
+
 	if ($_USER->is_logged())
 		{
-		// это администратор, делаем кнопки для выбора цвета в базе
 		if (is_array($item_colors))
 			{
 			$result =
@@ -148,7 +129,7 @@ function item_color_selector($item_rec)
 					'id'	=> $item_rec['id'],
 					'value'	=> $row['value'],
 					]));
-					
+
 				$selected = (is_array($item_rec['filter_xml']) and in_array($row['value'], $item_rec['filter_xml'])) ? " selected" : "";
 				$result .= TAB."<span class='col_sel{$selected}' rel='{$options}' style='background:{$row['color']};' title='".get_const($row['title'])."' onclick=\"select_item_color(this);\"></span>";
 				}
@@ -157,18 +138,17 @@ function item_color_selector($item_rec)
 				'value'	=> NULL,
 				]));
 
-			$result .= 
+			$result .=
 				TAB."<span class='col_sel no_shadow' rel='{$options}' title='".get_const('CLEAR_COLOR')."' onclick=\"select_item_color(this);\" clear></span>".
 				TAB."</div>".
 				TAB."</div>";
 			}
 		} else	{
-			// это посетитель - просто покажем выбранные цвета
 			if (is_array($item_rec['filter_xml']))
 				{
 				$result =
 					TAB."<div class='col_selector' id='col_selector'>".
-					TAB."<div class='color_set'>";					
+					TAB."<div class='color_set'>";
 				foreach ($item_rec['filter_xml'] as $key=>$row)
 					{
 					if (isset($item_colors[$row]))
@@ -177,7 +157,7 @@ function item_color_selector($item_rec)
 						$result .= "<span class='col_sel' title='".get_const($item_colors[$row]['title'])."' style='background:{$item_colors[$row]['color']};' {$onclick});\"></span>";
 						}
 					}
-				$result .= 
+				$result .=
 					TAB."</div>".
 					TAB."</div>";
 				}
@@ -185,13 +165,10 @@ function item_color_selector($item_rec)
 	return !empty($result) ? "<span class='col_sel_title'>".get_const('COLOR_SELECTOR')." : </span>".$result : "";
 	}
 
-//..............................................................................
-// устанавливает флаг цвета для товара
-//..............................................................................
 function set_item_color($item_id=NULL, $value=NULL)
-	{	
+	{
 	$item_rec = itMySQL::_get_rec_from_db('items', $item_id);
-	
+
 	$item_rec['filter_xml'] = !is_array($item_rec['filter_xml']) ? [] : $item_rec['filter_xml'];
 
 	if(is_array($item_rec['filter_xml']) and (($key = array_search($value, $item_rec['filter_xml'])) !== false))
@@ -203,19 +180,14 @@ function set_item_color($item_id=NULL, $value=NULL)
 				$item_rec['filter_xml'][] = $value;
 				} else $item_rec['filter_xml']=[];
 			}
-		
-	itMySQL::_update_value_db('items', $item_id, $item_rec['filter_xml'], 'filter_xml');		
-	}
-	
 
-//..............................................................................
-// селектор сортровки товаров
-//..............................................................................
+	itMySQL::_update_value_db('items', $item_id, $item_rec['filter_xml'], 'filter_xml');
+	}
+
 function get_items_sort_selector()
 	{
-// 	$o_form = new itForm2();
-	
-	$prepared_arr['itemsort'] = 
+
+	$prepared_arr['itemsort'] =
 		[
 			0 => [
 				'title'		=> get_const('NEWFIRST_TITLE'),
@@ -232,9 +204,7 @@ function get_items_sort_selector()
 				'value'		=> 'price_down',
 			],
 		];
-		
-// 	$o_form->add_field(get_items_price_selector());
-	
+
 	if (isset($prepared_arr['itemsort']))
 		{
 		$options = [
@@ -243,48 +213,30 @@ function get_items_sort_selector()
 			'values'	=> 'value',
 			'name'		=> 'sort',
 			'compact'	=> true,
-// 			'form'		=> $o_form->form_id(),
-// 			'type'		=> 'select',
 			'value'		=> ready_val($_SESSION['filter']['sort']),
 			'no_label'	=> true,
 			'ajax'		=> 'sort_price(this);',
 			'element_id'	=> 'sortsel',
-			];			
-		
+			];
+
 		$o_selector = new itSelector($options);
 		$result = $o_selector->code();
-// 		$o_form->add_itSelector($options);
 		}
 
-/*
-	$o_form->add_data([
-		'table_name'	=> DEFAULT_ITEM_TABLE,
-		'op'		=> 'itemsort',
-		]));	
-	$o_form->compile();
-	$result = $o_form->code();
-	unset($o_form);
-*/
-	
-	return 
+	return
 		$result.
-// 		"<script>$('#sortsel).on('hidden.bs.dropdown',function(){alert(1);});</script>".
 		"";
 	}
 
-
-//..............................................................................
-// селектор стоимости ленты товаров
-//..............................................................................
 function get_items_price_selector($table_name='items', $db_prefix=DB_PREFIX)
 	{
 	$step = 10;
-	
+
 	$sql = "SELECT MAX(`price`) as max, MIN(`price`) AS min FROM `{$db_prefix}{$table_name}` WHERE`status`='PUBLISHED'";
 	$request=itMySQL::_request($sql);
-	
+
 	$db_min = $request[0]['min'] - ($request[0]['min'] % $step);
-	$db_max = $step*ceil($request[0]['max']/$step);	
+	$db_max = $step*ceil($request[0]['max']/$step);
 
 	$min = ready_val($_SESSION['filter']['min']) ? $_SESSION['filter']['min'] : $db_min;
 	$max = ready_val($_SESSION['filter']['max']) ? $_SESSION['filter']['max'] : $db_max;
@@ -319,12 +271,9 @@ function get_items_price_selector($table_name='items', $db_prefix=DB_PREFIX)
 	</div>");
 	}
 
-//..............................................................................
-// селектор выборки ленты товаров
-//..............................................................................
 function feed_selector()
 	{
-	return 
+	return
 		TAB."<div class='feed_selector_div boxed'>".
 			TAB."<div class='feed_color boxed'>".
 				filter_color_selector().
@@ -336,6 +285,6 @@ function feed_selector()
 				get_items_sort_selector().
 			TAB."</div>".
 		TAB."</div>";
-		
+
 	}
 ?>

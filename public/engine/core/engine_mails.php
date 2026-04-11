@@ -1,13 +1,9 @@
 <?php
 define('SEND_USER_MAILS', 0);
-//define('DEFAULT_ORDER_TABLE', 'orders');
 
 define('NOT_PINCODE'," AND `subject` NOT REGEXP ('PIN')");
 define('HAS_PINCODE'," AND `subject` REGEXP ('PIN')");
 
-//..............................................................................
-// возвращает строку полного адреса
-//..............................................................................
 function get_full_address_request()
 	{
 	return "<div style='margin-top:0 16px;'><span style='color: blue;'>".get_const('FULL_ADDRESS_TITLE')."&nbsp;:</span>&nbsp;".
@@ -19,9 +15,6 @@ function get_full_address_request()
 		(!empty($_REQUEST['index']) ? ", ".$_REQUEST['index'] : NULL).
 		"</div>";
 	}
-//..............................................................................
-// выполняет подстановки кода для замены данных при отправке письма
-//..............................................................................
 function mailtemplate_script(&$options)
 	{
 	$name_of_user = isset($options['user_id'])
@@ -29,17 +22,12 @@ function mailtemplate_script(&$options)
 		: ( (isset($options['name']) AND !empty($options['name']))
 			? "<b>{$options['name']}</b>"
 			: "<b>".get_const('TRADER')."</b>" );
-		
+
 	$str_of_user = isset($options['user_id'])
 		? "<a target='blank' style='color:blue;' href='http://{$_SERVER['HTTP_HOST']}/".CMS_LANG."/user/{$options['user_id']}/'>{$name_of_user}</a>"
 		: $name_of_user;
-		
+
 	$options['prepared'] = mstr_replace([
-//		'[USER]'	=> $str_of_user,
-//		'[ADMIN]'	=> "<a target='blank' style='color:blue;' href='http://{$_SERVER['HTTP_HOST']}/".CMS_LANG."/user/".DEFAULT_ADMIN_ID."/'>".itUser::get_name(DEFAULT_ADMIN_ID)."</a>",
-//		'[CHAT]'	=> "<a target='blank' style='color:blue;' href='http://{$_SERVER['HTTP_HOST']}/".CMS_LANG."/chat/'>".get_const('NODE_CHAT')."</a>",
-//		'[CHATPRO]'	=> "<a target='blank' style='color:blue;' href='http://{$_SERVER['HTTP_HOST']}/".CMS_LANG."/chat/pro/'>".get_const('NODE_PRO_CHAT')."</a>",
-//		'[REG]'		=> "<a target='blank' style='color:blue;' href='http://{$_SERVER['HTTP_HOST']}/".CMS_LANG."/register/'>".get_const('BUTTON_REGISTER')."</a>",
 		'[B]'		=> "<b>",
 		'[/B]'		=> "</b>",
 		'[RED]'		=> "<font color='red'>",
@@ -50,26 +38,23 @@ function mailtemplate_script(&$options)
 		'[/GREEN]'	=> "</font>",
 		'[/COLOR]'	=> "</font>",
 		'[BIG]'		=> "<h1>",
-		'[/BIG]'	=> "</h1>",		
+		'[/BIG]'	=> "</h1>",
 		'[SMALL]'	=> "<small>",
-		'[/SMALL]'	=> "</small>",		
+		'[/SMALL]'	=> "</small>",
 		'[GAL]'		=> "<style>.gal .galcell {flex: 1 1 auto;}</style><div class='gal' style='display: flex;'>",
-		'[/GAL]'	=> "</div>",		
+		'[/GAL]'	=> "</div>",
 		'> '		=> '>',
-		
+
 		], $options['prepared']);
-		
+
 	return $options['prepared'];
 	}
-//..............................................................................
-// отправляет результат формы на почту
-//..............................................................................
 function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TABLE)
 	{
 	global $_SETTINGS, $_MEASURMENT;
 	$subject_user = NULL;
 	$prepared_title = NULL;
-	
+
 	switch ($form_id)
 		{
 		case FORM2_CONTACTS : {
@@ -77,16 +62,15 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 			$subject_admin 	= ADMIN_CONTACT_ACCEPT_TITLE;
 			$address	= false;
 			$agryment 	= false;
-			
+
 			$prepared_title	=
 					"<div style='font-size:1.2em; margin-top:16px; font-weight:bold;color:brown;'>СООБЩЕНИЕ от {$_REQUEST['name']}</div>".
 					"<div class='info'><span class='label'>email</span>&nbsp;:&nbsp;{$_REQUEST['email']}</div>".
 					"";
-			break;		
+			break;
 			}
-			
+
 		case FORM2_ORDER : {
-//			$subject_user 	= USER_ORDER_ACCEPT_TITLE;
 			$subject_admin 	= ADMIN_ORDER_ACCEPT_TITLE;
 			$address	= true;
 			$agryment 	= true;
@@ -96,7 +80,7 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 					"<div class='info'><span class='label'>email</span>&nbsp;:&nbsp;{$_REQUEST['email']}</div>".
 					"";
 			break;
-			}			
+			}
 
 		case FORM2_BUY : {
 			$subject_user 	= USER_BUY_ACCEPT_TITLE;
@@ -109,27 +93,25 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 					"<div class='info'><span class='label'>email</span>&nbsp;:&nbsp;{$_REQUEST['email']}</div>".
 					"";
 			break;
-			}			
+			}
 
 		case FORM2_MEASUREMENT :
 		case FORM2_MEASUREMENT2 :
 		case FORM2_MEASUREMENT3 :
 		case FORM2_MEASUREMENT4 :
-		case FORM2_MEASUREMENT5 :				
+		case FORM2_MEASUREMENT5 :
 			{
 			$meas = $form_id - FORM2_MEASUREMENT + 1;
-//			echo print_rr($_REQUEST); die;
-//			$subject_user 	= USER_MEASUREMENT_ACCEPT_TITLE;
 			$subject_admin 	= str_replace('[VALUE]',
 				$meas,
 				ADMIN_MEASUREMENT_ACCEPT_TITLE).(isset($_REQUEST['order']) ? " № {$_REQUEST['order']} от {$_REQUEST['email']}" : NULL);
 			$address	= false;
 			$agryment 	= false;
-			
+
 			$title_color 	= isset($_MEASURMENT[$form_id]['mailcolor'])
 				? $_MEASURMENT[$form_id]['mailcolor']
 				: 'blue';
-			
+
 			$prepared_title	=
 					"<div style='font-size:1.2em; margin-top:16px; font-weight:bold;color:{$title_color};'>МЕРКИ тип {$meas} для {$_REQUEST['order']}</div>".
 					"<div class='info'><span class='label'>email</span>&nbsp;:&nbsp;{$_REQUEST['email']}</div>";
@@ -144,53 +126,40 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 			'empty'		=> false,
 			]);
 
-//------------------
-	// подготовим письмо пользователю
 	$mail_of_user = [
 		'prepared'	=>
-			"<div style='{$inline_style}'>".	
+			"<div style='{$inline_style}'>".
 			implode('', $request).
 			($agryment ? "<div style='color:green;'><b>".str_replace("\n", "<br/><br/>","\n".USER_AGREEMENT)."</b></div>" : NULL).
 			"</div>",
 		'subject'	=> $subject_user,
 		];
-	
-//	echo $mail_of_user['prepared']; die;
-	
+
 	$now = mysql_now();
-	
 
 	itMailTemplate::_code($mail_of_user);
-				
-//------------------
+
 	if (SEND_USER_MAILS)
 		{
 	$mails[] =[
-//		'from'		=> CMS_NAME."<stylecolibri@gmail.com>",
 		'from'		=> $_SETTINGS['SITE_ADMIN_EMAIL']['value'],
-		//"<stylecolibri@gmail.com>",
-//		'reply'		=> "ateliecolibri@gmail.com",
 		'to'		=> $_REQUEST['email'],
 		'subject'	=> $subject_of_user,
-//		'subject'	=> CMS_NAME.' | '.$subject_user,//." #{$i}",
 		'message'	=> $mail_of_user['result'],
 		];
 		}
-//------------------	
 
-//------------------
-	// подготовим письмо администратору
 	$admin_mail = [
 		'prepared'	=>
-			"<div style='{$inline_style}'>".	
+			"<div style='{$inline_style}'>".
 			"<div>{$prepared_title}</div><br/>".
 			implode('', $request).
 			($address ? get_full_address_request() : NULL).
 			"</div>",
 		'subject'	=> $subject_admin,
 		];
-	
-	itMailTemplate::_code($admin_mail);	
+
+	itMailTemplate::_code($admin_mail);
 
 	if (isset($_REQUEST['articul']) AND ($item_rec = get_item_from_articul($_REQUEST['articul'])))
 		{
@@ -200,7 +169,7 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 		}
 
 	$mails[] =[
-		'from'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),	
+		'from'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
 		'to'		=> trim($_SETTINGS['SITE_ADMIN_EMAIL']['value']),
 		'reply'		=> trim($_REQUEST['email']),
 		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)",strtotime($now), CMS_LANG)." {$subject_admin}",
@@ -209,27 +178,22 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 		'password'	=> trim($_SETTINGS['SITE_SMTP_PASSWORD']['value']),
 		];
 
-//	echo print_rr($mails); die;
 	itMailings::_send_arr($mails, true);
-	
+
 	$o_mailer = new itMailer();
 	unset($o_mailer);
-//------------------
-	
+
 	return
 		(!is_null($subject_of_user)
 			? 	TAB."<div class='tit'>".
 				CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)",strtotime($now), CMS_LANG).
 				$subject_of_user.
-				"</div>" 
+				"</div>"
 			: NULL).
 		TAB."<div class='mailsend boxed'>{$mail_of_user['result']}</div>".
 		"";
 	}
 
-//..............................................................................
-// строка истории сообщений на выбранный email
-//..............................................................................
 function get_mailing_history_feed_options($email=NULL)
 	{
 	$base = !is_null($email) ? "`to`='$email'" : '1';
@@ -273,9 +237,6 @@ function render_mailing_history_feed_panel($name, $title, $condition)
 	];
 	}
 
-//..............................................................................
-// panel for sent forms and mails history
-//..............................................................................
 function mailing_history_panel($email=NULL)
 	{
 	$panels = [];
@@ -313,9 +274,6 @@ function mailing_history_panel($email=NULL)
 		TAB."</div>";
 	}
 
-//..............................................................................
-// one row of mails history panel
-//..............................................................................
 function get_mailing_history_feed_row($row)
 	{
 	global $mailers, $_MEASURMENT;
@@ -373,9 +331,6 @@ function get_mailing_history_feed_row($row)
 		TAB."</div>";
 	}
 
-//..............................................................................
-// lightweight launcher for shared preview modal
-//..............................................................................
 function get_mail_preview_event($row=NULL)
 	{
 	$mail_id = intval($row['id']);
@@ -383,9 +338,6 @@ function get_mail_preview_event($row=NULL)
 	return TAB."<a href='#/' data-reveal-id='mail-history-modal' class='green' onclick='return skel80OpenMailHistoryModal(this);' data-mail-id='{$mail_id}' data-mail-status='{$status}'>👁</a>";
 	}
 
-//..............................................................................
-// one shared modal for all mail history rows
-//..............................................................................
 function get_mailing_history_shared_modal()
 	{
 	$ok_label = get_const('BUTTON_OK');

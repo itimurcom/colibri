@@ -1,13 +1,7 @@
 <?php
-//..............................................................................
-// панель меню для всего проекта
-//..............................................................................
 function get_menus_block()
 	{
-	return 
-		//ряд логотипов
-// 		get_iphone_lang_menu(true).
-// 		get_iphone_menu().
+	return
 		TAB."<div class='siterow empty boxed'>".
 			TAB."<div class='flex iphonecolumn'>".
 				TAB."<div class='left20 boxed'>".
@@ -16,45 +10,37 @@ function get_menus_block()
 						itLang::compile(true).
 					TAB."</div>".
 				TAB."</div>".
-				
+
 				TAB."<div class='right80'>".
 					TAB."<a href='/'><img class='lettering' src='/themes/".CMS_THEME."/images/ateliecolibri-".CMS_LANG.".png'></a>".
 					TAB."<div class='explain'>".get_const('EXPLAIN_BRAND')."</div>".
 				TAB."</div>".
 			TAB."</div>".
-		TAB."</div>".				
- 		
+		TAB."</div>".
+
  		TAB."<div class='siterow empty boxed'>".
 
-/*
-		TAB."<div class='navigation_div boxeded iphoneonly'>".
-			TAB."<span class='nav_button toggle boxed rounded' onclick=\"$('.moremenu').toggleClass('closed');$(this).toggleClass('selected');\"/>".get_const('MOBILE_MENU')."</span>".
-		TAB."</div>".
-*/
 			TAB."<div class='flex'>".
 				TAB."<div class='left20 closed moremenu boxed'>".
 					get_left_navigation().
 				TAB."</div>".
-				
+
 				TAB."<div class='right80 boxed closed moremenu'>".
 					TAB."<div class='flex vertical'>".
 						get_catalog_navigation().
 						get_subcatalog_navigation().
-					TAB."</div>".					
+					TAB."</div>".
 				TAB."</div>".
-			TAB."</div>".				
+			TAB."</div>".
 
 		TAB."</div>". //site_row
 		"";
 	}
-	
-//..............................................................................
-// меню каталога товаров
-//..............................................................................
+
 function get_catalog_navigation()
 	{
 	global $cat_cat;
-	
+
 	$result = NULL;
 	if (is_array($cat_cat))
 		{
@@ -67,20 +53,14 @@ function get_catalog_navigation()
 		}
 	return $result;
 	}
-	
-//..............................................................................
-// один элемент меню
-//..............................................................................
+
 function get_category_node($row)
 	{
 	if (!ready_val($row['show'])) return;
-	
-	return get_category_node_code($row, ($_REQUEST['view']==$row['view']));			
+
+	return get_category_node_code($row, ($_REQUEST['view']==$row['view']));
 	}
-	
-//..............................................................................
-// код одного элемента меню
-//..............................................................................
+
 function get_category_node_code($row, $selected=false)
 	{
 	$selected = $selected ? ' selected' : NULL;
@@ -88,23 +68,20 @@ function get_category_node_code($row, $selected=false)
 	$link = "/".CMS_LANG."/".
 		($row['controller'] ? "{$row['controller']}/" : "").
 		((!is_null($row['view']) AND ($row['controller']!=$row['view']))  ? "{$row['view']}/" : "");
-	
-	return 
+
+	return
 		TAB."<div class='rounded glass boxed coll_node {$selected}'>".
 		(isset($row['avatar'])
 			? TAB."<a href='{$link}'><img class='avatar' src='/themes/".CMS_THEME."/images/{$row['avatar']}'></a>"
 			: NULL).
 			TAB."<a class='link' href='{$link}'>".get_const($row['title'])."</a>".
-		TAB."</div>";	
+		TAB."</div>";
 	}
-	
-//..............................................................................
-// меню каталога товаров
-//..............................................................................
+
 function get_subcatalog_navigation()
 	{
 	global $cat_more;
-	
+
 	$result = NULL;
 	if (is_array($cat_more))
 		{
@@ -117,26 +94,23 @@ function get_subcatalog_navigation()
 		}
 	return $result;
 	}
-	
-//..............................................................................
-// меню каталога товаров
-//..............................................................................
+
 function get_subcategory_node($row)
 	{
 	if (!ready_val($row['show'])) return;
-	
+
 	$link = "/".CMS_LANG."/".
 		($row['controller'] ? "{$row['controller']}/" : "").
 		((!is_null($row['view']) AND ($row['controller']!=$row['view']))  ? "{$row['view']}/" : "");
 
-	$selected = ( 
-			( $_REQUEST['view']==$row['view'] ) 
-				OR 
-			( ($_REQUEST['controller']==$row['controller']) AND is_null($row['view']) ) 
+	$selected = (
+			( $_REQUEST['view']==$row['view'] )
+				OR
+			( ($_REQUEST['controller']==$row['controller']) AND is_null($row['view']) )
 		)
 		? ' selected' : NULL;
 
-	return 
+	return
 		TAB."<div class='coll_node animatedParent small glass boxed rounded{$selected}'>".
 		(isset($row['avatar'])
 			? TAB."<a href='{$link}'><img class='avatar' src='/themes/".CMS_THEME."/images/{$row['avatar']}'></a>"
@@ -147,15 +121,12 @@ function get_subcategory_node($row)
 			: NULL).
 		TAB."</div>";
 
-	} 
+	}
 
-//..............................................................................
-// меню в левой части
-//..............................................................................
 function get_left_navigation()
 	{
 	global $a_menu, $_USER;
-	
+
 	if ($_USER->is_logged('ANY'))
 		{
 		$a_menu['register'] = [
@@ -166,7 +137,7 @@ function get_left_navigation()
 			'class'		=> 'register-btn online',
 			];
 		}
-	
+
 	$result = NULL;
 	foreach ($a_menu as $key=>$row)
 		{
@@ -186,21 +157,17 @@ function get_left_navigation()
 		social_links_panel();
 	}
 
-//..............................................................................
-// одна срока меню
-//..............................................................................
 function get_navigation_row($row)
 	{
 	$link = "/".CMS_LANG."/".
 		($row['controller'] ? "{$row['controller']}/" : "").
 		((!is_null($row['view']) AND ($row['controller']!=$row['view']))  ? "{$row['view']}/" : "");
-		
+
 	$selected = ($row['controller']==$_REQUEST['controller']) ? " selected" : NULL;
 	$class = isset($row['class']) ? " {$row['class']}" : NULL;
-	
+
 	return 	TAB."<a class='nav_button boxed rounded{$selected}{$class}' href='{$link}'>".get_const($row['title'])."</a>";
 	}
-
 
 function get_footer_navigation()
 	{
@@ -208,8 +175,7 @@ function get_footer_navigation()
 	global $cat_cat;
 	global $a_menu;
 	global $cat_more;
-		
-	// меню топовое
+
 	if (is_array($a_menu))
 		{
 		$result .= TAB."<div class='footer_menu c1 boxed noiphone'>";
@@ -218,7 +184,6 @@ function get_footer_navigation()
 		$result .= TAB."</div>";
 		}
 
-	// меню типов товаров
 	if (is_array($cat_cat))
 		{
 		$result .= TAB."<div class='footer_menu c2 boxed noiphone'>";
@@ -226,8 +191,7 @@ function get_footer_navigation()
 			if ($row['show']) $result .= get_footer_link($row);
 		$result .= TAB."</div>";
 		}
-		
-	// меню подгрупп
+
 	if (is_array($cat_more))
 		{
 		$result .= TAB."<div class='footer_menu c2 boxed noiphone'>";
@@ -247,8 +211,7 @@ function get_footer_navigation()
 
 	$result .= TAB."<div class='footer_menu c2 boxed copy'>".
 		$o_block->editor->container().
-//		TAB.get_block_content_event($o_block->data).
-		TAB."</div>";		
+		TAB."</div>";
 	return $result;
 	}
 
@@ -258,12 +221,12 @@ function get_footer_link($row)
 		($row['controller'] ? "{$row['controller']}/" : "").
 		((!is_null($row['view']) AND ($row['controller']!=$row['view']))  ? "{$row['view']}/" : "");
 
-	$selected = ( ( $_REQUEST['view']==$row['view'] ) 
-			OR 
-		( ($_REQUEST['controller']==$row['controller']) AND is_null($row['view']) ) 
+	$selected = ( ( $_REQUEST['view']==$row['view'] )
+			OR
+		( ($_REQUEST['controller']==$row['controller']) AND is_null($row['view']) )
 		)
 		? ' selected' : NULL;
 
-	return TAB."<div class='link{$selected}'><a href='{$link}'>".get_const($row['title'])."</a></div>";	
+	return TAB."<div class='link{$selected}'><a href='{$link}'>".get_const($row['title'])."</a></div>";
 	}
 ?>

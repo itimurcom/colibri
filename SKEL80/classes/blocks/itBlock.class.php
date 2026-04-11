@@ -1,29 +1,9 @@
 <?php
-// ================ CRC ================
-// version: 1.15.04
-// hash: 17304f652ec78bbc267821846511de879b7e6e5616561a2c85e6fb16b4399364
-// date: 29 March 2021  0:44
-// ================ CRC ================
-//..............................................................................
-// itBlock : класс настраиваемого блока на странице, привязка к контенту
-//..............................................................................
 class itBlock
 	{
 	public $table_name, $rec_id, $options, $data, $code, $no_data, $no_lang, $no_moderate, $no_avatar;
 	public $subtitle, $description, $og_image, $url, $editor;
 
-	//..............................................................................
-	// конструктор класса создает представление контента на странице
-	//..............................................................................
-	//
-	//   options:	'no_title'	=> убирает заголовок, если установлен
-	//		'no_data'	=> убирает дату в заголовке
-	//		'lang_xml'	=> отображается в указанном языке (все)
-	//		'table_name'	=> DEFAULT_BLOCK_TABLE // таблица блоков
-	//		'editor_name'	=> DEFAULT_CONTENT_TABLE // таблица контента
-	//			
-	//
-	//..............................................................................
 	public function __construct($rec_id=NULL, $options=NULL )
 		{
 		$this->options	= $options;
@@ -40,27 +20,23 @@ class itBlock
 			}
 
 		$this->no_data		= ready_val($options['no_data'], DEFAULT_NODATE);
-		$this->no_title		= ready_val($options['no_title'], DEFAULT_NOTITLE);		
+		$this->no_title		= ready_val($options['no_title'], DEFAULT_NOTITLE);
 		$this->no_lang		= ready_val($options['no_lang'], DEFAULT_NOLANG);
 		$this->no_avatar	= ready_val($options['no_avatar'], DEFAULT_NOAVATAR);
 		$this->no_moderate	= ready_val($options['no_moderate'], DEFAULT_NOMODERATE);
-		$this->no_related	= ready_val($options['no_related'], DEFAULT_NORELATED);				
-		$this->edclass		= ready_val($options['edclass'], DEFAULT_EDCLASS);			
+		$this->no_related	= ready_val($options['no_related'], DEFAULT_NORELATED);
+		$this->edclass		= ready_val($options['edclass'], DEFAULT_EDCLASS);
 
 		$this->data = itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
 
 		if (!is_array($this->data))
 			{
-			// вставим новую запись
 			itMySQL::_insert_rec($this->table_name, ['id' => $this->rec_id]);
                		$this->data = itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
 			}
 		$this->compile();
 		}
 
-	//..............................................................................
-	// генерирует html код блока и заносит его в качестве результата
-	//..............................................................................	
 	public function compile()
 		{
 		global $_USER;
@@ -77,7 +53,7 @@ class itBlock
 				'rec_id'	=> $this->data['content_id'],
 				'edclass'	=> $this->edclass,
 				]);
-				
+
 			if ($_USER->is_logged() OR (!isset($this->options['no_title']) AND ($this->data['content_id']!==NULL)))
 				{
 				$this->code .= $this->editor->get_title($this->no_data, $this->no_lang, $this->no_moderate, $this->no_avatar);
@@ -96,16 +72,12 @@ class itBlock
 			$this->code.= $this->editor->code();
 			}
 
-		$this->code .= 
+		$this->code .=
 			get_block_content_event($this->data).
 			TAB."</div>";
-			
+
 	      	}
 
-
-	//..............................................................................
-	// возвращает код скомпилированного блока
-	//..............................................................................	
 	public function code()
 		{
 		return $this->code;
