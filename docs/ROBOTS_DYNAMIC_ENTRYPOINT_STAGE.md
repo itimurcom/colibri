@@ -1,15 +1,20 @@
-# M0 / P28 robots dynamic entrypoint and manifest restore
+# M0 / P27 robots dynamic entrypoint
 
 ## Scope
-- Add dynamic `public/robots.php`
-- Route `robots.txt` to `robots.php` through `public/.htaccess`
-- Restore root-level `remove-paths-from-manifests.sh`
-- Add root-level remove manifest for `public/robots.txt`
+- add `public/robots.php`
+- route `robots.txt` to `robots.php` in `public/.htaccess`
+- register `public/robots.txt` removal through a root remove manifest
+- restore the root helper script `remove-paths-from-manifests.sh`
 
 ## Why
-The project should not keep a hardcoded old production domain inside `robots.txt`.
-`robots.txt` must be served for the current runtime host.
+The project must not stay hard-bound to `atelier-colibri.com` inside `robots.txt`.
+A dynamic entrypoint builds `Host` and `Sitemap` using the runtime host.
 
-## Notes
-- `public/robots.txt` is kept only as a neutral fallback.
-- The intended cleanup path is to remove `public/robots.txt` using the root manifest script.
+## Removal workflow
+Run from project root:
+
+```bash
+./remove-paths-from-manifests.sh --project-root .
+```
+
+This removes `public/robots.txt` using `M0_P27_robots_dynamic_entrypoint_REMOVE_MANIFEST.txt`.
