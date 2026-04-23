@@ -27,10 +27,6 @@ RewriteEngine On
 RewriteCond %{HTTP_HOST} ^www\.(.*)
 RewriteRule ^.*$ https://%1/$1 [R=301,L]
 
-RewriteCond %{HTTP_HOST} ^atelie-colibri.com$ [OR]
-RewriteCond %{HTTP_HOST} ^www.atelie-colibri.com$
-RewriteRule (.*)$ https://atelier-colibri.com/$1 [R=301,L]
-
 #
 # Внутренние преобразования статических URL в динамические
 
@@ -56,7 +52,6 @@ RewriteRule ^(.*)/$ index.php/ [L,QSA]
 RewriteRule items/(.*)$ index.php?url=$1 [L,QSA]
 
 RewriteRule ^sitemap.xml$ sitemap.php [L,QSA]
-RewriteRule ^robots.txt$ robots.php [L,QSA]
 
 #автоматическое генерирование аватарок
 RewriteBase /

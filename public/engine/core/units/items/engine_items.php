@@ -171,7 +171,7 @@ function get_item_panel($item_id=NULL)
 		'price'		=> $o_edit->data['price'],
 		'currency'	=> 'USD',
 		'sku'		=> $item_articul,
-		'url'		=> CMS_CURRENT_BASE_URL."/".CMS_LANG."/items/{$o_edit->data['id']}/",
+		'url'		=> CMS_CURRENT_BASE_URL.'/'.CMS_LANG."/items/{$o_edit->data['id']}/",
 		];
 
 	unset($o_edit, $o_ext, $o_b_all, $o_b_discl);

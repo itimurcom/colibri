@@ -26,5 +26,4 @@ Late project hook that can cross into runtime, overlay and delivery state.
 - New behavior should prefer clearly owned zones.
 - Extraction should happen slice by slice, not via blind rewrite.
 
-## robots runtime
-Use `public/robots.php` + `.htaccess` rewrite for host-aware `robots.txt`; do not keep hardcoded production domains in the static file.
+Runtime host links: prefer runtime base-url constants from `public/config.php` over hardcoded `atelier-colibri.com` references in mail, items, user PIN and settings flows.

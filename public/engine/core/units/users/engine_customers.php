@@ -51,7 +51,7 @@ function create_pin($customer=NULL)
 		'prepared'	=> mstr_replace([
 			'[USER]'	=> itUser::get_user_name($customer),
 			'[PIN]'		=> $pincode,
-			'[PINREG]'	=> CMS_CURRENT_BASE_URL."/".CMS_LANG."/register/pin/",
+			'[PINREG]'	=> CMS_CURRENT_BASE_URL.'/'.CMS_LANG.'/register/pin/',
 			], get_const('PIN_DESC')),
 		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat(" %d %b %Y  (%a)", strtotime('now'))." PIN CODE",
 		];

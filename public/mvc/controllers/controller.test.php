@@ -54,7 +54,7 @@ $_MARKUP = [
 	'price'		=> '123.4',
 	'currency'	=> 'UAH',
 	'sku'		=> 'R_2098_01',
-	'url'		=> CMS_CURRENT_BASE_URL.'/itmes/123-test',
+	'url'		=> CMS_CURRENT_BASE_URL.'/items/123-test',
 ];
 
 $o_markup =  new itMarkUp();
@@ -150,7 +150,7 @@ foreach ($files_arr as $row)
 	
 	$index = substr ( $finename, 0, 8);
 	
-	$items[$index]['gallery_xml'][] = ['img' => "/var/www/admin/data/www/".CMS_CURRENT_HOST_NO_PORT."/uploads/{$finename}"];
+	$items[$index]['gallery_xml'][] = ['img' => SERVER_ROOT_DEBUG."/uploads/{$finename}"];
 	$items[$index]['title_xml'] = '{"en":""}';
 	$items[$index]['serie'] = $f_serie;
 	$items[$index]['version'] = $f_version;

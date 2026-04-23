@@ -1,5 +1,4 @@
 <?php
-include ('config.php');
 
 $result = mail('ateliecolibri@gmail.com', 'Test', date('d.m.Y H:i:s'), 'From: robot@'.CMS_CURRENT_EMAIL_DOMAIN);
 

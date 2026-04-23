@@ -77,33 +77,43 @@ if (!defined('SERVER_ROOT_DEBUG'))
     define('SERVER_ROOT_DEBUG', __DIR__);
     }
 
-$protocol = (
-    (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
-    || (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on')
-    || (isset($_SERVER['SERVER_PORT']) && (string)$_SERVER['SERVER_PORT'] === '443')
-) ? 'https' : 'http';
-$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : (isset($_SERVER['SERVER_NAME']) ? $_SERVER['SERVER_NAME'] : 'localhost');
-$host_without_port = preg_replace('/:\d+$/', '', $host);
-$email_domain = preg_replace('/^www\./', '', $host_without_port);
-$base_url = $protocol.'://'.$host;
-
-foreach ([
-    'CMS_CURRENT_SCHEME' => $protocol,
-    'CMS_CURRENT_HOST' => $host,
-    'CMS_CURRENT_HOST_NO_PORT' => $host_without_port,
-    'CMS_CURRENT_EMAIL_DOMAIN' => $email_domain,
-    'CMS_CURRENT_BASE_URL' => $base_url,
-    'CMS_CURRENT_BASE_URL_SLASH' => $base_url.'/',
-] as $key => $value)
-    {
-    if (!defined($key))
-        {
-        define($key, $value);
-        }
-    }
+$protocol = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') || (isset($_SERVER['SERVER_PORT']) && (string)$_SERVER['SERVER_PORT'] === '443')) ? 'https' : 'http';
+$host = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
 
 if (!defined('SERVER_HTTP_DEBUG'))
     {
-    define('SERVER_HTTP_DEBUG', CMS_CURRENT_BASE_URL_SLASH);
+    define('SERVER_HTTP_DEBUG', $protocol.'://'.$host.'/');
+    }
+
+$host_no_port = preg_replace('/:\d+$/', '', $host);
+
+if (!defined('CMS_CURRENT_SCHEME'))
+    {
+    define('CMS_CURRENT_SCHEME', $protocol);
+    }
+
+if (!defined('CMS_CURRENT_HOST'))
+    {
+    define('CMS_CURRENT_HOST', $host);
+    }
+
+if (!defined('CMS_CURRENT_HOST_NO_PORT'))
+    {
+    define('CMS_CURRENT_HOST_NO_PORT', $host_no_port);
+    }
+
+if (!defined('CMS_CURRENT_EMAIL_DOMAIN'))
+    {
+    define('CMS_CURRENT_EMAIL_DOMAIN', $host_no_port ?: 'localhost');
+    }
+
+if (!defined('CMS_CURRENT_BASE_URL'))
+    {
+    define('CMS_CURRENT_BASE_URL', CMS_CURRENT_SCHEME.'://'.CMS_CURRENT_HOST);
+    }
+
+if (!defined('CMS_CURRENT_BASE_URL_SLASH'))
+    {
+    define('CMS_CURRENT_BASE_URL_SLASH', CMS_CURRENT_BASE_URL.'/');
     }
 ?>

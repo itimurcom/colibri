@@ -1,20 +1,34 @@
-# M0 / P26 runtime host/base URL de-hardcoding
+# M0 / P29 remaining runtime host dehardcoding bundle
 
 ## Goal
-Remove hardcoded `atelie-colibri.com` / `atelier-colibri.com` site URLs from runtime code, templates, and rewrite rules.
+Remove remaining hardcoded `atelie-colibri.com` / `atelier-colibri.com` runtime references and replace them with the current runtime host address.
 
-## What was changed
-- Added dynamic runtime URL constants in `public/config.php`:
-  - `CMS_CURRENT_SCHEME`
-  - `CMS_CURRENT_HOST`
-  - `CMS_CURRENT_HOST_NO_PORT`
-  - `CMS_CURRENT_EMAIL_DOMAIN`
-  - `CMS_CURRENT_BASE_URL`
-  - `CMS_CURRENT_BASE_URL_SLASH`
-- Replaced hardcoded site URLs in page templates, item markup, user PIN flows, mail header templates, test controller code, and OAuth redirect configuration.
-- Removed canonical host rewrites in `public/.htaccess` that forced requests to `atelier-colibri.com`.
-- Removed hardcoded `Host` / `Sitemap` target from `public/robots.txt` to avoid binding robots output to a legacy domain.
+## Runtime constants
+Added in `public/config.php`:
+- `CMS_CURRENT_SCHEME`
+- `CMS_CURRENT_HOST`
+- `CMS_CURRENT_HOST_NO_PORT`
+- `CMS_CURRENT_EMAIL_DOMAIN`
+- `CMS_CURRENT_BASE_URL`
+- `CMS_CURRENT_BASE_URL_SLASH`
 
-## Intentionally not changed
-- Existing email mailbox names such as `ateliecolibri@gmail.com` were left intact because they are mailbox identifiers, not site URLs.
-- Existing asset file names like `ateliecolibri-ua.png` were left intact because they are file names, not site URLs.
+## Scope
+Patched files:
+- `public/config.php`
+- `public/languages/en.php`
+- `public/languages/ru.php`
+- `public/languages/ua.php`
+- `public/languages/ua.bak.php`
+- `public/engine/core/units/users/engine_customers.php`
+- `public/engine/core/units/users/events/engine_customer_events.php`
+- `public/engine/ini/const.oAuth.php`
+- `public/mvc/controllers/controller.settings.php`
+- `public/test_mail.php`
+- `public/mvc/controllers/controller.test.php`
+- `public/engine/core/units/items/engine_items.php`
+- `public/.htaccess`
+- docs
+
+## What intentionally did not change
+- `public/robots.txt` is not part of this bundle; that path is handled separately by the dynamic robots entrypoint work.
+- No file removals are included in this patch.
