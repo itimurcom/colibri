@@ -26,5 +26,5 @@ Late project hook that can cross into runtime, overlay and delivery state.
 - New behavior should prefer clearly owned zones.
 - Extraction should happen slice by slice, not via blind rewrite.
 
-## Runtime host binding
-Hardcoded project domains are considered a legacy hotspot. Runtime links, item markup, mail templates, and redirect URLs must bind to the current launch host through shared runtime constants from `public/config.php`.
+## robots runtime
+Use `public/robots.php` + `.htaccess` rewrite for host-aware `robots.txt`; do not keep hardcoded production domains in the static file.
