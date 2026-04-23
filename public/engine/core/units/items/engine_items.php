@@ -166,12 +166,12 @@ function get_item_panel($item_id=NULL)
 		'name'		=> $plug_og['subtitle'],
 		'description'	=>$plug_og['description'],
 		'image'	=> [
-			0	=> 'https://www.atelier-colibri.com/img/itemshot_'.(isset($o_edit->data['images'][0]) ? $o_edit->data['images'][0] : basename(DEFAULT_OG_IMAGE)),
+			0	=> CMS_CURRENT_BASE_URL.'/img/itemshot_'.(isset($o_edit->data['images'][0]) ? $o_edit->data['images'][0] : basename(DEFAULT_OG_IMAGE)),
 			],
 		'price'		=> $o_edit->data['price'],
 		'currency'	=> 'USD',
 		'sku'		=> $item_articul,
-		'url'		=> "https://atelier-colibri.com/".CMS_LANG."/items/{$o_edit->data['id']}/",
+		'url'		=> CMS_CURRENT_BASE_URL."/".CMS_LANG."/items/{$o_edit->data['id']}/",
 		];
 
 	unset($o_edit, $o_ext, $o_b_all, $o_b_discl);

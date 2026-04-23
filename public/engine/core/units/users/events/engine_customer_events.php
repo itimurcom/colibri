@@ -272,7 +272,7 @@ function customer_ajaxpin_event(&$pined)
 		$_USER->login($id_of_user);
 
 		$do_replace = ($_REQUEST['path'] =='register/pin')
-			? "window.location.href = 'https://{$_SERVER['HTTP_HOST']}/".CMS_LANG."/cabinet/';"
+			? "window.location.href = '".CMS_CURRENT_BASE_URL."/".CMS_LANG."/cabinet/';"
 			: "$('#ajaxpin').remove();".js_replace_userdata();
 		$result = "<script>{$do_replace}</script>";
 		}
@@ -291,7 +291,7 @@ function customer_ajaxpin_event(&$pined)
 	 		TAB."</div>".
 	 		( (!$pinned AND ready_val($_REQUEST['ajaxpin']))
 	 			? ajax_error_focus('pin_enter-ajaxpin', 'ERROR_PIN')
-	 			: ( $pinned ? "<script>go_cabinet('https://".$_SERVER['HTTP_HOST']."/".CMS_LANG."/cabinet/');</script>" : NULL));
+	 			: ( $pinned ? "<script>go_cabinet('".CMS_CURRENT_BASE_URL."/".CMS_LANG."/cabinet/');</script>" : NULL));
 	}
 
 

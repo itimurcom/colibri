@@ -34,7 +34,7 @@ function user_by_pin($pincode=NULL, $table_name=DEFAULT_PIN_TABLE, $db_prefix=DB
 function create_pin($customer=NULL)
 	{
 	if (!defined('HTTP_PATH'))
-		define('HTTP_PATH', 'https://'.$_SERVER['HTTP_HOST'].'/');
+		define('HTTP_PATH', CMS_CURRENT_BASE_URL_SLASH);
 
 	global $_SETTINGS;
 
@@ -51,7 +51,7 @@ function create_pin($customer=NULL)
 		'prepared'	=> mstr_replace([
 			'[USER]'	=> itUser::get_user_name($customer),
 			'[PIN]'		=> $pincode,
-			'[PINREG]'	=> "https://{$_SERVER['HTTP_HOST']}/".CMS_LANG."/register/pin/",
+			'[PINREG]'	=> CMS_CURRENT_BASE_URL."/".CMS_LANG."/register/pin/",
 			], get_const('PIN_DESC')),
 		'subject'	=> CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat(" %d %b %Y  (%a)", strtotime('now'))." PIN CODE",
 		];

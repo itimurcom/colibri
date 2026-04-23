@@ -1,7 +1,7 @@
 <?php
 /* Установки для всех писем */
 if (!defined('HTTP_PATH'))
-	define('HTTP_PATH', 'https://'.$_SERVER['HTTP_HOST'].'/');
+	define('HTTP_PATH', CMS_CURRENT_BASE_URL_SLASH);
 if (!defined('CMS_THEME'))
 	{
 	define('CMS_THEME','default');

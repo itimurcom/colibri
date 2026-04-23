@@ -138,7 +138,7 @@ define('PRICE_DOWN_TITLE', "descending price");
 define('NEED_CORRECT', 'need correct');
 
 define ('PIN_DESC', "<center> Dear user, <b style = 'color: blue'> [USER] </b> </center>" .BR.BR.
-"<center> <div> To enter the system, you must enter the generated PIN-code by following the <a href='//atelier-colibri.com/en/register/pin/'> link </a>. This code valid for 5 minutes after sending the message <div> <h1> [PIN] </h1> </center> ");
+"<center> <div> To enter the system, you must enter the generated PIN-code by following the <a href='".CMS_CURRENT_BASE_URL."/en/register/pin/'> link </a>. This code valid for 5 minutes after sending the message <div> <h1> [PIN] </h1> </center> ");
 
 define ('NODE_REGISTER', "Cabinet");
 define ('ENTER_EMAIL', "Enter E-Mail");

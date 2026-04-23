@@ -148,7 +148,7 @@ define('ALREADY_HAVE', 'Уже есть в базе!');
 define('NOT_REGISTERED', 'пользователь не найден');
 
 define('PIN_DESC', "<center>Уважаемый пользователь, <b style='color:blue'>[USER]</b></center>".BR.BR.
-"<center><div>Чтобы войти в систему, необходимо ввести сгенерированный PIN-код, перейдя по <a href='//atelier-colibri.com/ru/register/pin/'>ссылке</a>. Данный код действителен в течении 5 минут после отправки сообщения<div><h1>[PIN]</h1></center>");
+"<center><div>Чтобы войти в систему, необходимо ввести сгенерированный PIN-код, перейдя по <a href='".CMS_CURRENT_BASE_URL."/ru/register/pin/'>ссылке</a>. Данный код действителен в течении 5 минут после отправки сообщения<div><h1>[PIN]</h1></center>");
 
 define('NODE_CABINET', 'Кабинет пользователя');
 define('NODE_PIN', 'PIN Код');

@@ -28,7 +28,7 @@ $_CONTENT['content'] =
 			TAB."<div class='tit'>Резервное копирование</div>".
 				"<center>".
 				"<div class='gray'>настроено автоматическое создание архива: ежедневвно в 03:00</div>".BR.
-				"<a class='green' href='https://atelier-colibri.com/colibri.bak.zip'>ссылка на актуальный архив</a>".BR.BR.
+				"<a class='green' href='".CMS_CURRENT_BASE_URL."/colibri.bak.zip'>ссылка на актуальный архив</a>".BR.BR.
 				(file_exists(SERVER_ROOT_DEBUG.'/colibri.bak.zip')
 					? "<div class='gray'>последний раз архив был изменен: <b class='yellow'>" . date ("F d Y H:i:s", filemtime(SERVER_ROOT_DEBUG.'/colibri.bak.zip'))."</b>.</div>"
 					: NULL).

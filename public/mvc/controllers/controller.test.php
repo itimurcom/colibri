@@ -47,14 +47,14 @@ $_MARKUP = [
 	'name'		=> 'test',
 	'description'	=> 'simpletest escripto',
 	'image'	=> [
-		0	=> 'https://www.atelier-colibri.com/img/itemshot_r_0348_1aa.jpg',
-		1	=> 'https://www.atelier-colibri.com/img/itemshot_r_0348_1b.jpg',
-		2	=> 'https://www.atelier-colibri.com/img/itemshot_r_0348_1bb.jpg',
+		0	=> CMS_CURRENT_BASE_URL.'/img/itemshot_r_0348_1aa.jpg',
+		1	=> CMS_CURRENT_BASE_URL.'/img/itemshot_r_0348_1b.jpg',
+		2	=> CMS_CURRENT_BASE_URL.'/img/itemshot_r_0348_1bb.jpg',
 		],
 	'price'		=> '123.4',
 	'currency'	=> 'UAH',
 	'sku'		=> 'R_2098_01',
-	'url'		=> 'https://atelier-colibri.iti.com/itmes/123-test',
+	'url'		=> CMS_CURRENT_BASE_URL.'/itmes/123-test',
 ];
 
 $o_markup =  new itMarkUp();
@@ -114,11 +114,11 @@ $mail->SMTPDebug = 1;
 $mail->isSMTP(); 
 $mail->Host = "mail.{$_SERVER['SERVER_NAME']}";
 $mail->SMTPAuth = true; 
-$mail->Username = 'robot@atelie-colibri.com'; // Ваш логин в Яндексе. Именно логин, без @yandex.ru
+$mail->Username = 'robot@'.CMS_CURRENT_EMAIL_DOMAIN; // Ваш логин в Яндексе. Именно логин, без @yandex.ru
 $mail->Password = 'robotcolibri'; // Ваш пароль
 //$mail->SMTPSecure = 'ssl'; 
 $mail->Port = 25;
-$mail->setFrom('robot@atelie-colibri.com', CMS_NAME); // Ваш Email
+$mail->setFrom('robot@'.CMS_CURRENT_EMAIL_DOMAIN, CMS_NAME); // Ваш Email
 $mail->addAddress("itimurweb@gmail.com"); // Email получателя
 
 // Письмо
@@ -150,7 +150,7 @@ foreach ($files_arr as $row)
 	
 	$index = substr ( $finename, 0, 8);
 	
-	$items[$index]['gallery_xml'][] = ['img' => "/var/www/admin/data/www/atelier-colibri.com/uploads/{$finename}"];
+	$items[$index]['gallery_xml'][] = ['img' => "/var/www/admin/data/www/".CMS_CURRENT_HOST_NO_PORT."/uploads/{$finename}"];
 	$items[$index]['title_xml'] = '{"en":""}';
 	$items[$index]['serie'] = $f_serie;
 	$items[$index]['version'] = $f_version;
