@@ -14,7 +14,7 @@ return [
 		'define delivery assets and project-level presentation hooks',
 	],
 	'extension_points' => [
-		['path' => 'public/engine/kernel.path.php', 'phase' => 'bootstrap.paths', 'purpose' => 'Project path overrides before class/event discovery.'],
+		['path' => 'public/engine/kernel.path.php', 'phase' => 'bootstrap.paths', 'purpose' => 'Optional project path overrides before class/event discovery.'],
 		['path' => 'public/engine/ini/const.*.php', 'phase' => 'bootstrap.const', 'purpose' => 'Project pre-constants before shared defaults are finalized.'],
 		['path' => 'public/engine/ini/ini.*.php', 'phase' => 'bootstrap.ini', 'purpose' => 'Project runtime and configuration overrides.'],
 		['path' => 'public/engine/core/engine_*.php', 'phase' => 'bootstrap.engine', 'purpose' => 'Project engine registration and cross-module orchestration.'],

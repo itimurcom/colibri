@@ -20,6 +20,74 @@ function get_items_slider($row)
 	return $result;
 	}
 
+function get_item_compiled_block($block_name, $options=[])
+	{
+	$o_block = new itBlock($block_name, array_merge([
+		'no_data'	=> true,
+		'no_title'	=> true,
+		'no_related'	=> true,
+		'no_lang'	=> true,
+		'edclass'	=> 'dashed_blue',
+	], $options));
+	$o_block->compile();
+	return $o_block;
+	}
+
+function get_item_runtime_url($row, $lang=NULL)
+	{
+	$lang = is_null($lang) ? CMS_LANG : $lang;
+	return '/'.$lang.'/items/'.
+		(isset($row['url_xml'][$lang])
+			? $row['url_xml'][$lang]
+			: "{$row['id']}/");
+	}
+
+function get_item_markup_image($row)
+	{
+	return CMS_CURRENT_BASE_URL.'/img/itemshot_'.
+		(isset($row['images'][0]) ? $row['images'][0] : basename(DEFAULT_OG_IMAGE));
+	}
+
+function get_items_feed_regexp_filter($session_key, $column)
+	{
+	if (!isset($_SESSION['filter'][$session_key]) || !count($_SESSION['filter'][$session_key]))
+		{
+		return NULL;
+		}
+
+	$regexp = '"'.implode('\"|\"', array_keys($_SESSION['filter'][$session_key])).'"';
+	return !empty($regexp) ? " AND `{$column}` REGEXP '{$regexp}'" : NULL;
+	}
+
+function get_items_feed_order()
+	{
+	switch (ready_val($_SESSION['filter']['sort']))
+		{
+		case 'price_up' :
+			return "`price` ASC";
+		case 'price_down' :
+			return "`price` DESC";
+		default :
+			return "`id` DESC";
+		}
+	}
+
+function get_items_feed_options($sql, $order, $fewer=false)
+	{
+	return [
+		'sql'		=> $sql,
+		'name'		=> 'items',
+		'start'		=> true,
+		'async'		=> !$fewer,
+		'appear'	=> false,
+		'fewer'		=> $fewer,
+		'order'		=> $fewer ? "`id` ASC" : $order,
+		'weight'	=> false,
+		'nodiv'		=> true,
+		'need_total'	=> false,
+		];
+	}
+
 function get_item_panel($item_id=NULL)
 	{
 	global $_USER, $cat_cat, $cat_relations, $plug_og, $_MARKUP;
@@ -40,46 +108,20 @@ function get_item_panel($item_id=NULL)
 		'edclass'	=> 'dashed boxed',
 		]);
 
-	$ext_code = $o_ext->container();
-
-	$o_b_all = new itBlock(BLOCK_ITEMALL,[
-		'no_data'	=> true,
-		'no_title'	=> true,
-		'no_related'	=> true,
-		'no_lang'	=> true,
-		'edclass'	=> 'dashed_blue',
-		]);
-	$o_b_all->compile();
-
-	$o_b_all = new itBlock(BLOCK_ITEMALL,[
-		'no_data'	=> true,
-		'no_title'	=> true,
-		'no_related'	=> true,
-		'no_lang'	=> true,
-		'edclass'	=> 'dashed_blue',
-		]);
-	$o_b_all->compile();
-
-	$o_b_discl = new itBlock(BLOCK_ITEMDISCL,[
-		'no_data'	=> true,
-		'no_title'	=> true,
-		'no_related'	=> true,
-		'no_lang'	=> true,
-		'class'		=> 'bg_red',
-		'edclass'	=> 'dashed_blue',
-		]);
-	$o_b_discl->compile();
-
-	$admin_code = NULL;
-
 	$category_row = $cat_cat[$cat_relations[$o_edit->data['category_id']]];
+	$item_articul = get_item_articul($o_edit->data);
+	$item_title = get_field_by_lang($o_edit->data['title_xml'], CMS_LANG, '');
+	$ext_code = $o_ext->container();
+	$o_b_all = get_item_compiled_block(BLOCK_ITEMALL);
+	$o_b_discl = get_item_compiled_block(BLOCK_ITEMDISCL, ['class' => 'bg_red']);
+	$admin_code = NULL;
 
 	$result =
 		get_item_serie_feed($o_edit->data).
 		TAB."<h1 class='tit' id='item-tit-{$item_id}'>".
 			"<small>".get_const($category_row['title'])."</small><br>".
-			"<span class='green'>".($item_articul = get_item_articul($o_edit->data))."</span>".
-			( ($item_title = get_field_by_lang($o_edit->data['title_xml'], CMS_LANG, '') ) ? "&nbsp;&laquo;{$item_title}&raquo;" : NULL).
+			"<span class='green'>{$item_articul}</span>".
+			($item_title ? "&nbsp;&laquo;{$item_title}&raquo;" : NULL).
 		TAB."</h1>".
 			($_USER->is_logged()
 				?	TAB."<div class='ed_devider admin'>".
@@ -92,7 +134,6 @@ function get_item_panel($item_id=NULL)
 					get_item_title_event($o_edit->data).
 					TAB."</div>"
 				: NULL).
-
 		TAB."<div class='siterow boxed'>".
 			TAB."<div class='left50 boxed glass'>".
 				TAB."<div class='portofolio'>".
@@ -104,11 +145,9 @@ function get_item_panel($item_id=NULL)
 				TAB."</div>".
 				get_price_item_event($o_edit->data).
 				$o_edit->container().
-				( ( !($o_edit->data['is_shop'] OR is_for_sale($o_edit->data) AND !is_null($o_b_discl->editor))) ? $o_b_discl->editor->code() : NULL).
+				((!($o_edit->data['is_shop'] OR is_for_sale($o_edit->data) AND !is_null($o_b_discl->editor))) ? $o_b_discl->editor->code() : NULL).
 			TAB."</div>".
-
 			TAB."<div class='right50 boxed padded glass bordered'>".
-
 				TAB."<div class='siterow boxed'>".
 					TAB."<div class='item_control boxed'>".
 						TAB."<div class='buttons boxed'>".
@@ -116,21 +155,17 @@ function get_item_panel($item_id=NULL)
 						get_buy_item_event($o_edit->data).
 						get_order_item_event($o_edit->data).
 						TAB."</div>".
-
 						filter_item_color_selector($o_edit->data).
 					TAB."</div>".
 				TAB."</div>".
-
 				TAB."<div class='siterow boxed'>".
-					(( !($o_edit->data['is_shop'] OR is_for_sale($o_edit->data) AND !is_null($o_b_all->editor))) ? $o_b_all->editor->code() : NULL).
+					((!($o_edit->data['is_shop'] OR is_for_sale($o_edit->data) AND !is_null($o_b_all->editor))) ? $o_b_all->editor->code() : NULL).
 					$admin_code.
 				TAB."</div>".
-				TAB."<div class='siterow boxed'>".
-				$ext_code.TAB.
-				"</div>".
+				TAB."<div class='siterow boxed'>".$ext_code.TAB."</div>".
 			TAB."</div>".
-		TAB."</div>".minify_js(
-			"<script>
+		TAB."</div>".
+		minify_js("<script>
 			$(document).ready(function(){
 				$('#item-tit-{$item_id}').ScrollTo({duration:800, callback:function(){}});
 				});
@@ -157,21 +192,19 @@ function get_item_panel($item_id=NULL)
 		unset($o_images);
 		}
 
-	$plug_og['title']	= $item_articul;
-	$plug_og['subtitle'] 	= get_const($category_row['title']).(!empty($item_title) ? " | {$item_title}" : NULL);
-	$plug_og['image'] 	= isset($o_edit->data['images'][0]) ? $o_edit->data['images'][0] : DEFAULT_OG_IMAGE;
-	$plug_og['description']	=  $o_edit->txt().$o_ext->txt();
+	$plug_og['title'] = $item_articul;
+	$plug_og['subtitle'] = get_const($category_row['title']).(!empty($item_title) ? " | {$item_title}" : NULL);
+	$plug_og['image'] = isset($o_edit->data['images'][0]) ? $o_edit->data['images'][0] : DEFAULT_OG_IMAGE;
+	$plug_og['description'] = $o_edit->txt().$o_ext->txt();
 
 	$_MARKUP = [
 		'name'		=> $plug_og['subtitle'],
-		'description'	=>$plug_og['description'],
-		'image'	=> [
-			0	=> CMS_CURRENT_BASE_URL.'/img/itemshot_'.(isset($o_edit->data['images'][0]) ? $o_edit->data['images'][0] : basename(DEFAULT_OG_IMAGE)),
-			],
+		'description'	=> $plug_og['description'],
+		'image'		=> [0 => get_item_markup_image($o_edit->data)],
 		'price'		=> $o_edit->data['price'],
 		'currency'	=> 'USD',
 		'sku'		=> $item_articul,
-		'url'		=> CMS_CURRENT_BASE_URL.'/'.CMS_LANG."/items/{$o_edit->data['id']}/",
+		'url'		=> CMS_CURRENT_BASE_URL.get_item_runtime_url($o_edit->data),
 		];
 
 	unset($o_edit, $o_ext, $o_b_all, $o_b_discl);
@@ -183,7 +216,7 @@ function color_gallery_title($data, $key)
 	if ($row = itMySQL::_get_rec_from_db($data['table_name'], $data['rec_id']))
 		{
 		$index = $key+1;
-		$category_str =  get_category_by_id($row['category_id']);
+		$category_str = get_category_by_id($row['category_id']);
 		$articul = get_item_articul($row);
 		return CMS_NAME." | {$category_str} | {$articul} | ".get_const('VARIANT')." #{$index}";
 		}
@@ -203,7 +236,7 @@ function item_gallery_title($data, $key)
 	{
 	if ($row = itMySQL::_get_rec_from_db($data['table_name'], $data['rec_id']))
 		{
-		$category_str =  get_category_by_id($data['category_id']);
+		$category_str = get_category_by_id($data['category_id']);
 		$articul = get_item_articul($row);
 		return "{$category_str} | ".CMS_NAME." | ( {$articul} )";
 		}
@@ -213,12 +246,10 @@ function item_gallery_caption($data, $key)
 	{
 	if ($row = itMySQL::_get_rec_from_db($data['table_name'], $data['rec_id']))
 		{
-		$category_str =  get_category_by_id($data['category_id']);
+		$category_str = get_category_by_id($data['category_id']);
 		$articul = get_item_articul($row);
-		return
-			"<center><b>".stripQuotas(get_field_by_lang($row['title_xml'], CMS_LANG, '')).
+		return "<center><b>".stripQuotas(get_field_by_lang($row['title_xml'], CMS_LANG, '')).
 			" <span class='green'>{$category_str}</span> <span class='blue'>{$articul}</span></b></center>";
-
 		}
 	}
 
@@ -230,13 +261,15 @@ function get_item_letter($item_rec=NULL)
 
 	if ($item_rec['is_shop'])
 		{
-		$letter = "S_";
+		$letter = 'S_';
 		}
 
 	if ($item_rec['is_replicant'])
 		{
 		return $letter.'R';
-		} else return $letter.$cat_cat[$cat_relations[$item_rec['category_id']]]['letter'];
+		}
+
+	return $letter.$cat_cat[$cat_relations[$item_rec['category_id']]]['letter'];
 	}
 
 function get_category_by_id($category_id)
@@ -249,109 +282,51 @@ function get_category_by_id($category_id)
 
 function get_item_articul($item_rec=NULL)
 	{
-	$result = get_item_letter($item_rec)."_".stripslashes($item_rec['serie'])."_".stripslashes($item_rec['version']);
-        return $result;
+	return get_item_letter($item_rec)."_".stripslashes($item_rec['serie'])."_".stripslashes($item_rec['version']);
 	}
 
 function get_items_feed()
 	{
 	global $cat_cat, $plug_og, $_USER;
 
+	$view = ready_val($_REQUEST['view']);
 	$sql = "SELECT * FROM `colibri_items` WHERE `status`='PUBLISHED' ".
-	(isset($cat_cat[$_REQUEST['view']]) ? "AND `category_id`='{$cat_cat[$_REQUEST['view']]['id']}' " : NULL).
- 	(!$_USER->is_logged() ? "AND `images` NOT IN ('', '[]') " : NULL).
-	"";
+		(isset($cat_cat[$view]) ? "AND `category_id`='{$cat_cat[$view]['id']}' " : NULL).
+		(!$_USER->is_logged() ? "AND `images` NOT IN ('', '[]') " : NULL);
 
-	if ($_REQUEST['view'] != 'shop' AND !in_array(@$cat_cat[$_REQUEST['view']]['id'],str_getcsv(get_const('CATEGORY_FOR_SALE'))))
+	if ($view != 'shop' AND !in_array(@$cat_cat[$view]['id'], str_getcsv(get_const('CATEGORY_FOR_SALE'))))
 		{
 		$sql .= " AND `is_shop`<>'1'";
 		}
 
-	switch ($_REQUEST['view'])
+	switch ($view)
 		{
 		case 'new' :
-			{
-			$sql .= " AND `is_new`";
+			$sql .= ' AND `is_new`';
 			break;
-			}
-
 		case 'econom' :
-			{
-			$sql .= " AND `is_econom`";
+			$sql .= ' AND `is_econom`';
 			break;
-			}
-
 		case 'shop' :
-			{
-			$sql .= " AND `is_shop`";
+			$sql .= ' AND `is_shop`';
 			break;
-			}
 		}
 
-	if (isset($_SESSION['filter']['colors']) and count($_SESSION['filter']['colors']))
-		{
-		$colors_regexp = "\"".implode('\"|\"', array_keys($_SESSION['filter']['colors']))."\"";
-		$sql .=  " AND `filter_xml` REGEXP '{$colors_regexp}'";
-		}
-
-	if (isset($_SESSION['filter']['tags']) and count($_SESSION['filter']['tags']))
-		{
-		$tags_regexp = "\"".implode('\"|\"', array_keys($_SESSION['filter']['tags']))."\"";
-		$sql .=  !empty($tags_regexp) ? " AND `tags_xml` REGEXP '{$tags_regexp}'" : "";
-		}
-
-	switch (ready_val($_SESSION['filter']['sort']))
-		{
-		case 'price_up' : {
-			$order_str = "`price` ASC";
-			break;
-			}
-		case 'price_down' : {
-			$order_str = "`price` DESC";
-			break;
-			}
-		default : {
-			$order_str = "`id` DESC";
-			break;
-			}
-		}
-
+	$sql .= get_items_feed_regexp_filter('colors', 'filter_xml');
+	$sql .= get_items_feed_regexp_filter('tags', 'tags_xml');
 	$sql .= ready_val($_SESSION['filter']['min']) ? " AND `price`>={$_SESSION['filter']['min']}" : NULL;
 	$sql .= ready_val($_SESSION['filter']['max']) ? " AND `price`<={$_SESSION['filter']['max']}" : NULL;
+	$sql .= isset($_REQUEST['anchor']) ? " AND `id`<='{$_REQUEST['anchor']}'" : '';
 
-	$sql .= (isset($_REQUEST['anchor']) ? " AND `id`<='{$_REQUEST['anchor']}'" : '');
-
-	$o_feed = new itFeed([
-		'sql'		=> $sql,
-		'name'		=> 'items',
-		'start'		=> true,
-		'async'		=> true,
-		'fewer'		=> false,
-		'order'		=> $order_str,
-		'weight'	=> false,
-		'nodiv'		=> true,
-		'appear'	=> false,
-		'need_total'	=> false,
-		]);
+	$order_str = get_items_feed_order();
+	$o_feed = new itFeed(get_items_feed_options($sql, $order_str));
 	$o_feed->compile();
 
 	$fewer_counter = NULL;
 	$o_fewer_code = NULL;
-
-	if(ready_val($_REQUEST['anchor']))
+	if (ready_val($_REQUEST['anchor']))
 		{
-		$options = array(
-			'sql'		=> $sql,
-			'start'		=> true,
-			'name' 		=> 'items',
-			'async'		=> false,
-			'appear'	=> false,
-			'fewer'		=> true,
-			'order'		=> "`id` ASC",	// по возрастанию вверх!
-			'nodiv'		=> true,
-			'need_total'	=> false,
-			);
-		$o_fewer = new itFeed($options);
+		$o_fewer = new itFeed(get_items_feed_options($sql, $order_str, true));
 		$o_fewer->compile();
 		$o_fewer_code = ($fewer_counter = $o_fewer->count_all()) ? $o_fewer->code() : NULL;
 		unset($o_fewer);
@@ -371,9 +346,7 @@ function get_items_feed()
 			$o_feed->code().
 			TAB."</div>";
 	unset($o_feed);
-	return
-		$result.
-		"";
+	return $result;
 	}
 
 function get_item_avatar_image($item_rec=NULL, $class='SERIE_AVATAR')
@@ -396,10 +369,7 @@ function get_items_feed_row($row, $full=false)
 
         $img_src = get_item_avatar_image($row);
         $title = get_item_articul($row)."<br/>".get_field_by_lang($row['title_xml'], CMS_LANG, '');
-        $link = "/".CMS_LANG."/items/".
-        	(isset($row['url_xml'][CMS_LANG])
-		        ?	$row['url_xml'][CMS_LANG]
-			: 	"{$row['id']}/");
+        $link = get_item_runtime_url($row);
 
         $animated_parent = $animated = NULL;
         if (($row['id'] == $_REQUEST['rec_id']) OR ($row['id'] == ready_val($_REQUEST['anchor'])))
@@ -408,15 +378,15 @@ function get_items_feed_row($row, $full=false)
 	        $animated = ' animated tada';
         	}
 
-        $full_str = $full ? " full" : NULL;
+        $full_str = $full ? ' full' : NULL;
         return
         	TAB."<div class='item_div boxed{$animated_parent}{$full_str}' id='item-{$row['id']}'>".
         	wish_btn($row).
 		($_USER->is_logged() ? TAB."<div class='id'># {$row['id']}</div>" : NULL).
-		( !$full ? get_item_flags($row) : NULL ).
-		( ($row['is_shop'] OR is_for_sale($row))
+		(!$full ? get_item_flags($row) : NULL).
+		(($row['is_shop'] OR is_for_sale($row))
 			? TAB."<div class='price sale rounded boxed'>".get_const('FOR_SALE')."</div>"
-			: ( true //$_USER->is_logged()
+			: (true
 				? TAB."<div class='price rounded shadow-white boxed'>{$row['price']}<small>&nbsp;$</small></div>"
 				: NULL)).
         	TAB."<a href='{$link}' target='_blank'>".
@@ -450,7 +420,7 @@ function get_item_serie_feed($row=NULL)
 		'name'	=> 'items',
 		'start'		=> true,
 		'async'		=> false,
-		'order'		=> "CONVERT(`version`, decimal)",		// по убыванию вниз!
+		'order'		=> "CONVERT(`version`, decimal)",
 		'weight'	=> false,
 		'need_total'	=> false,
 		]);

@@ -51,6 +51,7 @@ RewriteRule ^(.*)/$ index.php/ [L,QSA]
 
 RewriteRule items/(.*)$ index.php?url=$1 [L,QSA]
 
+RewriteRule ^robots.txt$ robots.php [L,QSA]
 RewriteRule ^sitemap.xml$ sitemap.php [L,QSA]
 
 #автоматическое генерирование аватарок

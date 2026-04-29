@@ -14,7 +14,7 @@ if (!function_exists('skel80_runtime_build_contract'))
 			'phases' => [
 				'bootstrap.core' => ['owner' => 'shared.core', 'description' => 'Load core primitives, runtime compatibility layer and basic PHP handlers.'],
 				'bootstrap.config' => ['owner' => 'project.bootstrap', 'description' => 'Resolve config.php and project-level config overlays before path registration.'],
-				'bootstrap.paths' => ['owner' => 'shared.core', 'description' => 'Resolve shared and user paths, then allow project path overrides through kernel.path.php.'],
+				'bootstrap.paths' => ['owner' => 'shared.core', 'description' => 'Resolve shared and user paths, then allow optional project path overrides through kernel.path.php when the file exists.'],
 				'bootstrap.overlay.contract' => ['owner' => 'project.overlay', 'description' => 'Load the project overlay manifest that declares responsibilities, extension points and hotspots.'],
 				'bootstrap.classes' => ['owner' => 'shared.core', 'description' => 'Register class folders and autoload order.'],
 				'bootstrap.engine' => ['owner' => 'project.overlay', 'description' => 'Load project engine_*.php parts and project classes/events.'],

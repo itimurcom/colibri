@@ -193,41 +193,49 @@ function generate_hash($hashlen=HASH_LEN)
 	}
 
 //..............................................................................
+// returns first non-empty server/environment value from candidate keys
+//..............................................................................
+function skel80_first_server_value($keys=[], $default=NULL)
+	{
+	foreach ((array)$keys as $key)
+		{
+		$value = getenv($key);
+		if ($value!==false && $value!=='') return $value;
+		if (isset($_SERVER[$key]) && $_SERVER[$key]!=='') return $_SERVER[$key];
+		}
+	return $default;
+	}
+
+//..............................................................................
+// normalizes raw forwarded ip value into one visible client ip or unknown
+//..............................................................................
+function skel80_normalize_user_ip($value='unknown')
+	{
+	$value = trim((string)$value);
+	if ($value==='' || preg_match('/[a-zA-Zа-яА-Я]/', $value)) return 'unknown';
+	if (strpos($value, ',')===false) return $value;
+	foreach (array_reverse(array_map('trim', explode(',', $value))) as $part)
+		{
+		if ($part!=='' && !preg_match('/[a-zA-Zа-яА-Я]/', $part)) return $part;
+		}
+	return 'unknown';
+	}
+
+//..............................................................................
 // определения ip адресса пользователя
 //..............................................................................
 function get_user_ip()
 	{
-    	if ( getenv ('REMOTE_ADDR')) {$ip_o_fuser = getenv ('REMOTE_ADDR');}
-    elseif ( getenv ('HTTP_FORWARDED_FOR')) {$ip_o_fuser = getenv ('HTTP_FORWARDED_FOR');} 
-    elseif ( getenv ('HTTP_X_FORWARDED_FOR')) {$ip_o_fuser = getenv ('HTTP_X_FORWARDED_FOR');} 
-    elseif ( getenv ('HTTP_X_COMING_FROM')) {$ip_o_fuser = getenv ('HTTP_X_COMING_FROM');} 
-    elseif ( getenv ('HTTP_VIA')) {$ip_o_fuser = getenv ('HTTP_VIA');} 
-    elseif ( getenv ('HTTP_XROXY_CONNECTION')) {$ip_o_fuser = getenv ('HTTP_XROXY_CONNECTION');} 
-    elseif ( getenv ('HTTP_CLIENT_IP')) {$ip_o_fuser = getenv ('HTTP_CLIENT_IP');} 
-    else {$ip_o_fuser='unknown';}
-    	if (15 < strlen ($ip_o_fuser))
-		{
-       	 	$ar = explode (', ', $ip_o_fuser);
-        	for ($i= sizeof ($ar)-1; $i> 0; $i--)
-		{
-            	if ($ar[$i]!='' and !preg_match ('/[a-zA-Zа-яА-Я]/', $ar[$i]))
-			{
-                	$ip_o_fuser = $ar[$i]; 
-                	break; 
-                	}
-            	if ($i== sizeof ($ar)-1)
-			{
-			$ip_o_fuser = 'unknown';
-			}
-         	}
-        	}
-    	if ( preg_match ('/[a-zA-Zа-яА-Я]/', $ip_o_fuser))
-		{
-		$ip_o_fuser = 'unknown';
-		}
-    	return $ip_o_fuser;
+	return skel80_normalize_user_ip(skel80_first_server_value([
+		'REMOTE_ADDR',
+		'HTTP_FORWARDED_FOR',
+		'HTTP_X_FORWARDED_FOR',
+		'HTTP_X_COMING_FROM',
+		'HTTP_VIA',
+		'HTTP_XROXY_CONNECTION',
+		'HTTP_CLIENT_IP',
+	], 'unknown'));
 	}
-
 
 //..............................................................................
 // перехода на другую страницу
@@ -239,25 +247,28 @@ function cms_redirect_page($url='/')
 	}
 
 //..............................................................................
+// resolves referer url from session/server with fallback and consumes session copy
+//..............................................................................
+function skel80_referer_url($fallback='/')
+	{
+	if (isset($_SESSION['HTTP_REFERER']))
+		{
+		$referer_url = $_SESSION['HTTP_REFERER'];
+		unset($_SESSION['HTTP_REFERER']);
+		return $referer_url;
+		}
+	return skel80_first_server_value(['HTTP_REFERER'], $fallback);
+	}
+
+//..............................................................................
 // умный переход в случае успешного логина или выхода из системы
 //..............................................................................
 function cms_smart_redirect($outgo_page=NULL, $exclude=['login','enter'])
 	{
-	if (isset($_SESSION['HTTP_REFERER']))
-		{
-	 	$referer_url = $_SESSION['HTTP_REFERER'];
-
-		unset($_SESSION['HTTP_REFERER']);
-		} else if (isset($_SERVER['HTTP_REFERER']))
-			{
-		 	$referer_url = $_SERVER['HTTP_REFERER'];
-			} else $referer_url = is_null($outgo_page) ? '/' : $outgo_page;
-
+	$referer_url = skel80_referer_url(is_null($outgo_page) ? '/' : $outgo_page);
 	$split = explode('?', $referer_url);
 	$referer_url = $split[0];
-
 	$referer_url = in_array(basename($referer_url), $exclude) ? '/' : $referer_url;
-
 	cms_redirect_page($referer_url);
 	}
 

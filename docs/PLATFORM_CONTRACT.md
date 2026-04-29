@@ -33,7 +33,7 @@
 
 ## Legal override points
 - `public/config*.php`
-- `public/engine/kernel.path.php`
+- `public/engine/kernel.path.php` (optional)
 - `public/engine/overlay_contract.php`
 - `public/engine/ini/const.*.php`
 - `public/engine/ini/ini.*.php`

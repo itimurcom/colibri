@@ -8,7 +8,7 @@
 6. Treat `public/engine/` as the first legal place for Colibri-specific runtime behavior.
 7. Treat `public/mvc/`, `public/themes/`, `public/languages/` as delivery/presentation territory.
 8. Do not call shared runtime helpers from `public/engine/kernel.php` before `SKEL80/run.php` is required; the shared kernel owns runtime helper initialization.
-
-9. For `public/ed_field.php`, reduce duplicate success tails and duplicate update+redirect branches before attempting broader flow cleanup.
-
+9. `public/engine/kernel.path.php` is an optional extension point. `SKEL80/run.php` loads it only when the file actually exists.
+10. For `public/ed_field.php`, reduce duplicate success tails and duplicate update+redirect branches before attempting broader flow cleanup.
 11. For runtime absolute links, prefer `CMS_CURRENT_BASE_URL`, `CMS_CURRENT_BASE_URL_SLASH`, `CMS_CURRENT_HOST`, and `CMS_CURRENT_EMAIL_DOMAIN` instead of hardcoded project domains or direct `$_SERVER['HTTP_HOST']` string assembly.
+12. `public/robots.php` is the dynamic entrypoint for `robots.txt`; keep the `.htaccess` rewrite and runtime-host output aligned.

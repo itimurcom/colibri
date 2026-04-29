@@ -378,17 +378,46 @@ class itFeed
 		}
 
 	//..............................................................................
+	// resolves localized feed-button text by constant prefix and suffix
+	//..............................................................................
+	private function feed_button_text($prefix, $suffix='TEXT')
+		{
+		$const_name = "{$prefix}_".strtoupper($this->name)."_{$suffix}";
+		return get_const($const_name);
+		}
+
+	//..............................................................................
+	// returns common HTML attributes for more/fewer controls
+	//..............................................................................
+	private function feed_button_attrs($feed_code)
+		{
+		return " class='more_feed' id='{$this->element_id}' feed-rel='{$feed_code}'".
+			($this->async ? ' async' : ' scroll').
+			($this->appear ? ' appear' : '');
+		}
+
+	//..............................................................................
+	// builds more/fewer control HTML
+	//..............................................................................
+	private function build_feed_button($fewer=false)
+		{
+		$feed_code = $this->build_feed_payload($fewer);
+		$button_msg = $this->feed_button_text($fewer ? 'FEWER' : 'MORE');
+		$logo_class = $fewer ? "fewer_{$this->name}" : $this->name;
+		$rotate_class = (!$fewer && !$this->rotate) ? ' norotate' : '';
+		return
+			TAB."<div".$this->feed_button_attrs($feed_code).">".
+			TAB."	<div class='more_logo {$logo_class}' tabindex=-1{$rotate_class}></div>".
+			TAB."	<div class='more_text'>{$button_msg}</div>".
+			TAB."</div>";
+		}
+
+	//..............................................................................
 	// returns more-button HTML
 	//..............................................................................
 	public function get_more_button()
 		{
-		$feed_code = $this->build_feed_payload(false);
-		eval('$button_msg = get_const(\'MORE_'.strtoupper($this->name).'_TEXT\');');
-		return
-			TAB."<div class='more_feed' id='{$this->element_id}' feed-rel='{$feed_code}'".($this->async ? " async" : " scroll").($this->appear ? " appear" : '').">".
-			TAB."\t<div class='more_logo {$this->name}' tabindex=-1".($this->rotate ? "" : " norotate")."></div>".
-			TAB."\t<div class='more_text'>{$button_msg}</div>".
-			TAB."</div>";
+		return $this->build_feed_button(false);
 		}
 
 	//..............................................................................
@@ -396,8 +425,7 @@ class itFeed
 	//..............................................................................
 	public function fewer_begin_text()
 		{
-		eval('$button_msg = get_const(\'FEWER_'.strtoupper($this->name).'_BEGIN\');');
-		return TAB."\t<div class='fewer_begin'>{$button_msg}</div>";
+		return TAB."	<div class='fewer_begin'>".$this->feed_button_text('FEWER', 'BEGIN')."</div>";
 		}
 
 	//..............................................................................
@@ -405,13 +433,7 @@ class itFeed
 	//..............................................................................
 	public function get_fewer_button()
 		{
-		$feed_code = $this->build_feed_payload(true);
-		eval('$button_msg = get_const(\'FEWER_'.strtoupper($this->name).'_TEXT\');');
-		return
-			TAB."<div class='more_feed' id='{$this->element_id}' feed-rel='{$feed_code}'".($this->async ? " async" : " scroll").($this->appear ? " appear" : '').">".
-			TAB."\t<div class='more_logo fewer_{$this->name}' tabindex=-1></div>".
-			TAB."\t<div class='more_text'>{$button_msg}</div>".
-			TAB."</div>";
+		return $this->build_feed_button(true);
 		}
 
 	//..............................................................................
@@ -419,32 +441,52 @@ class itFeed
 	//..............................................................................
 	public function get_feed_arr()
 		{
-		$counter = 0;
 		if (!($this->start AND $this->fewer))
 			{
-			$counter = ($this->onefield)
+			($this->onefield)
 				? $this->onefield_run()
 				: ($this->weight ? $this->weight_run() : $this->run());
 			}
 
 		if (!is_null($this->step()) OR isset($this->field_rec[$this->position]))
 			{
-			if ($this->fewer)
-				{
-				$this->rows['fewer'] = $this->get_fewer_button();
-				}
-			else
-				{
-				$this->rows['more'] = $this->get_more_button();
-				}
+			$this->rows[$this->fewer ? 'fewer' : 'more'] = $this->fewer ? $this->get_fewer_button() : $this->get_more_button();
+			return;
 			}
-		else
+
+		if ($this->fewer)
 			{
-			if ($this->fewer)
-				{
-				$this->rows['fewer'] = ($this->position>=$this->count_all()) ? $this->fewer_begin_text() : NULL;
-				}
+			$this->rows['fewer'] = ($this->position >= $this->count_all()) ? $this->fewer_begin_text() : NULL;
 			}
+		}
+
+	//..............................................................................
+	// compiles weighted feed columns into HTML
+	//..............................................................................
+	private function compile_weight_rows()
+		{
+		$code = '';
+		$func = "get_{$this->name}_feed_col";
+		foreach ($this->rows_without_controls($this->rows) as $row)
+			{
+			$code .= $func(self::compile_rows($row, $this->fewer));
+			}
+		return $code;
+		}
+
+	//..............................................................................
+	// wraps compiled feed code with controls and optional feed div
+	//..............................................................................
+	private function wrap_feed_code($code)
+		{
+		return
+			ready_val($this->rows['fewer']).
+			(($code)
+				? ((!$this->nodiv) ? TAB."<div class='feed_div'>" : '').
+				$code.
+				((!$this->nodiv) ? TAB."</div>" : '')
+				: '').
+			ready_val($this->rows['more']);
 		}
 
 	//..............................................................................
@@ -452,44 +494,39 @@ class itFeed
 	//..............................................................................
 	public function compile()
 		{
-		if (!$this->async)
-			{
-			$this->get_feed_arr($this->start);
-
-			if (is_array($this->rows))
-				{
-				if ($this->weight)
-					{
-					$this->code = '';
-					foreach ($this->rows as $key=>$row)
-						{
-						if (!in_array($key,['fewer','more']))
-							{
-							$func = "get_{$this->name}_feed_col";
-							$this->code .= $func(itFeed::compile_rows($row, $this->fewer));
-							}
-						}
-					}
-				else
-					{
-					$this->code = itFeed::compile_rows($this->rows, $this->fewer);
-					}
-				}
-			}
-		else
+		if ($this->async)
 			{
 			$this->code = $this->get_more_button();
 			return;
 			}
 
-		$this->code =
-			ready_val($this->rows['fewer']).
-			(($this->code)
-				? ((!$this->nodiv) ? TAB."<div class='feed_div'>" : '').
-				$this->code.
-				((!$this->nodiv) ? TAB."</div>" : '')
-				: "").
-			ready_val($this->rows['more']);
+		$this->get_feed_arr($this->start);
+		if (!is_array($this->rows))
+			{
+			$this->code = $this->wrap_feed_code('');
+			return;
+			}
+
+		$this->code = $this->weight
+			? $this->compile_weight_rows()
+			: self::compile_rows($this->rows, $this->fewer);
+		$this->code = $this->wrap_feed_code($this->code);
+		}
+
+	//..............................................................................
+	// returns feed rows without more/fewer control keys
+	//..............................................................................
+	private static function rows_without_controls($data, $reverse=false)
+		{
+		$rows = [];
+		foreach (($reverse ? array_reverse((array)$data, true) : (array)$data) as $key=>$row)
+			{
+			if (!in_array($key, ['fewer','more']))
+				{
+				$rows[] = $row;
+				}
+			}
+		return $rows;
 		}
 
 	//..............................................................................
@@ -497,28 +534,7 @@ class itFeed
 	//..............................................................................
 	static function compile_rows($data, $reverse=false)
 		{
-		$code = '';
-		if ($reverse)
-			{
-			foreach (array_reverse($data,true) as $key=>$row)
-				{
-				if (!in_array($key,['fewer','more']))
-					{
-					$code .= $row;
-					}
-				}
-			}
-		else
-			{
-			foreach ($data as $key=>$row)
-				{
-				if (!in_array($key,['fewer','more']))
-					{
-					$code .= $row;
-					}
-				}
-			}
-		return $code;
+		return implode('', self::rows_without_controls($data, $reverse));
 		}
 
 	//..............................................................................

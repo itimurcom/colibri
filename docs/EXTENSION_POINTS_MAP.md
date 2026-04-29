@@ -7,7 +7,7 @@
 - `public/config.secrets.local.php`
 
 ## Path overrides
-- `public/engine/kernel.path.php`
+- `public/engine/kernel.path.php` (optional)
 
 ## Project constants / ini
 - `public/engine/ini/const.*.php`

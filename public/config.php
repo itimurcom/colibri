@@ -22,7 +22,7 @@ $cms_config = [
     'DENY_JIVOSITE' => 'settings,mailing',
 
     'CMS_ERROR_REPORTING' => E_ALL & ~E_NOTICE & ~E_STRICT & ~E_DEPRECATED & ~E_USER_DEPRECATED,
-    'CMS_DISPLAY_ERRORS' => false,
+    'CMS_DISPLAY_ERRORS' => true,
     'CMS_LOG_ERRORS' => true,
     'CMS_DEFAULT_TIMEZONE' => 'Europe/Kyiv',
     'CMS_RUNTIME_LOG_FILE' => __DIR__.'/logs/php-runtime.log',
