@@ -1,5 +1,5 @@
 <?php
-function get_item_shop_event($row)
+function colibri_item_event_toggle_button($row, $op, $button_const, $flag_key)
 	{
 	global $_USER;
 
@@ -8,87 +8,92 @@ function get_item_shop_event($row)
 		'user_id'	=> $_USER->id(),
 		'table_name' 	=> $row['table_name'],
 		'rec_id'	=> $row['rec_id'],
-		'op'		=> 'is_shop',
+		'op'		=> $op,
 		]);
 	$o_form->compile();
-	$o_button = new itButton(get_const('BUTTON_SHOP'), 'submit', ['form'=>$o_form->form_id(), 'class' => 'admin'], $row['is_shop'] ? 'blue' : 'gray');
+	$o_button = new itButton(get_const($button_const), 'submit', ['form'=>$o_form->form_id(), 'class' => 'admin'], $row[$flag_key] ? 'blue' : 'gray');
 
 	$result = $o_form->code().$o_button->code();
 	unset($o_button, $o_form);
 	return $result;
+	}
+
+function colibri_item_event_modal($size='small', $animation='fadeAndPop')
+	{
+	$o_modal = new itModal();
+	$o_modal->set_size($size);
+	$o_modal->set_animation($animation);
+	return $o_modal;
+	}
+
+function colibri_item_event_add_ok_cancel($o_form, $o_modal, $ok_color='blue', $cancel_color='green')
+	{
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], $ok_color);
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], $cancel_color);
+	}
+
+function colibri_item_event_modal_code($o_modal, $o_form, $button_title, $button_color='green', $button_class='admin')
+	{
+	$o_form->compile();
+	$o_modal->add_field($o_form->code());
+ 	$o_modal->compile();
+
+	$o_button = new itButton($button_title, 'modal', ['class' => $button_class, 'form' => $o_modal->form_id()], $button_color);
+	$result = $o_button->code().$o_modal->code();
+	unset($o_button, $o_form, $o_modal);
+	return $result;
+	}
+
+function colibri_item_event_category_selector_options($prepared_arr, $value=NULL)
+	{
+	$options = [
+		'array' 	=> $prepared_arr['items'],
+		'titles'	=> 'title',
+		'values'	=> 'value',
+		'name'		=> 'category_id',
+		'compact'	=> true,
+		];
+
+	if ($value!==NULL)
+		{
+		$options['type'] = 'select';
+		$options['label'] = 'ITEM_CATEGORY';
+		$options['value'] = $value;
+		}
+
+	return $options;
+	}
+
+function get_item_shop_event($row)
+	{
+	return colibri_item_event_toggle_button($row, 'is_shop', 'BUTTON_SHOP', 'is_shop');
 	}
 
 function get_item_replicant_event($row)
 	{
-	global $_USER;
-
-	$o_form = new itForm2();
-	$o_form->add_data([
-		'user_id'	=> $_USER->id(),
-		'table_name' 	=> $row['table_name'],
-		'rec_id'	=> $row['rec_id'],
-		'op'		=> 'is_replicant',
-		]);
-	$o_form->compile();
-	$o_button = new itButton(get_const('BUTTON_REPLICANT'), 'submit', ['form'=>$o_form->form_id(), 'class' => 'admin'], $row['is_replicant'] ? 'blue' : 'gray');
-
-	$result = $o_form->code().$o_button->code();
-	unset($o_button, $o_form);
-	return $result;
+	return colibri_item_event_toggle_button($row, 'is_replicant', 'BUTTON_REPLICANT', 'is_replicant');
 	}
 
 function get_item_econom_event($row)
 	{
-	global $_USER;
-
-	$o_form = new itForm2();
-	$o_form->add_data([
-		'user_id'	=> $_USER->id(),
-		'table_name' 	=> $row['table_name'],
-		'rec_id'	=> $row['rec_id'],
-		'op'		=> 'is_econom',
-		]);
-	$o_form->compile();
-	$o_button = new itButton(get_const('BUTTON_ECONOM'), 'submit', ['form'=>$o_form->form_id(), 'class' => 'admin'], $row['is_econom'] ? 'blue' : 'gray');
-
-	$result = $o_form->code().$o_button->code();
-	unset($o_button, $o_form);
-	return $result;
+	return colibri_item_event_toggle_button($row, 'is_econom', 'BUTTON_ECONOM', 'is_econom');
 	}
 
 function get_item_new_event($row)
 	{
-	global $_USER;
-
-	$o_form = new itForm2();
-	$o_form->add_data([
-		'user_id'	=> $_USER->id(),
-		'table_name' 	=> $row['table_name'],
-		'rec_id'	=> $row['rec_id'],
-		'op'		=> 'is_new',
-		]);
-	$o_form->compile();
-	$o_button = new itButton(get_const('BUTTON_NEW'), 'submit', ['form'=>$o_form->form_id(), 'class' => 'admin'], $row['is_new'] ? 'blue' : 'gray');
-
-	$result = $o_form->code().$o_button->code();
-	unset($o_button, $o_form);
-	return $result;
+	return colibri_item_event_toggle_button($row, 'is_new', 'BUTTON_NEW', 'is_new');
 	}
 
 function get_item_title_event($row)
 	{
 	global $lang_cat;
 
-	$o_modal = new itModal();
-	$o_modal->set_size('medium');
-	$o_modal->set_animation('fadeAndUp');
-
+	$o_modal = colibri_item_event_modal('medium', 'fadeAndUp');
 	$o_form = new itForm2();
 	$o_form->add_title(mstr_replace([
 		'[VALUE]'	=> get_item_articul($row),
 		'[LANG]'	=> $lang_cat[CMS_LANG]['name_orig'],
 		], get_const('ITEM_TITLE_QUERY')));
-
 	$o_form->add_input([
 		'name'		=> 'value',
 		'value'		=> get_field_by_lang($row['title_xml'], CMS_LANG, ''),
@@ -98,49 +103,22 @@ function get_item_title_event($row)
 		'rec_id'	=> $row['rec_id'],
 		'op'		=> 'ed_title'
 		]);
-	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
-	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
-	$o_form->compile();
-
-	$o_modal->add_field($o_form->code());
- 	$o_modal->compile();
-
-	$o_button = new itButton(get_const('BUTTON_ED_TITLE'), 'modal', ['class' => 'admin', 'form' => $o_modal->form_id()], 'green' );
-	$result = $o_button->code().$o_modal->code();
-	unset($o_button, $o_form, $o_modal);
-	return $result;
+	colibri_item_event_add_ok_cancel($o_form, $o_modal);
+	return colibri_item_event_modal_code($o_modal, $o_form, get_const('BUTTON_ED_TITLE'), 'green');
 	}
 
 function get_item_x_event($row)
 	{
-
-		$button = 'X';
-		$color = 'red';
-		$color_ok = 'red';
-		$query =  'QUERY_ITEM_REMOVE';
-
-	$o_modal = new itModal();
-	$o_modal->set_size('small');
-	$o_modal->set_animation('fadeAndPop');
-
+	$o_modal = colibri_item_event_modal();
 	$o_form = new itForm2();
-	$o_form->add_title(str_replace('[VALUE]', get_item_articul($row), get_const($query)));
+	$o_form->add_title(str_replace('[VALUE]', get_item_articul($row), get_const('QUERY_ITEM_REMOVE')));
 	$o_form->add_data([
 		'table_name'	=> $row['table_name'],
 		'rec_id'	=> $row['rec_id'],
 		'op'		=> 'item_x',
 		]);
-	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], $color_ok );
-	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
-	$o_form->compile();
-
-	$o_modal->add_field($o_form->code());
- 	$o_modal->compile();
-
-	$o_button = new itButton(get_const($button), 'modal', ['class' => 'admin', 'form' => $o_modal->form_id()], $color );
-	$result = $o_button->code().$o_modal->code();
-	unset($o_button, $o_form, $o_modal);
-	return $result;
+	colibri_item_event_add_ok_cancel($o_form, $o_modal, 'red');
+	return colibri_item_event_modal_code($o_modal, $o_form, get_const('X'), 'red');
 	}
 
 function get_item_add_event()
@@ -149,13 +127,9 @@ function get_item_add_event()
 
 	if (!$_USER->is_logged($_RIGHTS['EDIT'])) return;
 
-	$o_modal = new itModal();
-	$o_modal->set_size('medium');
-	$o_modal->set_animation('fadeAndPop');
-
+	$o_modal = colibri_item_event_modal('medium');
 	$o_form = new itForm2();
 	$o_form->add_title(str_replace ('[VALUE]', $lang_cat[CMS_LANG]['name_orig'], get_const('QUERY_ADD_ITEM')));
-
 	$o_form->add_input([
 		'name'		=> 'value',
 		'value'		=> '',
@@ -164,90 +138,57 @@ function get_item_add_event()
 
 	if (isset($prepared_arr['items']))
 		{
-		$options = [
-			'array' 	=> $prepared_arr['items'],
-			'titles'        => 'title',
-			'values'	=> 'value',
-			'name'		=> 'category_id',
-			'compact'	=> true,
-			];
-		$o_form->add_selector('select', $options, '', NULL, get_const('ITEM_CATEGORY'));
+		$o_form->add_selector('select', colibri_item_event_category_selector_options($prepared_arr), '', NULL, get_const('ITEM_CATEGORY'));
 		}
 
 	$o_form->add_set([
 		'label'	=> 'SPECIAL_ITEM_LABEL',
 		'name'	=> 'is',
 		'array'	=> [
-				[
-				'title'	=> 'ITEM_REPLICANT',
-				'value'	=> 'replicant',
-				],
-				[
-				'title'	=> 'ITEM_SHOP',
-				'value'	=> 'shop',
-				],
+			[
+			'title'	=> 'ITEM_REPLICANT',
+			'value'	=> 'replicant',
 			],
+			[
+			'title'	=> 'ITEM_SHOP',
+			'value'	=> 'shop',
+			],
+		],
 		'compact'	=> true,
 		]);
-
 	$o_form->add_input([
 		'name'		=> 'serie',
 		'value'		=> '',
 		'label'		=> get_const('ITEM_SERIE'),
 		'compact'	=> true,
 		]);
-
 	$o_form->add_input([
 		'name'		=> 'version',
 		'value'		=> '',
 		'label'		=> get_const('ITEM_VERSION'),
 		'compact'	=> true,
 		]);
-
 	$o_form->add_data([
 		'table_name'	=> DEFAULT_ITEM_TABLE,
 		'op'		=> 'add_item',
 		]);
-	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
-	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
-
-	$o_form->compile();
-
-	$o_modal->add_field($o_form->code());
- 	$o_modal->compile();
-
-	$o_button = new itButton("<b>".get_const('BUTTON_PLUS_ITEM')."</b>", 'modal', ['class'=>'admin', 'form' => $o_modal->form_id()], 'green' );
-	$result = $o_button->code().$o_modal->code();
-	unset($o_button, $o_form, $o_modal);
-	return $result;
+	colibri_item_event_add_ok_cancel($o_form, $o_modal);
+	return colibri_item_event_modal_code($o_modal, $o_form, '<b>'.get_const('BUTTON_PLUS_ITEM').'</b>', 'green');
 	}
 
 function get_item_articul_event($row)
 	{
-	global $lang_cat, $prepared_arr, $_USER, $_RIGHTS;
+	global $prepared_arr, $_USER, $_RIGHTS;
 
 	if (!$_USER->is_logged($_RIGHTS['EDIT'])) return;
 
-	$o_modal = new itModal();
-	$o_modal->set_size('small');
-	$o_modal->set_animation('fadeAndPop');
-
+	$o_modal = colibri_item_event_modal();
 	$o_form = new itForm2();
 	$o_form->add_title(str_replace ('[VALUE]', get_field_by_lang($row['title_xml']), get_const('QUERY_ARTICUL_ITEM')));
 
 	if (isset($prepared_arr['items']))
 		{
-		$options = [
-			'array' 	=> $prepared_arr['items'],
-			'titles'	=> 'title',
-			'values'	=> 'value',
-			'name'		=> 'category_id',
-			'compact'	=> true,
-			'type'		=> 'select',
-			'label'		=> 'ITEM_CATEGORY',
-			'value'		=> $row['category_id'],
-			];
-		$o_form->add_selector($options);
+		$o_form->add_selector(colibri_item_event_category_selector_options($prepared_arr, $row['category_id']));
 		}
 
 	$o_form->add_input([
@@ -256,32 +197,19 @@ function get_item_articul_event($row)
 		'label'		=> get_const('ITEM_SERIE'),
 		'compact'	=> true,
 		]);
-
 	$o_form->add_input([
 		'name'		=> 'version',
 		'value'		=> $row['version'],
 		'label'		=> get_const('ITEM_VERSION'),
 		'compact'	=> true,
 		]);
-
 	$o_form->add_data([
 		'table_name'	=> DEFAULT_ITEM_TABLE,
-		'rec_id'		=> $row['id'],
-		'op'			=> 'item_articul',
+		'rec_id'	=> $row['id'],
+		'op'		=> 'item_articul',
 		]);
-
-	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
-	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
-
-	$o_form->compile();
-
-	$o_modal->add_field($o_form->code());
- 	$o_modal->compile();
-
-	$o_button = new itButton(get_const('BUTTON_ARTICUL'), 'modal', ['class'=>'admin', 'form' => $o_modal->form_id()], 'blue' );
-	$result = $o_button->code().$o_modal->code();
-	unset($o_button, $o_form, $o_modal);
-	return $result;
+	colibri_item_event_add_ok_cancel($o_form, $o_modal);
+	return colibri_item_event_modal_code($o_modal, $o_form, get_const('BUTTON_ARTICUL'), 'blue');
 	}
 
 function get_rewind_event()
@@ -409,37 +337,25 @@ function get_price_item_event($row)
 
 	if (!$_USER->is_logged()) return;
 
-	$o_modal = new itModal();
-	$o_modal->set_size('small');
-	$o_modal->set_animation('fadeAndUp');
-
+	$o_modal = colibri_item_event_modal('small', 'fadeAndUp');
 	$o_form = new itForm2();
 	$o_form->add_title(mstr_replace([
 		'[VALUE]'	=> get_item_articul($row),
 		], get_const('ITEM_PRICE_QUERY')));
-
 	$o_form->add_input([
 		'label'		=> 'стоимость, $',
 		'name'		=> 'value',
 		'value'		=> $row['price'],
 		'compact'	=> true,
 		]);
-
 	$o_form->add_data([
 		'table_name' 	=> 'items',
 		'rec_id'	=> $row['rec_id'],
 		'op'		=> 'item_price'
 		]);
-	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
-	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
-	$o_form->compile();
+	colibri_item_event_add_ok_cancel($o_form, $o_modal);
 
-	$o_modal->add_field($o_form->code());
- 	$o_modal->compile();
-
-	$o_button = new itButton(doubleval($row['price'])." $", 'modal', ['class' => '', 'form' => $o_modal->form_id()], 'yellow big' );
-	$result = $o_button->code().$o_modal->code();
-	unset($o_button, $o_form, $o_modal);
+	$result = colibri_item_event_modal_code($o_modal, $o_form, doubleval($row['price']).' $', 'yellow big', '');
 	return
 		TAB."<div class='item_price'>".
 		TAB."<div>".

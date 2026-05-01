@@ -57,3 +57,6 @@ M0 / P39 note: `itFeed.class.php` had only visual separator/CRC cleanup; `engine
 
 ## Project-wide comment noise cleanup
 Generated CRC metadata blocks and decorative separator comments are considered visual legacy noise. They may be removed in broad cleanup patches when no runtime code is changed.
+
+## M0 / P42 `engine_add_items_event.php`
+The first item admin event cleanup reduced repeated project-side form/modal/button assembly while preserving existing public `get_*_event(...)` function names and item mutation `op` values.

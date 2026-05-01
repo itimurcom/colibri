@@ -24,3 +24,6 @@
 
 ## Comment cleanup rule
 Broad comment cleanup may remove generated CRC metadata and decorative separator lines, but it must not remove behavior notes, TODO/FIXME markers, license text, or comments that document runtime constraints. See `docs/PROJECT_COMMENT_NOISE_CLEANUP_STAGE.md`.
+
+## M0 / P42 item admin events note
+`public/engine/core/units/items/events/engine_add_items_event.php` is a project-side item admin UI helper file. Keep its existing `get_*_event(...)` public functions stable, and reduce only repeated local form/modal/button assembly inside the same file.
