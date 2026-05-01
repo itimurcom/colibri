@@ -19,8 +19,8 @@ function get_itimage_x_event($data)
 
 	$data['op'] = 'itimage_x';
 	$o_form->add_data($data);
-	$o_form->add_itButton(get_const('BUTTON_REMOVE'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"itimages_reload('#".itImages::_container_id($data)."');"], 'red' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_REMOVE'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"itimages_reload('#".itImages::_container_id($data)."');"], 'red' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

@@ -31,8 +31,8 @@ function get_ed_media_event($row)
 
 	$row['op'] = 'add_ed_media';
 	$o_form->add_data($row);
-	$o_form->add_itButton(get_const('BUTTON_ADD'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"editor_edreload('#".itEditor::_container_id($row)."');"], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_ADD'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"editor_edreload('#".itEditor::_container_id($row)."');"], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

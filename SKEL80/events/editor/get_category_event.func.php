@@ -27,7 +27,7 @@ function get_category_event($row)
 		'rec_id'	=> $row['rec_id'],
 		'op'		=> 'category',
 		]);
-	$o_form->add_itSelector('submit', $options, $row['category_id']);
+	$o_form->add_selector('submit', $options, $row['category_id']);
 
 	$o_form->compile();
 

@@ -27,7 +27,7 @@ function get_wizard_type_event($row)
 			'name'		=> 'value',
 			'compact'	=> true,
 			);
-		$o_form->add_itSelector('select', $options, $row['type'], NULL, get_const('QUERY_CHANGE_WIZ_TYPE'));
+		$o_form->add_selector('select', $options, $row['type'], NULL, get_const('QUERY_CHANGE_WIZ_TYPE'));
 		} else $o_form->add_hidden('type', DEFAULT_WIZARD_TYPE);
 		
 	$o_form->add_data([
@@ -37,8 +37,8 @@ function get_wizard_type_event($row)
 		'user_id'	=> $_USER->id(),
 		'op' 		=> 'wiz_type',
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

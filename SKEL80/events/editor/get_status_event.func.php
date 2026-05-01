@@ -41,7 +41,7 @@ function get_status_event($row, $selector='statuses')
 			'name'		=> 'status',
 			'form'		=> $o_form->form_id()
 			];
-		$o_form->add_itSelector('submit', $options, $row['status']);
+		$o_form->add_selector('submit', $options, $row['status']);
 		} else add_error_message("no prepared index <b>{$selector}</b>");
 		
 	$o_form->add_data([

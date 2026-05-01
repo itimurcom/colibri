@@ -42,7 +42,7 @@ function get_object_select_event($row)
 				'name'		=> 'value',
 				);
 
-			$o_form->add_itSelector('select', $options, $row['value'], NULL, get_const('QUERY_OBJECT_SELECT_VALUE'));
+			$o_form->add_selector('select', $options, $row['value'], NULL, get_const('QUERY_OBJECT_SELECT_VALUE'));
 			} else $value_field = get_const('NO_DATA');
 		
 		$o_form->add_data([
@@ -52,8 +52,8 @@ function get_object_select_event($row)
 			'user_id'	=> $_USER->id(),
 			]);
 		$o_form->add_hidden('op', 'obj_value');
-		$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-		$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+		$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+		$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 		$o_form->compile();
 
 		$o_modal->add_field($o_form->code());

@@ -23,7 +23,7 @@ function f2_new_field_event($row)
 
 	$o_form = new itForm2();
 	$o_form->add_title(str_replace('[VALUE]', "{$row['kind']} #".($row['ed_key']+1), get_const('QUERY_NEW_FILED')));
-	$o_form->add_select([
+	$o_form->add_selector([
 		'array'	=> $form2_defaults,
 		'name'	=> 'kind',
 		]);
@@ -31,7 +31,7 @@ function f2_new_field_event($row)
 	$row['op'] = 'f2_field';
 	$o_form->add_data($row);
 	
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"f2_edreload('#".itForm2::_container_id($row)."');"], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"f2_edreload('#".itForm2::_container_id($row)."');"], 'blue' );	
 	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 
 	$o_modal->add_field($o_form->_view());

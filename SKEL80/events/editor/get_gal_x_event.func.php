@@ -26,8 +26,8 @@ function get_gal_x_event($row, $gallery_id=NULL)
 
 	$row['gallery_id'] = $gallery_id; 
 	$row['op'] = 'gal_x';
-	$o_form->add_itButton(get_const('BUTTON_REMOVE'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"editor_edreload('#".itEditor::_container_id($row)."');"], 'red' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_REMOVE'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"editor_edreload('#".itEditor::_container_id($row)."');"], 'red' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->add_data($row);
 	$o_form->compile();
 

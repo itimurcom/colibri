@@ -51,20 +51,24 @@ function f2_change_event($row)
 		switch ($row['kind'])
 			{
 			case 'SELECT' : {
-				$o_form->add_select([
+				$list_array = isset($row['array']) && is_array($row['array']) ? $row['array'] : [];
+				$list_titles = isset($row['titles']) ? $row['titles'] : 'title';
+				$list_values = isset($row['values']) ? $row['values'] : 'value';
+
+				$o_form->add_selector([
 					'type'		=>'select',
 					'name'		=> 'value',
-					'array' 	=> ready_val($row['array'], []),
-					'titles'        => isset($row['titles']) ? $row['titles'] : 'title',
-					'values'	=> isset($row['values']) ? $row['values'] : 'values',
+					'array' 	=> $list_array,
+					'titles'        => $list_titles,
+					'values'	=> $list_values,
 					'value'		=> isset($row['value'][CMS_LANG]) ? $row['value'][CMS_LANG] : ready_val($row['value']),
 					'label'		=> get_const('F2_VALUE')."&nbsp;<small class='blue'>{$lang_cat[CMS_LANG]['name_orig']}</small>",
 					'compact'	=> true,
 					]);
-				
+
 
 				$titles_res = NULL;
-				if (is_array((@$titles_arr = array_column($row['array'], $row['titles']))))
+				if (is_array(($titles_arr = array_column($list_array, $list_titles))))
 					{
 					foreach ($titles_arr as $key=>$title_row)
 						{
@@ -72,7 +76,7 @@ function f2_change_event($row)
 						}
 					}
 				$values_res = NULL;
-				if (is_array((@$values_arr = array_column($row['array'], $row['values']))))
+				if (is_array(($values_arr = array_column($list_array, $list_values))))
 					{
 					foreach ($values_arr as $key=>$value_row)
 						{
@@ -86,13 +90,13 @@ function f2_change_event($row)
 					}
 				$o_form->add_area([
 					'name'		=> 'f2_titles',
-					'value'		=> (is_array($titles_res) ? implode("\n",$titles_res) : $titles_res),
+					'value'		=> (is_array($titles_res) ? implode("\n",$titles_res) : ready_val($titles_res)),
 					'label'		=> 'F2_TITLES',
 					'class'		=> 'fixed',
 					]);					
 				$o_form->add_area([
 					'name'		=> 'f2_values',
-					'value'		=> (is_array($values_res) ? implode("\n",$values_res) : $values_res),
+					'value'		=> (is_array($values_res) ? implode("\n",$values_res) : ready_val($values_res)),
 					'label'		=> 'F2_VALUES',
 					'class'		=> 'fixed',					
 					]);					
@@ -101,11 +105,15 @@ function f2_change_event($row)
 				}
 
 			case "SET" : {
+				$list_array = isset($row['array']) && is_array($row['array']) ? $row['array'] : [];
+				$list_titles = isset($row['titles']) ? $row['titles'] : 'title';
+				$list_values = isset($row['values']) ? $row['values'] : 'value';
+
 				$o_form->add_set([
 					'name'		=> 'value',
-					'array' 	=> $row['array'],
-					'titles'        => $row['titles'],
-					'values'	=> $row['values'],
+					'array' 	=> $list_array,
+					'titles'        => $list_titles,
+					'values'	=> $list_values,
 					'value'		=> ready_val($row['value']),
 					'label'		=>  get_const('F2_VALUE')."&nbsp;<small class='blue'>{$lang_cat[CMS_LANG]['name_orig']}</small>",
 //					'compact'	=> true,
@@ -113,7 +121,7 @@ function f2_change_event($row)
 
 
 				$titles_res = NULL;
-				if (is_array(($titles_arr = array_column($row['array'], $row['titles']))))
+				if (is_array(($titles_arr = array_column($list_array, $list_titles))))
 					{
 					foreach ($titles_arr as $key=>$title_row)
 						{
@@ -121,7 +129,7 @@ function f2_change_event($row)
 						}
 					}
 				$values_res = NULL;
-				if (is_array(($values_arr = array_column($row['array'], $row['values']))))
+				if (is_array(($values_arr = array_column($list_array, $list_values))))
 					{
 					foreach ($values_arr as $key=>$value_row)
 						{
@@ -131,13 +139,13 @@ function f2_change_event($row)
 										
 				$o_form->add_area([
 					'name'		=> 'f2_titles',
-					'value'		=> implode("\n",$titles_res),
+					'value'		=> is_array($titles_res) ? implode("\n",$titles_res) : ready_val($titles_res),
 					'label'		=> 'F2_TITLES',
 					'class'		=> 'fixed',					
 					]);					
 				$o_form->add_area([
 					'name'		=> 'f2_values',
-					'value'		=> implode("\n",$values_res),
+					'value'		=> is_array($values_res) ? implode("\n",$values_res) : ready_val($values_res),
 					'label'		=> 'F2_VALUES',
 					'class'		=> 'fixed',					
 					]);					

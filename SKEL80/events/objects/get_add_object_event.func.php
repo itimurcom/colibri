@@ -35,15 +35,15 @@ function get_add_object_event($table_name=DEFAULT_OBJECT_TABLE)
 			'color'		=> 'color',
 			'name'		=> 'category_id'
 			);
-		$o_form->add_itSelector('select', $options, '', NULL, get_const('QUERY_ADD_CATEGORY_PARENT'));
+		$o_form->add_selector('select', $options, '', NULL, get_const('QUERY_ADD_CATEGORY_PARENT'));
 		} else $o_form->add_hidden('category_id', 0);
 	
 	$o_form->add_data([
 		'table_name' 	=> $table_name,
 		'op'		=> 'add_object',
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

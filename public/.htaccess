@@ -45,14 +45,14 @@ RewriteRule ^(.*)/?top_left_logo(.*).png$ maillogo.php?path=$1&mail_id=$2 [B]
 RewriteRule ^social(.*)$ soclogin.php?op=login&engine=$1 [L,QSA]
 RewriteRule ^soclogin/$ soclogin.php [L,QSA]
 
+RewriteRule ^robots.txt$ robots.php [L,QSA]
+RewriteRule ^sitemap.xml$ sitemap.php [L,QSA]
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)/$ index.php/ [L,QSA]
 
 RewriteRule items/(.*)$ index.php?url=$1 [L,QSA]
-
-RewriteRule ^robots.txt$ robots.php [L,QSA]
-RewriteRule ^sitemap.xml$ sitemap.php [L,QSA]
 
 #автоматическое генерирование аватарок
 RewriteBase /
@@ -60,7 +60,6 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^img/(.*)$ img.php?img_url=$1 [L]
 
 # http2https
-RewriteEngine On
 RewriteCond %{HTTPS} off
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]

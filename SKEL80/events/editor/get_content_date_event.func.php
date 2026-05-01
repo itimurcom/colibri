@@ -20,15 +20,15 @@ function get_content_date_event($row)
 	
 	$o_form = new itForm2();
 	$o_form->add_title("<b>".get_const('QUERY_CHANGE_DATE')."</b>");
-	$o_form->add_itDate($row['datetime'], ['name' => 'datetime', 'type' => 'text']);
+	$o_form->add_date($row['datetime'], ['name' => 'datetime', 'type' => 'text']);
 
 	$o_form->add_data([
 		'table_name'	=> $row['table_name'],
 		'rec_id'	=> $row['rec_id'],
 		'op'		=> 'datetime',
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

@@ -143,8 +143,8 @@ function customer_edit_event()
 		'rec_id'	=> $_USER->data['id'],
 		'op'		=> 'user_edit',
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	
 	$o_form->compile();
 
@@ -246,7 +246,7 @@ function customer_ajaxpin_event(&$pined)
 		'more'		=> false,
 		]);
 
-	$o_form->add_desc([
+	$o_form->add_description([
 		'value'	=> get_const('NODE_PIN_DESC'),
 		]);
 		

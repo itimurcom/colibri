@@ -36,10 +36,10 @@ function get_block_content_event($row, $table_name=DEFAULT_BLOCK_TABLE)
 		'op'		=> 'block',
 		]);
 	
-	$o_form->add_itSelector('select', $options, $row['content_id'], NULL, get_const('QUERY_BLOCK'));
+	$o_form->add_selector('select', $options, $row['content_id'], NULL, get_const('QUERY_BLOCK'));
 
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

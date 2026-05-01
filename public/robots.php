@@ -1,18 +1,19 @@
 <?php
-$https = false;
-if (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') {
-    $https = true;
-} elseif (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') {
-    $https = true;
-} elseif (!empty($_SERVER['REQUEST_SCHEME']) && strtolower((string)$_SERVER['REQUEST_SCHEME']) === 'https') {
-    $https = true;
+$scheme = 'http';
+if (
+    (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') ||
+    (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower((string)$_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') ||
+    (!empty($_SERVER['REQUEST_SCHEME']) && strtolower((string)$_SERVER['REQUEST_SCHEME']) === 'https') ||
+    (!empty($_SERVER['SERVER_PORT']) && (string)$_SERVER['SERVER_PORT'] === '443')
+) {
+    $scheme = 'https';
 }
 
-$scheme = $https ? 'https' : 'http';
-$host = !empty($_SERVER['HTTP_HOST']) ? (string)$_SERVER['HTTP_HOST'] : 'localhost';
-$baseUrl = $scheme . '://' . $host;
+$httpHost = !empty($_SERVER['HTTP_HOST']) ? (string)$_SERVER['HTTP_HOST'] : 'localhost';
+$hostNoPort = preg_replace('/:\\d+$/', '', $httpHost);
+$baseUrl = $scheme.'://'.$httpHost;
 
-header('Content-Type: text/plain; charset=UTF-8');
+header('Content-Type: text/plain; charset=utf-8');
 
 echo "User-agent: *\n";
 echo "Disallow: /engine/\n";
@@ -21,5 +22,5 @@ echo "Disallow: /mvc/\n";
 echo "Disallow: /themes/\n\n";
 echo "User-agent: *\n";
 echo "Allow: /\n\n";
-echo 'Host: ' . $host . "\n";
-echo 'Sitemap: ' . $baseUrl . "/sitemap.xml\n";
+echo "Host: {$hostNoPort}\n";
+echo "Sitemap: {$baseUrl}/sitemap.xml\n";

@@ -24,7 +24,7 @@ function f2_x_field_event($row)
 	$row['op'] = 'f2_x';
 	$o_form->add_data($row);
 	
-	$o_form->add_itButton(get_const('BUTTON_REMOVE'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"f2_edreload('#".itForm2::_container_id($row)."');"], 'red' );	
+	$o_form->add_button(get_const('BUTTON_REMOVE'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"f2_edreload('#".itForm2::_container_id($row)."');"], 'red' );	
 	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 
 	$o_modal->add_field($o_form->_view());

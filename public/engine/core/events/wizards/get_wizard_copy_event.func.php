@@ -31,7 +31,7 @@ function get_wizard_copy_event($row)
 			'color'		=> 'color',
 			'name'		=> 'category_id',
 			);
-		$o_form->add_itSelector('select', $options, $row['rec_id'], NULL, get_const('QUERY_COPY_WIZARD_PARENT'));
+		$o_form->add_selector('select', $options, $row['rec_id'], NULL, get_const('QUERY_COPY_WIZARD_PARENT'));
 		} else $o_form->add_hidden('category_id', 0);
 	
 	$o_form->add_data([
@@ -41,8 +41,8 @@ function get_wizard_copy_event($row)
 		'key'		=> $row['key'],
 		'op'		=> 'wiz_copy',
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

@@ -27,7 +27,7 @@ function get_category_parent_event($row, $table_name=DEFAULT_CATEGORY_TABLE)
 	
 	$o_form = new itForm2();
 	$o_form->add_title(str_replace ('[VALUE]', "#{$row['id']} <b>".get_field_by_lang($row['title_xml'])."</b>", get_const('QUERY_CATEGORY_PARENT')));
-	$o_form->add_itSelector('select', $options, $row['parent_id'], NULL, get_const('QUERY_CHANGE_CATEGORY_PARENT'));
+	$o_form->add_selector('select', $options, $row['parent_id'], NULL, get_const('QUERY_CHANGE_CATEGORY_PARENT'));
 	
 	
 	$o_form->add_data([
@@ -35,8 +35,8 @@ function get_category_parent_event($row, $table_name=DEFAULT_CATEGORY_TABLE)
 		'rec_id' 	=> $row['id'],
 		'op'		=> 'set_parent',
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

@@ -23,15 +23,15 @@ function get_related_conents_event($row, $table_name=DEFAULT_CONTENT_TABLE)
 		'name' 		=> 'content_id',
 		'op' 		=> 'contents',
 		);
-	$o_form->add_itAutoSelect($options, get_const('QUERY_RELATED_LABEL'));
+	$o_form->add_auto($options, get_const('QUERY_RELATED_LABEL'));
 	$o_form->add_data([
 		'table_name' 	=> $table_name,
 		'rec_id' 	=> $row['id'],
 		'field' 	=> ready_val($row['field'], DEFAULT_RELATED_FIELD),
 		'op'		=> 'related',
 		]);	
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

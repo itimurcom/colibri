@@ -41,14 +41,14 @@ function get_gal_n_event($row, $gallery_id)
 	$o_form->add_title(str_replace('[VALUE]', $gallery_id+1, QUERY_GAL_N));
 	$o_form->add_title(TAB."<img src='".get_thumbnail($row['value'][$gallery_id], 'IMG_PREV')."'/>");
 
-	$o_form->add_itSelector('select', $options, $gallery_id);
+	$o_form->add_selector('select', $options, $gallery_id);
 
 	$row['gallery_id'] = $gallery_id;
 	$row['op'] = 'gal_n';
 	$o_form->add_data($row);
 
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"editor_edreload('#".itEditor::_container_id($row)."');"], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"editor_edreload('#".itEditor::_container_id($row)."');"], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

@@ -31,7 +31,7 @@ function get_object_category_event($row)
 				'color'		=> 'color',
 				'name'		=> 'value'
 				);
-			$o_form->add_itSelector('select', $options, $row['category_id'], NULL, get_const('QUERY_OBJECT_CATEGORY'));
+			$o_form->add_selector('select', $options, $row['category_id'], NULL, get_const('QUERY_OBJECT_CATEGORY'));
 			} else $o_form->add_hidden('category_id', 0);
 	
 		$o_form->add_data([
@@ -39,8 +39,8 @@ function get_object_category_event($row)
 			'rec_id' 	=> $row['rec_id'],
 			'op'		=> 'obj_category'
 			]);
-		$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-		$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+		$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+		$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 		$o_form->compile();
 
 		$o_modal->add_field($o_form->code());

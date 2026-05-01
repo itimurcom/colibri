@@ -247,6 +247,12 @@ class itForm2
         $field = $form2_defaults[$kind]['default'];
         $field['kind'] = $kind;
 
+        if (in_array($kind, ['SELECT', 'SET'], true)) {
+            $field['array'] = isset($field['array']) && is_array($field['array']) ? $field['array'] : [];
+            $field['titles'] = isset($field['titles']) ? $field['titles'] : 'title';
+            $field['values'] = isset($field['values']) ? $field['values'] : 'value';
+        }
+
         if (!in_array($kind, ['TITLE', 'DESC', 'CODE'], true)) {
             $field['name'] = ready_val($data['name'], $this->index_name($kind));
         }
@@ -273,21 +279,12 @@ class itForm2
         $this->insertCollectionItem('fields_xml', $ed_key, $this->buildInsertedField($kind, $data));
         }
 
-    protected static function mutateStoredForm($options, $callback)
-        {
-        $o_form = new itForm2($options);
-        $result = $callback($o_form);
-        $o_form->store();
-        unset($o_form);
-        return $result;
-        }
-
     static function _insert_field($data=NULL)
         {
-        self::mutateStoredForm($data, function($o_form) use ($data) {
-            $o_form->insert_field($data);
-            return true;
-            });
+        $o_form = new itForm2($data);
+        $o_form->insert_field($data);
+        $o_form->store();
+        unset($o_form);
         }
 
     public function sort_fields()
@@ -302,12 +299,14 @@ class itForm2
 
     static function _up_field($data)
         {
-        return self::mutateStoredForm([
-            'table_name' => $data['table_name'],
-            'rec_id' => $data['rec_id'],
-            ], function($o_form) use ($data) {
-                return $o_form->up_field($data['ed_key']);
-            });
+        $o_form2 = new itForm2([
+            'table_name'	=> $data['table_name'],
+            'rec_id'	=> $data['rec_id'],
+            ]);
+        $result = $o_form2->up_field($data['ed_key']);
+        $o_form2->store();
+        unset($o_form2);
+        return $result;
         }
 
     public function down_field($ed_key)
@@ -317,12 +316,14 @@ class itForm2
 
     static function _down_field($data)
         {
-        return self::mutateStoredForm([
-            'table_name' => $data['table_name'],
-            'rec_id' => $data['rec_id'],
-            ], function($o_form) use ($data) {
-                return $o_form->down_field($data['ed_key']);
-            });
+        $o_form2 = new itForm2([
+            'table_name'	=> $data['table_name'],
+            'rec_id'	=> $data['rec_id'],
+            ]);
+        $result = $o_form2->down_field($data['ed_key']);
+        $o_form2->store();
+        unset($o_form2);
+        return $result;
         }
 
     public function insert_button($data=NULL)
@@ -357,44 +358,39 @@ class itForm2
             }
         }
 
-    protected function buildFieldDefinition($defaults, $kind, $args, $options=[])
+    protected function addFieldFromDefaults($kind, $args, $default_kind=NULL, $extra=[], $with_more=true, $unset_empty_options=false)
         {
-        _arguments($args, $defaults, $data);
-        $data['kind'] = $kind;
+        global $form2_defaults;
+        _arguments($args, $form2_defaults[ready_val($default_kind, $kind)]['default'], $data);
 
-        if (isset($options['unset_options']) && is_null(ready_val($data['options'])))
+        if ($unset_empty_options AND is_null(ready_val($data['options'])))
             {
             unset($data['options']);
             }
 
-        if (isset($options['extra']) && is_array($options['extra']))
+        $data['kind'] = $kind;
+        foreach ($extra as $key=>$value)
             {
-            $data = array_merge($data, $options['extra']);
+            $data[$key] = $value;
             }
 
-        if (!empty($options['correct']))
-            {
-            $this->_correct_field_data($data);
-            }
+        $this->_correct_field_data($data);
 
-        if (!empty($options['more']))
+        if ($with_more)
             {
             $data['more'] = isset($data['more']) ? $data['more'] : DEFAULT_MORE_STATE;
             }
 
-        return $data;
-        }
-
-    protected function appendFieldDefinition($defaults, $kind, $args, $options=[])
-        {
-        $collection = isset($options['collection']) ? $options['collection'] : 'fields_xml';
-        $this->{$collection}[] = $this->buildFieldDefinition($defaults, $kind, $args, $options);
+        $this->fields_xml[] = $data;
         }
 
     public function add_title(...$args)
         {
         global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['TITLE']['default'], 'TITLE', $args);
+        _arguments($args, $form2_defaults['TITLE']['default'], $data);
+
+        $data['kind'] = 'TITLE';
+        $this->fields_xml[] = $data;
         }
 
     public function add_hidden(...$args)
@@ -412,155 +408,89 @@ class itForm2
         {
         if (is_array($arr))
             {
-            foreach($arr as $key=>$value)
-                {
-                $this->data[$key] = $value;
-                }
+            foreach($arr as $key=>$value) {
+                    $this->data[$key] = $value;
+                    }
             }
-        }
-
-    public function add_desc(...$args)
-        {
-        return $this->add_description(...$args);
         }
 
     public function add_description(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['DESC']['default'], 'DESC', $args, ['correct' => true, 'more' => true]);
-        }
-
-    public function add_row(...$args)
-        {
-        return $this->add_field(...$args);
-        }
-
-    public function add_code(...$args)
-        {
-        return $this->add_field(...$args);
+        return $this->addFieldFromDefaults('DESC', $args);
         }
 
     public function add_field(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['CODE']['default'], 'CODE', $args, ['correct' => true]);
+        return $this->addFieldFromDefaults('CODE', $args, NULL, [], false);
         }
 
     public function add_input(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['INPUT']['default'], 'INPUT', $args, ['correct' => true, 'more' => true]);
+        return $this->addFieldFromDefaults('INPUT', $args);
         }
 
     public function add_phone(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['PHONE']['default'], 'PHONE', $args, ['correct' => true, 'more' => true, 'extra' => ['type' => 'phone']]);
+        return $this->addFieldFromDefaults('PHONE', $args, NULL, ['type' => 'phone']);
         }
 
     public function add_email(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['EMAIL']['default'], 'EMAIL', $args, ['correct' => true, 'more' => true, 'extra' => ['type' => 'email']]);
+        return $this->addFieldFromDefaults('EMAIL', $args, NULL, ['type' => 'email']);
         }
 
     public function add_number(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['PHONE']['default'], 'NUMBER', $args, ['correct' => true, 'more' => true, 'extra' => ['type' => 'number']]);
+        return $this->addFieldFromDefaults('NUMBER', $args, 'PHONE', ['type' => 'number']);
         }
-
     public function add_password(...$args)
         {
-        return $this->add_pass(...$args);
-        }
-
-    public function add_pass(...$args)
-        {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['PASS']['default'], 'PASS', $args, ['correct' => true, 'more' => true]);
+        return $this->addFieldFromDefaults('PASS', $args);
         }
 
     public function add_area(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['AREA']['default'], 'AREA', $args, ['correct' => true, 'more' => true]);
-        }
-
-    public function add_itSelector(...$args)
-        {
-        return $this->add_selector(...$args);
-        }
-
-    public function add_select(...$args)
-        {
-        return $this->add_selector(...$args);
+        return $this->addFieldFromDefaults('AREA', $args);
         }
 
     public function add_selector(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['PASS']['default'], 'SELECT', $args, ['correct' => true, 'more' => true, 'unset_options' => true]);
-        }
-
-    public function add_itAutoSelect(...$args)
-        {
-        return $this->add_auto(...$args);
+        return $this->addFieldFromDefaults('SELECT', $args, 'SELECT', [], true, true);
         }
 
     public function add_auto(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['AUTO']['default'], 'AUTO', $args, ['correct' => true, 'more' => true]);
-        }
-
-    public function add_itDate(...$args)
-        {
-        return $this->add_date(...$args);
+        return $this->addFieldFromDefaults('AUTO', $args);
         }
 
     public function add_date(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['DATE']['default'], 'DATE', $args, ['correct' => true, 'more' => true]);
-        }
-
-    public function add_timeSelector(...$args)
-        {
-        return $this->add_time(...$args);
+        return $this->addFieldFromDefaults('DATE', $args);
         }
 
     public function add_time(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['TIME']['default'], 'TIME', $args, ['correct' => true, 'more' => true]);
+        return $this->addFieldFromDefaults('TIME', $args);
         }
 
     public function add_set(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['SET']['default'], 'SET', $args, ['correct' => true, 'more' => true]);
+        return $this->addFieldFromDefaults('SET', $args);
         }
 
     public function add_upgal(...$args)
         {
-        global $form2_defaults;
-        $this->appendFieldDefinition($form2_defaults['UPGAL']['default'], 'UPGAL', $args, ['correct' => true, 'more' => true]);
+        return $this->addFieldFromDefaults('UPGAL', $args);
         }
-
-    public function add_itButton(...$args)
-        {
-        return $this->add_button(...$args);
-        }
-
     public function add_button(...$args)
         {
+        global $form2_defaults;
         _arguments($args, [
-            'title'     => 'Ok',
-            'type'      => DEFAULT_BUTTON_TYPE,
-            'options'   => NULL,
-            'color'     => NULL,
-            'element_id'=> NULL,
+            'title' 	=> 'Ok',
+            'type'		=> DEFAULT_BUTTON_TYPE,
+            'options'	=> NULL,
+            'color'		=> NULL,
+            'element_id'	=> NULL,
             ], $data);
 
         $this->buttons_xml[] = $data;

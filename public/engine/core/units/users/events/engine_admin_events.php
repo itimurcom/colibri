@@ -34,8 +34,8 @@ function get_login_event($options=NULL)
 		'value'		=> (isset($_REQUEST['user_password']) ? $_REQUEST['user_password'] : NULL),
 		'placeholder'	=> get_const('USER_PASSWORD'),
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
 	
 	if (ready_val($options['reg']))
 		{

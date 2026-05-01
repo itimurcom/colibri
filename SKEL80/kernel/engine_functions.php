@@ -277,32 +277,29 @@ function cms_smart_redirect($outgo_page=NULL, $exclude=['login','enter'])
 
 
 //..............................................................................
+// returns random string from provided character set
+//..............................................................................
+function skel80_random_from_chars($characters='', $length=1)
+	{
+	$characters = (string)$characters;
+	$length = max(0, intval($length));
+	$max_index = strlen($characters)-1;
+	$result = '';
+	if ($characters==='') return $result;
+	for ($i=0; $i<$length; $i++)
+		{
+		$result .= $characters[rand(0, $max_index)];
+		}
+	return $result;
+	}
+
+//..............................................................................
 // генерирует новый пароль из допустимых символов
 //..............................................................................
 function generate_new_password($number=8)
 	{
-	$arr = array(
-		'a','b','c','d','e','f',  
-                'g','h','i','j','k','l',  
-                'm','n','o','p','r','s',  
-                't','u','v','x','y','z',  
-                'A','B','C','D','E','F',  
-                'G','H','I','J','K','L',  
-                'M','N','O','P','R','S',  
-                'T','U','V','X','Y','Z',  
-                '1','2','3','4','5','6',  
-                '7','8','9','0');  
-	// Генерируем пароль  
-	$pass = "";  
-	for($i = 0; $i < $number; $i++)  
-		{  
-		// Вычисляем случайный индекс массива  
-		$index = rand(0, count($arr) - 1);  
-		$pass .= $arr[$index];  
-		}  
-		return $pass;  
-	}  
-
+	return skel80_random_from_chars('abcdefghijklmnoprstuvxyzABCDEFGHIJKLMNOPRSTUVXYZ1234567890', $number);
+	}
 
 
 
@@ -431,30 +428,37 @@ function decode_json_values(&$array)
 	}
 
 //..............................................................................
+// returns localized label for today/yesterday dates when applicable
+//..............................................................................
+function skel80_relative_date_label($time)
+	{
+	$date_key = skel80_strftime_compat('%d %b %Y', $time);
+	if ($date_key == skel80_strftime_compat('%d %b %Y', strtotime('today'))) return get_const('LOCAL_DATE_TODAY');
+	if ($date_key == skel80_strftime_compat('%d %b %Y', strtotime('yesterday'))) return get_const('LOCAL_DATE_YESTERDAY');
+	return NULL;
+	}
+
+//..............................................................................
+// returns localized date format parts
+//..............................................................................
+function skel80_local_date_format($s_month=false, $s_dname=false, $s_year=true)
+	{
+	return [
+		'year' => ($s_year) ? ' %Y' : '',
+		'month' => ($s_month) ? '%b' : '%B',
+		'weekday' => ($s_dname) ? '%a, ' : '',
+	];
+	}
+
+//..............................................................................
 // возвращает правильное локальное написание даты для данных полей
 //..............................................................................
 function get_local_date_str($data, $s_month=false, $s_dname=false, $s_year=true)
 	{
-	//%a
 	$time = strtotime($data);
-
-	$year  = ($s_year) ? ' %Y' : '';
-
-	$month = ($s_month) ? '%b' : '%B';
-
-	$weekday =  ($s_dname) ? "%a, " : '';
-
-
-	if (skel80_strftime_compat("%d %b %Y",$time) == skel80_strftime_compat("%d %b %Y",strtotime('today'))) 
-		{
-		return get_const('LOCAL_DATE_TODAY');
-		} else
-	if (skel80_strftime_compat("%d %b %Y",$time) == skel80_strftime_compat("%d %b %Y",strtotime('yesterday'))) 
-		{
-		return get_const('LOCAL_DATE_YESTERDAY');
-		} 
-
-	return skel80_strftime_compat("{$weekday}%d {$month}{$year}",$time);
+	if ($label = skel80_relative_date_label($time)) return $label;
+	$format = skel80_local_date_format($s_month, $s_dname, $s_year);
+	return skel80_strftime_compat("{$format['weekday']}%d {$format['month']}{$format['year']}", $time);
 	}
 
 //..............................................................................
@@ -462,33 +466,13 @@ function get_local_date_str($data, $s_month=false, $s_dname=false, $s_year=true)
 //..............................................................................
 function get_local_datetime_str($data, $s_month=false, $s_dname=false, $s_year=true, $no_midnight=true)
 	{
-	//%a
 	$time = strtotime($data);
-
-	$year  = ($s_year) ? ' %Y' : '';
-
-	$month = ($s_month) ? '%b' : '%B';
-
-	$weekday =  ($s_dname) ? "%a, " : '';
-	
-	if (( ($time_str=get_time_str($data))==='00:00') AND $no_midnight)
-		{
-		$time_str = '';
-		} else $time_str = "<small class='time'>{$time_str}</small>";
-
-
-	if (skel80_strftime_compat("%d %b %Y",$time) == skel80_strftime_compat("%d %b %Y",strtotime('today'))) 
-		{
-		return get_const('LOCAL_DATE_TODAY')." ".$time_str;
-		} else
-	if (skel80_strftime_compat("%d %b %Y",$time) == skel80_strftime_compat("%d %b %Y",strtotime('yesterday'))) 
-		{
-		return get_const('LOCAL_DATE_YESTERDAY')." ".$time_str;
-		} 
-
-	return skel80_strftime_compat("{$weekday}%d {$month}{$year}",$time)." {$time_str}";
+	$time_str = get_time_str($data);
+	$time_str = (($time_str==='00:00') AND $no_midnight) ? '' : "<small class='time'>{$time_str}</small>";
+	if ($label = skel80_relative_date_label($time)) return $label." ".$time_str;
+	$format = skel80_local_date_format($s_month, $s_dname, $s_year);
+	return skel80_strftime_compat("{$format['weekday']}%d {$format['month']}{$format['year']}", $time)." {$time_str}";
 	}
-
 //..............................................................................
 // возвращает правильное локальное время
 //..............................................................................
@@ -721,14 +705,7 @@ function get_uuid() {
 //..............................................................................
 function random_str($length = 1)
 	{
-	$characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-	$charactersLength = strlen($characters);
-	$randomString = '';
-	for ($i = 0; $i < $length; $i++)
-		{
-        	$randomString .= $characters[rand(0, $charactersLength - 1)];
-    		}
-    	return $randomString;
+	return skel80_random_from_chars('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', $length);
 	}
 
 

@@ -281,7 +281,7 @@ class itObject
 							'value'		=> $row['value'],
 							'label'		=> get_field_by_lang($row['label']),
 							);
-						$o_form->add_itSelector('select', $options);
+						$o_form->add_selector('select', $options);
 						break;
 						}
 
@@ -301,8 +301,8 @@ class itObject
 				'user_id'	=> $_USER->id(),
 				]);
 			$o_form->add_hidden('op', $this->op);
-			$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
-			$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
+			$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
+			$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
 			$o_form->compile();
 			$result = $o_form->code();
 			unset($o_form);

@@ -98,8 +98,8 @@ function get_item_title_event($row)
 		'rec_id'	=> $row['rec_id'],
 		'op'		=> 'ed_title'
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());
@@ -130,8 +130,8 @@ function get_item_x_event($row)
 		'rec_id'	=> $row['rec_id'],
 		'op'		=> 'item_x',
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], $color_ok );
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], $color_ok );
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());
@@ -171,7 +171,7 @@ function get_item_add_event()
 			'name'		=> 'category_id',
 			'compact'	=> true,
 			];
-		$o_form->add_itSelector('select', $options, '', NULL, get_const('ITEM_CATEGORY'));
+		$o_form->add_selector('select', $options, '', NULL, get_const('ITEM_CATEGORY'));
 		}
 
 	$o_form->add_set([
@@ -208,8 +208,8 @@ function get_item_add_event()
 		'table_name'	=> DEFAULT_ITEM_TABLE,
 		'op'		=> 'add_item',
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
 
 	$o_form->compile();
 
@@ -247,7 +247,7 @@ function get_item_articul_event($row)
 			'label'		=> 'ITEM_CATEGORY',
 			'value'		=> $row['category_id'],
 			];
-		$o_form->add_itSelector($options);
+		$o_form->add_selector($options);
 		}
 
 	$o_form->add_input([
@@ -270,8 +270,8 @@ function get_item_articul_event($row)
 		'op'			=> 'item_articul',
 		]);
 
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
 
 	$o_form->compile();
 
@@ -430,8 +430,8 @@ function get_price_item_event($row)
 		'rec_id'	=> $row['rec_id'],
 		'op'		=> 'item_price'
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

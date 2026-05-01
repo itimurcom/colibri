@@ -53,14 +53,14 @@ function get_content_lang_event($row)
 	$o_form = new itForm2();
 	$o_form->add_title(str_replace('[VALUE]', get_field_by_lang($row['title_xml']), get_const('ED_LANG_QUERY')));
 
-	$o_form->add_itSelector('select', $options, $row['lang'], NULL, get_const('QUERY_LANG_CONTENT'));
+	$o_form->add_selector('select', $options, $row['lang'], NULL, get_const('QUERY_LANG_CONTENT'));
 	$o_form->add_data([
 		'table_name'	=> $row['table_name'],
 		'rec_id'	=> $row['rec_id'],
 		'op'		=> 'lang',
 		]);
-	$o_form->add_itButton(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
-	$o_form->add_itButton(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
+	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
 	$o_form->compile();
 
 	$o_modal->add_field($o_form->code());

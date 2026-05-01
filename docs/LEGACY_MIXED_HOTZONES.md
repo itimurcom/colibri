@@ -36,4 +36,16 @@ Primary item read/render hotspot. Current cleanup direction: collapse duplicated
 Shared feed runtime that still mixes payload building, control rendering and HTML assembly. Current cleanup direction: reduce more/fewer button and feed-row compilation duplication in place.
 
 ## 9. `SKEL80/classes/f2/itForm2.class.php`
-Large shared form runtime with many repetitive field builder methods. Current cleanup direction: reduce repeated field-definition builders and stored-form mutation wrappers in place.
+Large shared form runtime with many repetitive field builder methods. Current cleanup direction: reduce repeated field-definition builders in place, preserve public `add_*` method names, and avoid new form factory/controller layers.
+
+## Stabilization checkpoint: generated endpoints
+`public/.htaccess` routes `robots.txt` and `sitemap.xml` before broad route rewrites, so generated endpoint behavior stays explicit after cleanup and hotfix patches.
+
+## M0 / P34 engine_functions second cleanup pass
+`SKEL80/kernel/engine_functions.php` now uses local shared primitives for repeated random-string and localized-date formatting logic. This is still direct cleanup inside the shared helper dump, not a new runtime layer.
+
+## itForm2 canonical method names
+`itForm2` no longer keeps public synonym add-methods for old naming variants. Project call sites should use the canonical method names documented in `docs/ITFORM2_CANONICAL_METHOD_NAMES_STAGE.md`.
+
+## P37 note
+`itForm2.class.php` canonical method migration remains active; P37 only fixes field-builder regressions for form-editor field creation and list-field metadata.

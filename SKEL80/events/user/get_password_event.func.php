@@ -29,8 +29,8 @@ function get_password_event($row, $table_name=DEFAULT_USER_TABLE)
 		'op'		=> 'password',
 		]);
 
-	$o_form->add_itButton(BUTTON_OK, 'submit', ['form' => $o_form->form_id()], 'blue' );	
-	$o_form->add_itButton(BUTTON_CANCEL, 'close', ['form' => $o_modal->form_id()], 'green' );
+	$o_form->add_button(BUTTON_OK, 'submit', ['form' => $o_form->form_id()], 'blue' );	
+	$o_form->add_button(BUTTON_CANCEL, 'close', ['form' => $o_modal->form_id()], 'green' );
 	$o_form->compile();
 	$o_modal->add_field($o_form->code());
  	$o_modal->compile();
