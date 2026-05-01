@@ -19,86 +19,60 @@ class itEditor
 	// конструктор класса - создает привязку редактора к записи в базе данных
 	public function __construct($table_name=DEFAULT_CONTENT_TABLE, $rec_id=NULL, $no_date=NULL, $no_lang=NULL, $no_moderate=false, $no_avatar=NULL, $field=DEFAULT_CONTENT_FIELD)
 		{
-		if (!is_array($table_name))
-			{
-			$this->table_name 	= $table_name;
-			$this->rec_id 		= $rec_id;
-			$this->field 		= $field;
-			$this->column 		= $field;
-			$this->no_date 		= $no_date;
-			$this->no_lang 		= $no_lang;
-			$this->no_moderate 	= $no_moderate;
-			$this->no_avatar 	= $no_avatar;
-			$this->viewed 		= false;
-			$this->title_class	= NULL;
-			$this->no_title		= DEFAULT_NOTITLE;
-			$this->data = itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);			
-			$this->rel_field	= DEFAULT_RELATED_FIELD;
-			$this->no_related	= DEFAULT_NORELATED;
-			$this->async		= DEFAULT_EDASYNC;
-			} else	{
-				// передали массив нужно разыменовать все
-				$data = $table_name;
-				$this->table_name 	= isset($data['table_name']) 	? $data['table_name'] 	: DEFAULT_CONTENT_TABLE;
-				$this->rec_id 		= isset($data['rec_id']) 	? $data['rec_id'] 	: NULL;
-				$this->field 		= isset($data['field']) 	? $data['field'] 	: DEFAULT_CONTENT_FIELD;
-				$this->column 		= isset($data['column']) 	? $data['column'] 	: DEFAULT_CONTENT_COLUMN;
-				$this->no_date 		= isset($data['no_date']) 	? $data['no_date'] 	: NULL;
-				$this->no_lang 		= isset($data['no_lang']) 	? $data['no_lang'] 	: DEFAULT_NODATE;
-				$this->no_moderate 	= isset($data['no_moderate']) 	? $data['no_moderate'] 	: DEFAULT_NOMODERATE;
-				$this->no_avatar 	= isset($data['no_avatar']) 	? $data['no_avatar'] 	: NULL;
-				$this->viewed 		= isset($data['viewed']) 	? $data['viewed'] 	: false;
-				$this->title_class	= isset($data['title_class']) 	? $data['title_class'] 	: NULL;
-				$this->no_title		= isset($data['no_title']) 	? $data['no_title'] 	: DEFAULT_NOTITLE;
-				$this->rel_field	= isset($data['rel_field']) 	? $data['rel_field'] 	: DEFAULT_RELATED_FIELD;
-				$this->no_related	= isset($data['no_related']) 	? $data['no_related'] 	: DEFAULT_NORELATED;
-				$this->async		= isset($data['async']) 	? $data['async'] 	: DEFAULT_EDASYNC;				
-				$this->data		= isset($data['data']) 		? $data['data'] 	: itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
-				}
+		$is_options = is_array($table_name);
+		$data = $is_options ? $table_name : [];
 
-		$this->no_cache 	= isset($data['no_cache']) 	? $data['no_cache'] 	: DEFAULT_NOCACHE;
-		$this->edclass 		= isset($data['edclass']) 	? $data['edclass'] 	: DEFAULT_EDCLASS;
-
-		$this->root 		= isset($data['root']) 		? $data['root'] 	: NULL;
-
+		$this->table_name 	= $is_options && isset($data['table_name']) 	? $data['table_name'] 	: $table_name;
+		$this->rec_id 		= $is_options && isset($data['rec_id']) 	? $data['rec_id'] 	: $rec_id;
+		$this->field 		= $is_options && isset($data['field']) 	? $data['field'] 	: $field;
+		$this->column 		= $is_options && isset($data['column']) 	? $data['column'] 	: ($is_options ? DEFAULT_CONTENT_COLUMN : $field);
+		$this->no_date 		= $is_options && isset($data['no_date']) 	? $data['no_date'] 	: $no_date;
+		$this->no_lang 		= $is_options && isset($data['no_lang']) 	? $data['no_lang'] 	: ($is_options ? DEFAULT_NODATE : $no_lang);
+		$this->no_moderate 	= $is_options && isset($data['no_moderate']) 	? $data['no_moderate'] 	: ($is_options ? DEFAULT_NOMODERATE : $no_moderate);
+		$this->no_avatar 	= $is_options && isset($data['no_avatar']) 	? $data['no_avatar'] 	: $no_avatar;
+		$this->viewed 		= $is_options && isset($data['viewed']) 	? $data['viewed'] 	: false;
+		$this->title_class	= $is_options && isset($data['title_class']) 	? $data['title_class'] 	: NULL;
+		$this->no_title		= $is_options && isset($data['no_title']) 	? $data['no_title'] 	: DEFAULT_NOTITLE;
+		$this->rel_field	= $is_options && isset($data['rel_field']) 	? $data['rel_field'] 	: DEFAULT_RELATED_FIELD;
+		$this->no_related	= $is_options && isset($data['no_related']) 	? $data['no_related'] 	: DEFAULT_NORELATED;
+		$this->async		= $is_options && isset($data['async']) 	? $data['async'] 	: DEFAULT_EDASYNC;
+		$this->data		= $is_options && isset($data['data']) 	? $data['data'] 	: itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
+		$this->no_cache 	= $is_options && isset($data['no_cache']) 	? $data['no_cache'] 	: DEFAULT_NOCACHE;
+		$this->edclass 		= $is_options && isset($data['edclass']) 	? $data['edclass'] 	: DEFAULT_EDCLASS;
+		$this->root 		= $is_options && isset($data['root']) 	? $data['root'] 	: NULL;
 
 		if (!is_null($this->root))
 			{
 			$this->record = &$this->data[$this->column][$this->root];
 			$this->storage = &$this->data[$this->column][$this->root][$this->field];
-			
 			$this->record['status'] 	= isset($this->record['status']) 	? $this->record['status'] 	: DEFAULT_EDSTORAGE_STATUS;
-			$this->record['lang'] 		= isset($this->record['lang']) 		? $this->record['lang'] 	: 'ALL';		
-			} else  {
-				$this->record = &$this->data;
-				$this->storage = &$this->data[$this->column];
-				}
+			$this->record['lang'] 		= isset($this->record['lang']) 		? $this->record['lang'] 	: 'ALL';
+			}
+		else
+			{
+			$this->record = &$this->data;
+			$this->storage = &$this->data[$this->column];
+			}
 
-		// проверка на то, что это работа по разному для всех
-		if ( (($this->selector = ready_val($this->record['lang'], 'ALL'))=='ALL') AND !isset($this->storage['ALL']) AND isset($this->storage[CMS_LANG]))
+		if ((($this->selector = ready_val($this->record['lang'], 'ALL'))=='ALL') AND !isset($this->storage['ALL']) AND isset($this->storage[CMS_LANG]))
 			{
 			$this->storage['ALL'] = itEditor::_consolidate($this->storage);
 			$this->store();
 			}
 
-
-		$this->name = 
-			"editor-".crc32(
+		$this->name = "editor-".crc32(
 			(isset($data['table_name']) 	? "-{$data['table_name']}" 	: NULL).
 			(isset($data['rec_id']) 	? "-{$data['rec_id']}" 		: NULL).
 			(isset($data['column']) 	? "-{$data['column']}" 		: NULL).
 			(isset($data['root']) 		? "-{$data['root']}" 		: NULL).
 			"");
-		// определимся с селектором данных их общего массива
+
 		if (is_array($this->storage))
 			{
 			$this->title = itEditor::title($this->record);
-			
-			// проверим поле URL
 			if (isset($this->storage['url']))
 				{
 				$url = function_exists('translit_url') ? translit_url($this->title)."-{$this->rec_id}" : "material-{$this->rec_id}";
-					
 				if (!isset($this->storage['url'][CMS_LANG]) OR ($this->storage['url'][CMS_LANG]!=$url))
 					{
 					$this->storage['url'][CMS_LANG] = $url;
