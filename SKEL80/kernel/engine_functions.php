@@ -1,16 +1,9 @@
 <?php
-// ================ CRC ================
-// version: 1.15.08
-// hash: 6178e8743315848eac8ad89c5f1ab3e94d74e47f9465df9f5a3bb7c9a73f6d8c
-// date: 30 April 2021 16:04
-// ================ CRC ================
 /* общие для работы функции */
 
 
 
-//..............................................................................
 // определяет кодировку строки
-//..............................................................................
 function detect_encoding($string)
 	{ 
 	foreach (['UTF-8', 'CP1251', 'CP1252'] as $item)
@@ -22,9 +15,7 @@ function detect_encoding($string)
   	return NULL;
 	}
 
-//..............................................................................
 // первый символ предложения загалвный остальные маленькие (multi ucifirst)
-//..............................................................................
 if (!function_exists('mb_ucfirst'))
 	{
 	function mb_ucfirst($str, $encoding = "UTF-8", $lower_str_end = false)
@@ -44,9 +35,7 @@ if (!function_exists('mb_ucfirst'))
 
 
 
-//..............................................................................
 // восстановим переменные запроса из сессии для пары логин:пароль
-//..............................................................................
 function restore_login_reqest()
 	{
 	if (isset($_SESSION['user_login']))
@@ -62,17 +51,13 @@ function restore_login_reqest()
 		}
 	}
 
-//..............................................................................
 // возвращает правильное локальное написание даты для данных полей
-//..............................................................................
 function get_mysql_time_str($time)
 	{
 	return skel80_strftime_compat("%Y-%m-%d %H:%M:%S",$time);
 	}
 
-//..............................................................................
 // strftime compatibility layer for PHP 8.1+
-//..............................................................................
 function skel80_locale_date_tokens($time, $lang=NULL)
 	{
 	$lang = is_null($lang) ? (defined('CMS_LANG') ? CMS_LANG : 'en') : $lang;
@@ -127,14 +112,10 @@ function skel80_strftime_compat($format, $time=NULL, $lang=NULL)
 	return strtr($format, $replacements);
 	}
 
-//..............................................................................
 // для генерации случайной строки длиной HASH_LEN
-//..............................................................................
 
 
-//..............................................................................
 // safely decodes encrypted serialized request payload into array
-//..............................................................................
 function skel80_decode_encrypted_array($payload=NULL, $default=[])
 	{
 	if (is_null($payload) || $payload==='')
@@ -159,17 +140,13 @@ function skel80_decode_encrypted_array($payload=NULL, $default=[])
 		: (is_array($default) ? $default : []);
 	}
 
-//..............................................................................
 // unified json response output for ajax/runtime handlers
-//..............................................................................
 function skel80_json_response($payload=[])
 	{
 	return print json_encode($payload, JSON_ALLOWED);
 	}
 
-//..............................................................................
 // resolves mail id from encrypted payload or direct request fallback
-//..............................................................................
 function skel80_request_mail_id($payload=[])
 	{
 	if (is_array($payload) && isset($payload['mail_id']))
@@ -182,19 +159,10 @@ function skel80_request_mail_id($payload=[])
 
 function generate_hash($hashlen=HASH_LEN)
 	{
-	$chars 	= "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	$code	= "";
-	$clen	= strlen($chars)-1;
-	while (strlen($code)<$hashlen)
-		{
-		$code .= $chars[mt_rand(0,$clen)];
-		}
-	return $code;
+	return skel80_random_from_chars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", $hashlen);
 	}
 
-//..............................................................................
 // returns first non-empty server/environment value from candidate keys
-//..............................................................................
 function skel80_first_server_value($keys=[], $default=NULL)
 	{
 	foreach ((array)$keys as $key)
@@ -206,9 +174,7 @@ function skel80_first_server_value($keys=[], $default=NULL)
 	return $default;
 	}
 
-//..............................................................................
 // normalizes raw forwarded ip value into one visible client ip or unknown
-//..............................................................................
 function skel80_normalize_user_ip($value='unknown')
 	{
 	$value = trim((string)$value);
@@ -221,9 +187,7 @@ function skel80_normalize_user_ip($value='unknown')
 	return 'unknown';
 	}
 
-//..............................................................................
 // определения ip адресса пользователя
-//..............................................................................
 function get_user_ip()
 	{
 	return skel80_normalize_user_ip(skel80_first_server_value([
@@ -237,18 +201,14 @@ function get_user_ip()
 	], 'unknown'));
 	}
 
-//..............................................................................
 // перехода на другую страницу
-//..............................................................................
 function cms_redirect_page($url='/')
 	{
 	header("location:".$url);
 	die();
 	}
 
-//..............................................................................
 // resolves referer url from session/server with fallback and consumes session copy
-//..............................................................................
 function skel80_referer_url($fallback='/')
 	{
 	if (isset($_SESSION['HTTP_REFERER']))
@@ -260,9 +220,7 @@ function skel80_referer_url($fallback='/')
 	return skel80_first_server_value(['HTTP_REFERER'], $fallback);
 	}
 
-//..............................................................................
 // умный переход в случае успешного логина или выхода из системы
-//..............................................................................
 function cms_smart_redirect($outgo_page=NULL, $exclude=['login','enter'])
 	{
 	$referer_url = skel80_referer_url(is_null($outgo_page) ? '/' : $outgo_page);
@@ -276,9 +234,7 @@ function cms_smart_redirect($outgo_page=NULL, $exclude=['login','enter'])
 
 
 
-//..............................................................................
 // returns random string from provided character set
-//..............................................................................
 function skel80_random_from_chars($characters='', $length=1)
 	{
 	$characters = (string)$characters;
@@ -293,9 +249,7 @@ function skel80_random_from_chars($characters='', $length=1)
 	return $result;
 	}
 
-//..............................................................................
 // генерирует новый пароль из допустимых символов
-//..............................................................................
 function generate_new_password($number=8)
 	{
 	return skel80_random_from_chars('abcdefghijklmnoprstuvxyzABCDEFGHIJKLMNOPRSTUVXYZ1234567890', $number);
@@ -305,9 +259,7 @@ function generate_new_password($number=8)
 
 
 
-//..............................................................................
 // возвращает первое несуществующее имя для загруженной картинки
-//..............................................................................
 function get_new_picture_filename($filename='', $dir=PICTURE_ROOT)
 	{
 	if ($filename=='')
@@ -330,9 +282,7 @@ function get_new_picture_filename($filename='', $dir=PICTURE_ROOT)
 	return $result;
 	}
 
-//..............................................................................
 // возвращает имя файла, добавляя скобки и номер
-//..............................................................................
 function add_dashed_number($str='', $number=-1)
 	{
 	$extention	= get_file_extension($str);
@@ -342,9 +292,7 @@ function add_dashed_number($str='', $number=-1)
 	return $result;
 	}
 
-//..............................................................................
 // возвращает имя файла без скобок и номера для загруженной картинки
-//..............................................................................
 function remove_dashed_number($str='')
 	{
 	$extention	= get_file_extension($str);
@@ -370,9 +318,7 @@ function remove_dashed_number($str='')
 
 
 
-//..............................................................................
 // крутой парсер пути
-//..............................................................................
 function parse_path($url=NULL)
 	{
 	if ($url==NULL) 
@@ -413,9 +359,7 @@ function parse_path($url=NULL)
 
 
 
-//..............................................................................
 // возвращает массив, в котором все элементы декодированы из JSON в array
-//..............................................................................
 function decode_json_values(&$array)
 	{
 	if (!is_array($array)) return;
@@ -427,9 +371,7 @@ function decode_json_values(&$array)
 		}
 	}
 
-//..............................................................................
 // returns localized label for today/yesterday dates when applicable
-//..............................................................................
 function skel80_relative_date_label($time)
 	{
 	$date_key = skel80_strftime_compat('%d %b %Y', $time);
@@ -438,9 +380,7 @@ function skel80_relative_date_label($time)
 	return NULL;
 	}
 
-//..............................................................................
 // returns localized date format parts
-//..............................................................................
 function skel80_local_date_format($s_month=false, $s_dname=false, $s_year=true)
 	{
 	return [
@@ -450,9 +390,7 @@ function skel80_local_date_format($s_month=false, $s_dname=false, $s_year=true)
 	];
 	}
 
-//..............................................................................
 // возвращает правильное локальное написание даты для данных полей
-//..............................................................................
 function get_local_date_str($data, $s_month=false, $s_dname=false, $s_year=true)
 	{
 	$time = strtotime($data);
@@ -461,9 +399,7 @@ function get_local_date_str($data, $s_month=false, $s_dname=false, $s_year=true)
 	return skel80_strftime_compat("{$format['weekday']}%d {$format['month']}{$format['year']}", $time);
 	}
 
-//..............................................................................
 // возвращает правильное локальное написание даты для данных полей
-//..............................................................................
 function get_local_datetime_str($data, $s_month=false, $s_dname=false, $s_year=true, $no_midnight=true)
 	{
 	$time = strtotime($data);
@@ -473,9 +409,7 @@ function get_local_datetime_str($data, $s_month=false, $s_dname=false, $s_year=t
 	$format = skel80_local_date_format($s_month, $s_dname, $s_year);
 	return skel80_strftime_compat("{$format['weekday']}%d {$format['month']}{$format['year']}", $time)." {$time_str}";
 	}
-//..............................................................................
 // возвращает правильное локальное время
-//..............................................................................
 function get_time_str($data, $sec=false)
 	{
 	$time = strtotime($data);
@@ -484,18 +418,14 @@ function get_time_str($data, $sec=false)
 
 
 
-//..............................................................................
 // убирает ненужные символы в начале и в конце строки, включая код перевода
-//..............................................................................
 function br_trim($string)
 	{
 	return preg_replace('/^(<br>){0,}|(<br>){0,}$/m', '', $string);	
 	}
 
 
-//..............................................................................
 // возвращает возраст исходя из дня рождения
-//..............................................................................
 function get_age($birthdayDate=NULL)
 	{
 	if ($birthdayDate==NULL) return get_const('NO_SET');
@@ -504,35 +434,27 @@ function get_age($birthdayDate=NULL)
         return $interval->format("%Y");
 	}
 
-//..............................................................................
 // возвращает разницу между двух дней
-//..............................................................................
 function dateDiff ($d1=NULL, $d2=NULL)
 	{
 	$d1 = is_null($d1) ? 'now' : $d1;	
 	$d2 = is_null($d2) ? 'now' : $d2;
 	return round(abs(strtotime($d1)-strtotime($d2))/86400);
 	}
-//..............................................................................
 // возвращает правильное написание даты для данных полей
-//..............................................................................
 function get_mysql_date($time)
 	{
 	return skel80_strftime_compat("%Y-%m-%d",$time);
 	}
 
-//..............................................................................
 // возвращает правильное написание даты и времени для данных полей
-//..............................................................................
 function get_mysql_datetime($time)
 	{
 	return skel80_strftime_compat("%Y-%m-%d %H:%M:%S",$time);
 	}
 
 
-//..............................................................................
 // возвращает значение зашифрованного пороля для MySQL
-//..............................................................................
 function sqlPassword($input)
 	{
 	$pass = strtoupper(sha1(sha1($input, true)));
@@ -540,19 +462,14 @@ function sqlPassword($input)
 	return $pass;
 	}
 
-//..............................................................................
 // возвращает значение зашифрованного пороля для MySQL
-//..............................................................................
 function print_json($res_arr, $stop=true)
 	{
 	header("Content-Type: application/json", true);
-	return print json_encode($res_arr, JSON_ALLOWED);
-	if ($stop) exit;
+	return skel80_json_response($res_arr);
 	}
 
-//..............................................................................
 // возвращает правильную ссылку с http://
-//..............................................................................
 function addhttp($url)
 	{
 	if (!preg_match("~^(?:f|ht)tps?://~i", $url))
@@ -562,17 +479,13 @@ function addhttp($url)
 	return $url;
 	}
 	
-//..............................................................................
 // возвращает правильную ссылку с http://
-//..............................................................................
 function striphttp($url)
 	{
 	return preg_replace( '/^https?:\/\//', '', $url );
 	}
 	
-//..............................................................................
 // обратная nl2br
-//..............................................................................
 function br2nl($str)
 	{
 	$search = ["\n<br>", "\n<br/>", "\n<br />", "<br>", "<br/>", "<br />"];
@@ -584,18 +497,14 @@ function br2nl($str)
 
 
 
-//..............................................................................
 // возвращает код клика по элементо по его id после загрузки страницы
-//..............................................................................
 function javascript_click($element)
 	{
 	return "<script>$(document).ready(function (){ $('#{$element}').click(); });</script>";
 	}
 	
 
-//..............................................................................
 // перевод кириллицы в транслит
-//..............................................................................
 function translit($s) {
   $s = (string) $s; // преобразуем в строковое значение
   $s = strip_tags($s); // убираем HTML-теги
@@ -610,17 +519,13 @@ function translit($s) {
 }
 
 
-//..............................................................................
 // возвращает ЧПУ из текста названия
-//..............................................................................
 function translit_url($title=NULL)
 	{
 	return preg_replace('/\-+/', '-', get_str_cut(strtolower(translit(str_replace(' ','-', trim(strip_tags($title))))), TRANSLIT_URL_LEN));
 	}
 	
-//..............................................................................
 // возвращает дату и время для datetime MySQL
-//..............................................................................
 function mysql_now()
 	{
 	return get_mysql_time_str(strtotime('now'));
@@ -628,9 +533,7 @@ function mysql_now()
 	
 
 	
-//..............................................................................
 // фильтрует массив по строке поиска
-//..............................................................................
 function array_match($data, $term)
 	{
 	$term = strtolower($term);
@@ -639,9 +542,7 @@ function array_match($data, $term)
 		}, ARRAY_FILTER_USE_BOTH);		
 	}
 
-//..............................................................................
 // возвращает масив без указаынных элментов
-//..............................................................................
 function array_skip($array, Array $excludeKeys)
 	{
 	foreach($excludeKeys as $key)
@@ -651,9 +552,7 @@ function array_skip($array, Array $excludeKeys)
     	return $array;
 	}
 
-//..............................................................................
 // возвращает масив без указаынных элментов
-//..............................................................................
 function array_remove($array,$value,$key=NULL)
 	{
 	if (is_null($key))
@@ -674,10 +573,8 @@ function array_remove($array,$value,$key=NULL)
 	return $array;
 	}
 
-//..............................................................................
 // возвращает случайный UUID для сессий
 // 00000000-0000-0000-C000-000000000046
-//..............................................................................
 function get_uuid() {
     return sprintf( '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
         // 32 bits for "time_low"
@@ -700,9 +597,7 @@ function get_uuid() {
     );
 }
 
-//..............................................................................
 // возвращает случайный набор символов определенной длины
-//..............................................................................
 function random_str($length = 1)
 	{
 	return skel80_random_from_chars('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', $length);

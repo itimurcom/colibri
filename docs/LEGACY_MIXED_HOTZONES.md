@@ -51,3 +51,6 @@ Large shared form runtime with many repetitive field builder methods. Current cl
 `itForm2.class.php` canonical method migration remains active; P37 only fixes field-builder regressions for form-editor field creation and list-field metadata.
 
 M0 / P39 note: `itFeed.class.php` had only visual separator/CRC cleanup; `engine_items.php` had only unused-local and dead-ternary cleanup.
+
+## M0 / P40 engine_functions third cleanup pass
+`SKEL80/kernel/engine_functions.php` now reuses local shared primitives for hash generation and JSON output, and stale CRC/decorative separator comments were removed. This remains direct cleanup inside the existing shared helper file.
