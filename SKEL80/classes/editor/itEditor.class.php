@@ -467,27 +467,26 @@ class itEditor
 			}
 		}
 
+	protected function setGalleryLocalizedValue($selector, $ed_key, $column, $gal_id, $value=NULL)
+		{
+		if (isset($this->storage[$selector][$ed_key][$column][$gal_id]) AND !is_array($this->storage[$selector][$ed_key][$column][$gal_id]))
+			{
+			unset($this->storage[$selector][$ed_key][$column][$gal_id]);
+			}
+		$this->storage[$selector][$ed_key][$column][$gal_id][CMS_LANG] = $value;
+		}
+
 	// вводит ссылку в галлерее изображений
 	public function gal_link($selector, $ed_key, $gal_id, $value=NULL)
 		{
-		if (isset($this->storage[$selector][$ed_key]['link'][$gal_id]) and !is_array($this->storage[$selector][$ed_key]['link'][$gal_id]))
-			{
-			unset($this->storage[$selector][$ed_key]['link'][$gal_id]);
-			}
-		$this->storage[$selector][$ed_key]['link'][$gal_id][CMS_LANG] = $value;
+		$this->setGalleryLocalizedValue($selector, $ed_key, 'link', $gal_id, $value);
 		}
-
 
 	// вводит надпись в галлерее изображений
 	public function gal_text($selector, $ed_key, $gal_id, $value=NULL)
 		{
-		if (isset($this->storage[$selector][$ed_key]['text'][$gal_id]) and !is_array($this->storage[$selector][$ed_key]['text'][$gal_id]))
-			{
-			unset($this->storage[$selector][$ed_key]['text'][$gal_id]);
-			}
-		$this->storage[$selector][$ed_key]['text'][$gal_id][CMS_LANG] = $value;
+		$this->setGalleryLocalizedValue($selector, $ed_key, 'text', $gal_id, $value);
 		}
-
 
 	// сортирует индексы изображений в галлерее
 	public function sort_gallery($selector, $ed_key)
@@ -656,7 +655,7 @@ class itEditor
 		{
 		return $this->compileEditorStorage('edit');
 		}		
-		
+
 	// по сути - это коомпилятор всех полей и связь с классами обработчиков
 	public function go()
 		{
@@ -670,39 +669,30 @@ class itEditor
 	// проверяет массив количества медиа данных в теле редактора по селектору
 	static function count_media($row=NULL, $selector=NULL, $field=DEFAULT_CONTENT_FIELD)
 		{
-		$selector = is_null($selector) ? (($row['lang']=='ALL') ? 'ALL' : CMS_LANG) : $selector;			
+		$selector = is_null($selector) ? (($row['lang']=='ALL') ? 'ALL' : CMS_LANG) : $selector;
 		$result = [ 'gallery' => 0, 'media' => 0, 'video' => 0, 'audio' => 0, 'photo' => 0 ];
 
-		if (isset($row[$field][$selector]) AND is_array($row[$field][$selector]))
+		if (!isset($row[$field][$selector]) OR !is_array($row[$field][$selector]))
+			{
+			return $result;
+			}
+
 		foreach ($row[$field][$selector] as $key=>$value)
 			{
-			if (isset($value['type']))
+			if (!isset($value['type'])) continue;
+
+			if ($value['type']=='media')
 				{
-				switch ($value['type'])
-					{
-					case 'media' :	{
-						$result['media']++;
-						switch (itEdMedia::get_embed_source($value['value']))
-							{
-							case 'TUBE' :
-							case 'VIMEO' : {
-								$result['video']++;
-								break;
-								}
-							case 'SOUNDCLOUD' :
-							case 'MIXCLOUD' : {
-								$result['audio']++;
-								break;
-								}
-							}
-						break;
-						}
-					case 'gallery' : {
-						$result['gallery']++;
-						$result['photo'] += count($value['value']);						
-						break;
-						}
-					}
+				$result['media']++;
+				$source = itEdMedia::get_embed_source($value['value']);
+				if (in_array($source, ['TUBE', 'VIMEO'])) $result['video']++;
+				if (in_array($source, ['SOUNDCLOUD', 'MIXCLOUD'])) $result['audio']++;
+				}
+
+			if ($value['type']=='gallery')
+				{
+				$result['gallery']++;
+				$result['photo'] += isset($value['value']) && is_array($value['value']) ? count($value['value']) : 0;
 				}
 			}
 		return $result;
@@ -715,51 +705,107 @@ class itEditor
 		return ready_val($_RIGHTS['EDIT'], NULL);
 		}
 
+	protected function relatedCode()
+		{
+		if ($this->no_related OR !isset($this->storage[$this->rel_field]) OR !is_array($this->storage[$this->rel_field]))
+			{
+			return NULL;
+			}
+
+		$func = "related_{$this->table_name}_row";
+		if (!function_exists($func))
+			{
+			add_error_message(get_const('FUNCTION_NOT_EXISTS')." <b>{$func}()</b>");
+			return NULL;
+			}
+
+		$rows = NULL;
+		foreach ($this->storage[$this->rel_field] as $key=>$row)
+			{
+			if (is_array($related_row = itMySQL::_get_rec_from_db($this->table_name, $row)))
+				{
+				$related_row['rec_id'] = $this->rec_id;
+				$rows[] =
+					TAB."<div class='related'>".
+					$func($related_row).
+					(function_exists('get_related_x_event') ? get_related_x_event($related_row) :"").
+					TAB."</div>";
+				}
+			}
+
+		return is_array($rows)
+			? TAB."<div class='related_div'>".
+				TAB."<div class='related_title'>".get_const('RELATED_CONTENTS_TITLE').TAB."</div>".
+				implode('', $rows).
+				TAB."</div>"
+			: NULL;
+		}
+
+	protected function clearHtmlCache()
+		{
+		if (isset($this->record['html_xml']))
+			{
+			if (isset($this->record['html_xml'][CMS_LANG]))
+				{
+				unset($this->record['html_xml'][CMS_LANG]);
+				}
+			if (is_array($this->record['html_xml']) AND (count($this->record['html_xml'])==0))
+				{
+				$this->record['html_xml'] = NULL;
+				}
+			}
+		}
+
+	protected function normalizeDataBeforeStore()
+		{
+		if (isset($this->data['id']))
+			{
+			unset($this->data['id']);
+			}
+
+		if (array_key_exists('avatar', $this->data) AND is_null($this->data['avatar']))
+			{
+			$this->data['avatar'] = '';
+			}
+		}
+
+	protected function containerEventPayload()
+		{
+		return [
+			'table_name'	=> $this->table_name,
+			'rec_id'	=> $this->rec_id,
+			'field'		=> $this->field,
+			'column'	=> $this->column,
+			'root' 		=> $this->root,
+			'no_date'	=> $this->no_date,
+			'no_lang'	=> $this->no_lang,
+			'no_moderate'	=> $this->no_moderate,
+			'no_avatar'	=> $this->no_avatar,
+			'viewed'	=> $this->viewed,
+			'title_class'	=> $this->title_class,
+			'rel_field'	=> $this->rel_field,
+			'no_related'	=> $this->no_related,
+			'async'		=> $this->async,
+			'no_cache'	=> $this->no_cache,
+			'edclass'	=> $this->edclass,
+			'container_id'	=> $this->data['container_id'],
+			'state'		=> $this->data['state'],
+			];
+		}
+
+	protected function containerContent()
+		{
+		return ($this->data['state']=='view') ? $this->_view() : $this->_edit();
+		}
+
 	// разыменовывает поля редактора и возвращает html код для вставки поля
 	public function compile()
 		{
-		global $editor_blocks;
-                $this->code = '';
-
-//		if (!$this->is_loaded()) return;
-
-		if (!isset($this->storage[$this->selector][0]))
-			{
-			$this->storage[$this->selector][0] = array (
-				'type' 	=> 'text',
-				'value'	=> [ $this->selector => ''],
-				);
-			}
+		$this->code = '';
+		$this->ensureStorageField();
 		$this->code = $this->cache();
-		
-		// обработаем связанные новости
-		if (!$this->no_related AND isset($this->storage[$this->rel_field]) AND is_array($this->storage[$this->rel_field]))
-			{
-			$func = "related_{$this->table_name}_row";
-			if (function_exists($func))
-				{
-				$rows = NULL;
-				foreach ($this->storage[$this->rel_field] as $key=>$row)
-					{
-					if (is_array($related_row = itMySQL::_get_rec_from_db($this->table_name, $row)))
-						{
-						$related_row['rec_id'] = $this->rec_id;
-						$rows[] = 
-							TAB."<div class='related'>".
-							$func($related_row).
-							(function_exists('get_related_x_event') ? get_related_x_event($related_row) :"").
-							TAB."</div>";
-						}
-					}
-				if (is_array($rows))
-					$this->code .= 
-						TAB."<div class='related_div'>".
-						TAB."<div class='related_title'>".get_const('RELATED_CONTENTS_TITLE').TAB."</div>".
-						implode('', $rows).
-						TAB."</div>";
-				} else add_error_message(get_const('FUNCTION_NOT_EXISTS')." <b>{$func}()</b>");
-			}			
-		// увеличим просмотр если флаг установлен
+		$this->code .= $this->relatedCode();
+
 		if ($this->viewed)
 			{
 			$this->addview();
@@ -791,27 +837,30 @@ class itEditor
 	static function _redata($replace = false)
 		{
 		$data = isset($_REQUEST['data'])
-			? @unserialize(simple_decrypt($_REQUEST['data'])) 
+			? @unserialize(simple_decrypt($_REQUEST['data']))
 			: NULL;
-		
-		if (is_array($data)) {
-			if ($replace) {
+
+		if (is_array($data))
+			{
+			if ($replace)
+				{
 				$_REQUEST['data'] = $data;
-				} else	{
-					foreach ($data as $key=>$row) {
-						if (!isset($_REQUEST[$key])) {
-							$_REQUEST[$key] = $row;
-							}
-						}
+				}
+			else
+				{
+				foreach ($data as $key=>$row)
+					{
+					if (!isset($_REQUEST[$key])) $_REQUEST[$key] = $row;
 					}
+				}
 			}
 
-		// пропишем команду, если она установлена
-		if (!empty($op = isset($data['op'])
+		$op = (is_array($data) AND isset($data['op']))
 			? $data['op']
-			: ( isset($_REQUEST['op'])
-				? $_REQUEST['op']
-				: NULL))) {
+			: (isset($_REQUEST['op']) ? $_REQUEST['op'] : NULL);
+
+		if (!empty($op))
+			{
 			$_REQUEST['op'] = $op;
 			}
 
@@ -850,34 +899,9 @@ class itEditor
 			{
 			$rec_id = $this->rec_id;
 			}
-		
-		// сбросим кєш
-		if (isset($this->record['html_xml']))
-			{
-			if (isset($this->record['html_xml'][CMS_LANG]))
-				{
-				unset($this->record['html_xml'][CMS_LANG]);
-				}
-			if (is_array($this->record['html_xml']) AND (count($this->record['html_xml'])==0))
-				{
-				$this->record['html_xml'] = NULL;
-				}
-			}
 
-		// возвращаемся к основой записи!	
-//		$values_arr = $this->data;
-		
-		if (isset($this->data['id']))
-			unset($this->data['id']);
-
-		// PHP 8 / strict DB compatibility: some legacy project tables keep `avatar` as NOT NULL.
-		// Editor text save updates the whole record, so normalize missing avatar to empty string
-		// instead of NULL to avoid breaking AJAX JSON responses with a backend fatal.
-		if (array_key_exists('avatar', $this->data) AND is_null($this->data['avatar']))
-			{
-			$this->data['avatar'] = '';
-			}
-
+		$this->clearHtmlCache();
+		$this->normalizeDataBeforeStore();
 		itMySQL::_update_db_rec($this->table_name, $rec_id, $this->data);
 		}
 
@@ -927,42 +951,17 @@ class itEditor
 	public function container($options=NULL)
 		{
 		global $_USER;
-		
+
 		$this->data['state'] 		= isset($options['state']) ? $options['state'] : DEFAULT_EDSTATE;
 		$this->data['container_id']	= itEditor::_container_id((array)$this);
-		
-		$data = itEditor::event_data([
-			'table_name'	=> $this->table_name,
-			'rec_id'	=> $this->rec_id,
-			'field'		=> $this->field,
-			'column'	=> $this->column,
-			'root' 		=> $this->root,
-			'no_date'	=> $this->no_date,
-			'no_lang'	=> $this->no_lang,
-			'no_moderate'	=> $this->no_moderate,
-			'no_avatar'	=> $this->no_avatar,
-			'viewed'	=> $this->viewed,
-			'title_class'	=> $this->title_class,										
-			'rel_field'	=> $this->rel_field,
-			'no_related'	=> $this->no_related,
-			'async'		=> $this->async,
-			'no_cache'	=> $this->no_cache,
-			'edclass'	=> $this->edclass,
-			'container_id'	=> $this->data['container_id'],
-			'state'		=> $this->data['state'],
-			]);
-			
+		$data = itEditor::event_data($this->containerEventPayload());
 
 		return $_USER->is_logged(itEditor::moderators())
-			? 
-				TAB."<div class='ed_container {$this->edclass}' id='".itEditor::_container_id((array)$this)."' rel='{$data}'>".
-				( ($this->data['state']=='view')
-					? $this->_view()
-					: $this->_edit() ).
+			? TAB."<div class='ed_container {$this->edclass}' id='{$this->data['container_id']}' rel='{$data}'>".
+				$this->containerContent().
 				get_ed_async_event($this->data).
-				TAB."</div>".
-				""
-			: 	(($this->record['status']=='PUBLISHED')  ? $this->_view() : NULL );
+				TAB."</div>"
+			: (($this->record['status']=='PUBLISHED') ? $this->_view() : NULL);
 		}
 
 	// функция выборки данных из сохраненных полей редактора

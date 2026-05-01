@@ -1,12 +1,28 @@
 <?php
-// ================ CRC ================
-// version: 1.15.04
-// hash: 79d4d3cdabd8f07d8fbf95cef3961152f00fb138a6cb70e18431dea1f1f3aee5
-// date: 09 September 2019  5:10
-// ================ CRC ================
-//..............................................................................
+function editor_events_json($payload)
+	{
+	return print json_encode($payload, JSON_ALLOWED);
+	}
+
+function editor_events_reload($reload)
+	{
+	return editor_events_json(['result' => 1, 'reload'=>$reload]);
+	}
+
+function editor_events_ajax_reload($data)
+	{
+	return editor_events_json(['result' => 1, 'type'=>'ajax', 'value' => "editor_edreload('#".itEditor::_container_id($data)."');"]);
+	}
+
+function editor_events_container($data, $state='edit')
+	{
+	$o_editor = new itEditor($data);
+	$value = $o_editor->container(['state'=>$state]);
+	unset($o_editor);
+	return $value;
+	}
+
 // обработчик событий редактора
-//..............................................................................	
 function editor_events($url, $path)
 	{	
 	global $_USER;
@@ -19,7 +35,7 @@ function editor_events($url, $path)
 		$o_editor = new itEditor($data);
 		$value = $o_editor->_view();
 		unset($o_editor);
-		return print json_encode(['result' => 1, 'value' => $value], JSON_ALLOWED);
+		return editor_events_json(['result' => 1, 'value' => $value]);
 		} else
 	switch ($_REQUEST['op'])
 		{
@@ -30,8 +46,7 @@ function editor_events($url, $path)
 			$value = $_USER->is_logged() ? $o_editor->container(['state'=>$state]) : $o_editor->_view();
 			unset($o_editor);
 			
-			return print json_encode(['result' => 1, 'value' => $value], JSON_ALLOWED);
-			break;
+			return editor_events_json(['result' => 1, 'value' => $value]);
 			};
 			
 		case 'edreload' : {
@@ -39,22 +54,17 @@ function editor_events($url, $path)
 			$value = $o_editor->container(['state'=>'edit']);
 			unset($o_editor);
 			
-			return print json_encode(['result' => 1, 'value' => $value], JSON_ALLOWED);
-			break;
+			return editor_events_json(['result' => 1, 'value' => $value]);
 			};						
 
-		//..............................................................................
 		// itEditor - управление блоками
-		//..............................................................................
 		case 'block' : {
 			itMySQL::_update_value_db($_REQUEST['table_name'], $_REQUEST['rec_id'], $_REQUEST['content_id'], 'content_id');
 			cms_redirect_page("$url");
 			break;
 			}
 
-		//..............................................................................
 		// itEditor
-		//..............................................................................
 		case 'ed_text' : {
 			$o_editor = new itEditor(itEditor::_repack_data($data));
 			if (!isset($o_editor->storage[$data['selector']][$data['ed_key']]['type']))
@@ -65,8 +75,7 @@ function editor_events($url, $path)
 			$o_editor->store();
 			unset($o_editor);
 
-			return print json_encode(['result' => 1, 'value' => $url], JSON_ALLOWED);
-			break;
+			return editor_events_json(['result' => 1, 'value' => $url]);
 			}
 
 		case 'ed_remove' : {
@@ -77,36 +86,28 @@ function editor_events($url, $path)
 				$o_editor->store();
 				}
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);			
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);			
 			}
 
 		case 'add_ed_text' : {
 			$o_editor = new itEditor(itEditor::_repack_data($data));
 			$index = $o_editor->insert_field($data['selector'], $data['ed_key'], 'text', '');
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);
 			}
 
 		case 'up_ed_field' : {
 			$o_editor = new itEditor(itEditor::_repack_data($data));
 			$index = $o_editor->up_field($data['selector'],$data['ed_key']);
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);			
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);			
 			}
 
 		case 'down_ed_field' : {
 			$o_editor = new itEditor(itEditor::_repack_data($data));
 			$index = $o_editor->down_field($data['selector'],$data['ed_key']);
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);
 			}
 
 
@@ -116,9 +117,7 @@ function editor_events($url, $path)
 		        if (isset($o_editor->storage[$data['selector']][$data['ed_key']]['position'])) unset ($o_editor->storage[$data['selector']][$data['ed_key']]['position']);
 			$o_editor->store();
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);			
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);			
 			}
 
 		case 'ed_add_avatar' : {
@@ -138,9 +137,7 @@ function editor_events($url, $path)
 				$o_editor->store();
 				}
 			unset($o_editor);
-//			return print json_encode(['result' => 1, 'value' => $url], JSON_ALLOWED);
-			return print json_encode(['result' => 1, 'type'=>'ajax', 'value' => "editor_edreload('#".itEditor::_container_id($data)."');"], JSON_ALLOWED);			
-			break;
+			return editor_events_ajax_reload($data);			
 			}
 
 		case 'ed_switch' : {
@@ -154,8 +151,7 @@ function editor_events($url, $path)
 						}
 			$o_editor->store();
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);
-//			cms_redirect_page("$url");
+			return editor_events_reload($reload);
 			break;		
 			}
 
@@ -164,8 +160,7 @@ function editor_events($url, $path)
 			$o_editor->switch_zoom($data['selector'], $data['ed_key']);
 			$o_editor->store();
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);
-//			cms_redirect_page("$url");
+			return editor_events_reload($reload);
 			break;		
 			}
 
@@ -174,16 +169,13 @@ function editor_events($url, $path)
 				{
 				$o_editor = new itEditor(itEditor::_repack_data($data));;
 				$index = $o_editor->insert_field($data['selector'], $data['ed_key'], 'media', $_REQUEST['value']);
-//				$o_editor->data[$index][$data['selector']][$data['ed_key']]['avatar'] = itEdMedia::get_media_preview($_REQUEST['value']);
 				$o_editor->store();
 				unset($o_editor);
 				} else 	{
 					if (function_exists('add_error_message'))					
 					add_error_message(ERROR_ADD_MEDIA." <b>[{$_REQUEST['value']}]</b>");
 					}
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);
-			//cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);
 			}
 
 		case 'ed_zoom' : {
@@ -201,14 +193,10 @@ function editor_events($url, $path)
 			$o_editor->storage[$data['selector']][$data['ed_key']]['avatar'] = itEdMedia::get_media_preview($_REQUEST['value']);
 			$o_editor->store();
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);			
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);			
 			}
 
-                //..............................................................................
 		// события общего плана
-                //..............................................................................
 		case 'ed_title' : {
 			$o_editor = new itEditor($_REQUEST['table_name'], $_REQUEST['rec_id']);
 			$o_editor->data['title_xml'][$_REQUEST['lang']] = $_REQUEST['value'];
@@ -292,7 +280,7 @@ function editor_events($url, $path)
 				itMySQL::_update_value_db($data['table_name'], $data['rec_id'], $clear_name, 'avatar');
 				} else 	if (function_exists('add_error_message'))
 						add_error_message("Error sending $clear_name");
-			return print json_encode(['result' => 1, 'value' => $url]);
+			return editor_events_json(['result' => 1, 'value' => $url]);
 				
 			}
 			
@@ -312,9 +300,7 @@ function editor_events($url, $path)
 			cms_redirect_page("$url");
 			}
 
-                //..............................................................................
 		// itEditor : события галлерей itEdGallery
-                //..............................................................................
 		case 'add_ed_gallery' : {
 			$o_editor = new itEditor(itEditor::_repack_data($data));
 			$o_editor->insert_field($data['selector'], $data['ed_key'], 'gallery', []);
@@ -333,8 +319,7 @@ function editor_events($url, $path)
 			$o_editor->store();
 			unset($o_editor);
 			
-			return print json_encode(['result' => 1, 'type'=>'ajax', 'value' => "editor_edreload('#".itEditor::_container_id($data)."');"], JSON_ALLOWED);
-			break;
+			return editor_events_ajax_reload($data);
 			}
 
 
@@ -355,9 +340,7 @@ function editor_events($url, $path)
 				}
 			$o_editor->store();
 			unset($o_editor);
-//			return print json_encode(['result' => 1, 'value' => $url], JSON_ALLOWED);
-			return print json_encode(['result' => 1, 'type'=>'ajax', 'value' => "editor_edreload('#".itEditor::_container_id($data)."');"], JSON_ALLOWED);
-			break;
+			return editor_events_ajax_reload($data);
 			}
 
 		case 'gal_x' : {
@@ -366,9 +349,7 @@ function editor_events($url, $path)
 			$o_editor->sort_gallery($data['selector'], $data['ed_key']);
 			$o_editor->store();
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);
 			}
 
 		case 'gal_up' : {
@@ -376,9 +357,7 @@ function editor_events($url, $path)
 			$o_editor->gal_up($data['selector'],$data['ed_key'],$data['gallery_id']);
 			$o_editor->store();
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);
 			}
 
 		case 'gal_down' : {
@@ -386,9 +365,7 @@ function editor_events($url, $path)
 			$o_editor->gal_down($data['selector'],$data['ed_key'],$data['gallery_id']);
 			$o_editor->store();
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);	
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);	
 			}
 
 
@@ -397,9 +374,7 @@ function editor_events($url, $path)
 			$o_editor->gal_move($data['selector'],$data['ed_key'],$data['gallery_id'], $_REQUEST['new_id']);
 			$o_editor->store();
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);
 			}
 			
 		case 'gal_link' : {
@@ -407,9 +382,7 @@ function editor_events($url, $path)
 			$o_editor->gal_link($data['selector'],$data['ed_key'],$data['gallery_id'], ($_REQUEST['value']) ? addhttp($_REQUEST['value']) : NULL);
 			$o_editor->store();
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);
 			}
 
 		case 'gal_text' : {
@@ -417,9 +390,7 @@ function editor_events($url, $path)
 			$o_editor->gal_text($data['selector'],$data['ed_key'],$data['gallery_id'], $_REQUEST['value']);
 			$o_editor->store();
 			unset($o_editor);
-			return print json_encode(['result' => 1, 'reload'=>$reload], JSON_ALLOWED);
-//			cms_redirect_page("$url");
-			break;
+			return editor_events_reload($reload);
 			}			
 			
 		// связанные новости

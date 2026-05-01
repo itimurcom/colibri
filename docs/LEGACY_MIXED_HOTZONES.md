@@ -58,8 +58,5 @@ M0 / P39 note: `itFeed.class.php` had only visual separator/CRC cleanup; `engine
 ## Project-wide comment noise cleanup
 Generated CRC metadata blocks and decorative separator comments are considered visual legacy noise. They may be removed in broad cleanup patches when no runtime code is changed.
 
-## M0 / P42 `engine_add_items_event.php`
-The first item admin event cleanup reduced repeated project-side form/modal/button assembly while preserving existing public `get_*_event(...)` function names and item mutation `op` values.
-
-## M0 / P45 `itEditor.class.php`
-`itEditor` remains a shared editor runtime hotspot. P45 consolidates duplicated `_view()` / `_edit()` field compilation and gallery movement helpers inside the same class. Do not introduce a separate editor controller/factory layer during M0.
+## M0 / P46 editor runtime event consolidation
+P46 consolidates repeated editor runtime paths inside `itEditor.class.php` and repeated editor JSON response paths inside `editor_events.func.php`. The change remains local to existing editor files and does not introduce a new action framework.
