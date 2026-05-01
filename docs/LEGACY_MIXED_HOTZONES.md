@@ -60,3 +60,6 @@ Generated CRC metadata blocks and decorative separator comments are considered v
 
 ## M0 / P42 `engine_add_items_event.php`
 The first item admin event cleanup reduced repeated project-side form/modal/button assembly while preserving existing public `get_*_event(...)` function names and item mutation `op` values.
+
+## M0 / P45 `itEditor.class.php`
+`itEditor` remains a shared editor runtime hotspot. P45 consolidates duplicated `_view()` / `_edit()` field compilation and gallery movement helpers inside the same class. Do not introduce a separate editor controller/factory layer during M0.

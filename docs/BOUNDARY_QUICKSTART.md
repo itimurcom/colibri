@@ -27,3 +27,6 @@ Broad comment cleanup may remove generated CRC metadata and decorative separator
 
 ## M0 / P42 item admin events note
 `public/engine/core/units/items/events/engine_add_items_event.php` is a project-side item admin UI helper file. Keep its existing `get_*_event(...)` public functions stable, and reduce only repeated local form/modal/button assembly inside the same file.
+
+## M0 / P45 itEditor runtime consolidation note
+`SKEL80/classes/editor/itEditor.class.php` now has a single local field compilation path behind `_view()` and `_edit()`. Keep future editor cleanup inside the class unless a later migration explicitly defines a real editor boundary.

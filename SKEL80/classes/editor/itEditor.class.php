@@ -422,35 +422,30 @@ class itEditor
 			}
 		}
 
+	protected function swapGalleryColumn($selector, $ed_key, $column, $from_id, $to_id)
+		{
+		if (isset($this->storage[$selector][$ed_key][$column]))
+			{
+			$tmp = $this->storage[$selector][$ed_key][$column][$from_id];
+			$this->storage[$selector][$ed_key][$column][$from_id] = $this->storage[$selector][$ed_key][$column][$to_id];
+			$this->storage[$selector][$ed_key][$column][$to_id] = $tmp;
+			}
+		}
+
+	protected function swapGalleryItems($selector, $ed_key, $from_id, $to_id)
+		{
+		$this->swapGalleryColumn($selector, $ed_key, 'value', $from_id, $to_id);
+		$this->swapGalleryColumn($selector, $ed_key, 'text', $from_id, $to_id);
+		$this->swapGalleryColumn($selector, $ed_key, 'link', $from_id, $to_id);
+		$this->sort_gallery($selector, $ed_key);
+		}
+
 	// поднимает запись изображения в галлерее вверх на одну позицию
 	public function gal_up($selector, $ed_key, $gal_id)
 		{
 		if ($gal_id>0)
 			{
-			$this->storage[$selector][$ed_key]['value']['tmp'] 		= $this->storage[$selector][$ed_key]['value'][$gal_id];
-			$this->storage[$selector][$ed_key]['value'][$gal_id]		= $this->storage[$selector][$ed_key]['value'][($gal_id-1)];
-			$this->storage[$selector][$ed_key]['value'][($gal_id-1)] 	= $this->storage[$selector][$ed_key]['value']['tmp'];
-			unset($this->storage[$selector][$ed_key]['value']['tmp']);
-			
-			// то же самое для текста
-			if (isset($this->storage[$selector][$ed_key]['text']))
-				{
-				$this->storage[$selector][$ed_key]['text']['tmp'] 		= $this->storage[$selector][$ed_key]['text'][$gal_id];
-				$this->storage[$selector][$ed_key]['text'][$gal_id]		= $this->storage[$selector][$ed_key]['text'][($gal_id-1)];
-				$this->storage[$selector][$ed_key]['text'][($gal_id-1)] 	= $this->storage[$selector][$ed_key]['text']['tmp'];
-				unset($this->storage[$selector][$ed_key]['text']['tmp']);
-				}
-
-			// то же самое для ссылки
-			if (isset($this->storage[$selector][$ed_key]['link']))
-				{
-				$this->storage[$selector][$ed_key]['link']['tmp'] 		= $this->storage[$selector][$ed_key]['link'][$gal_id];
-				$this->storage[$selector][$ed_key]['link'][$gal_id]		= $this->storage[$selector][$ed_key]['link'][($gal_id-1)];
-				$this->storage[$selector][$ed_key]['link'][($gal_id-1)] 	= $this->storage[$selector][$ed_key]['link']['tmp'];
-				unset($this->storage[$selector][$ed_key]['link']['tmp']);
-				}
-
-			$this->sort_gallery($selector, $ed_key);
+			$this->swapGalleryItems($selector, $ed_key, $gal_id, $gal_id-1);
 			}
 		}
 
@@ -459,70 +454,16 @@ class itEditor
 		{
 		if ($gal_id!=$new_id)
 			{
-			$this->storage[$selector][$ed_key]['value']['tmp'] 		= $this->storage[$selector][$ed_key]['value'][$gal_id];
-			$this->storage[$selector][$ed_key]['value']['tmp2'] 		= $this->storage[$selector][$ed_key]['value'][$new_id];
-			$this->storage[$selector][$ed_key]['value'][$new_id] 	= $this->storage[$selector][$ed_key]['value']['tmp'];
-			$this->storage[$selector][$ed_key]['value'][$gal_id] 	= $this->storage[$selector][$ed_key]['value']['tmp2'];
-			unset($this->storage[$selector][$ed_key]['value']['tmp']);
-			unset($this->storage[$selector][$ed_key]['value']['tmp2']);
-
-			// то же самое для текста
-			if (isset($this->storage[$selector][$ed_key]['text']))
-				{			
-				$this->storage[$selector][$ed_key]['text']['tmp'] 		= $this->storage[$selector][$ed_key]['text'][$gal_id];
-				$this->storage[$selector][$ed_key]['text']['tmp2'] 		= $this->storage[$selector][$ed_key]['text'][$new_id];
-				$this->storage[$selector][$ed_key]['text'][$new_id] 	= $this->storage[$selector][$ed_key]['text']['tmp'];
-				$this->storage[$selector][$ed_key]['text'][$gal_id] 	= $this->storage[$selector][$ed_key]['text']['tmp2'];
-				unset($this->storage[$selector][$ed_key]['text']['tmp']);
-				unset($this->storage[$selector][$ed_key]['text']['tmp2']);
-				}
-
-			// то же самое для ссылки
-			if (isset($this->storage[$selector][$ed_key]['link']))
-				{
-				$this->storage[$selector][$ed_key]['link']['tmp'] 		= $this->storage[$selector][$ed_key]['link'][$gal_id];
-				$this->storage[$selector][$ed_key]['link']['tmp2'] 		= $this->storage[$selector][$ed_key]['link'][$new_id];
-				$this->storage[$selector][$ed_key]['link'][$new_id] 	= $this->storage[$selector][$ed_key]['link']['tmp'];
-				$this->storage[$selector][$ed_key]['link'][$gal_id] 	= $this->storage[$selector][$ed_key]['link']['tmp2'];
-				unset($this->storage[$selector][$ed_key]['link']['tmp']);
-				unset($this->storage[$selector][$ed_key]['link']['tmp2']);
-				}
-
-			$this->sort_gallery($selector, $ed_key);
+			$this->swapGalleryItems($selector, $ed_key, $gal_id, $new_id);
 			}
 		}
-
 
 	// опускает запись изображения в галлерее вниз на одну позицию
 	public function gal_down($selector, $ed_key, $gal_id)
 		{
 		if ($gal_id<=count($this->storage[$selector][$ed_key]['value']))
 			{
-			$this->storage[$selector][$ed_key]['value']['tmp'] 		= $this->storage[$selector][$ed_key]['value'][$gal_id];
-			$this->storage[$selector][$ed_key]['value'][$gal_id]		= $this->storage[$selector][$ed_key]['value'][($gal_id+1)];
-			$this->storage[$selector][$ed_key]['value'][($gal_id+1)] 	= $this->storage[$selector][$ed_key]['value']['tmp'];
-			unset($this->storage[$selector][$ed_key]['value']['tmp']);
-
-
-			// то же самое для текста
-			if (isset($this->storage[$selector][$ed_key]['text']))
-				{
-				$this->storage[$selector][$ed_key]['text']['tmp'] 		= $this->storage[$selector][$ed_key]['text'][$gal_id];
-				$this->storage[$selector][$ed_key]['text'][$gal_id]		= $this->storage[$selector][$ed_key]['text'][($gal_id+1)];
-				$this->storage[$selector][$ed_key]['text'][($gal_id+1)] 	= $this->storage[$selector][$ed_key]['text']['tmp'];
-				unset($this->storage[$selector][$ed_key]['text']['tmp']);
-				}
-
-			// то же самое для ссылки
-			if (isset($this->storage[$selector][$ed_key]['link']))
-				{
-				$this->storage[$selector][$ed_key]['link']['tmp'] 		= $this->storage[$selector][$ed_key]['link'][$gal_id];
-				$this->storage[$selector][$ed_key]['link'][$gal_id]		= $this->storage[$selector][$ed_key]['link'][($gal_id+1)];
-				$this->storage[$selector][$ed_key]['link'][($gal_id+1)] 	= $this->storage[$selector][$ed_key]['link']['tmp'];
-				unset($this->storage[$selector][$ed_key]['link']['tmp']);
-				}
-
-			$this->sort_gallery($selector, $ed_key);			
+			$this->swapGalleryItems($selector, $ed_key, $gal_id, $gal_id+1);
 			}
 		}
 
@@ -639,58 +580,8 @@ class itEditor
 
 
 
-	// просмотр панели редактора
-	public function _view()
+	protected function ensureStorageField()
 		{
-		global $editor_blocks;
-		
-		$result = NULL;
-		// обработаем все поля редактора (компиляторы должны иметь события!)
-		if (isset($this->storage[$this->selector]) and is_array($this->storage[$this->selector]))
-			{
-			$last_field = count($this->storage[$this->selector])-1;
-			foreach ($this->storage[$this->selector] as $key=>$row)
-				{
-				if (!isset($row['type']) or ($row['type']==NULL))
-					{
-					if (function_exists('add_error_message'))
-						add_error_message("<b>itEditor.class</b> Class (<b>$class</b>) not found in field #{$key} material #{$this->rec_id}.<br/><b>Converted to 'text'</b>");
-					$row['type'] = 'text';
-					}
-
-				$class = $editor_blocks[$row['type']]['class'];
-				if (class_exists($class))
-					{ 
-					// дополним все данные, чтобы передать в обработчик класса
-					$row['table_name'] 	= $this->table_name;
-					$row['rec_id'] 		= $this->rec_id;
-					$row['name'] 		= $this->name;
-					$row['field'] 		= $this->field;
-					$row['column'] 		= $this->column;
-					$row['root'] 		= $this->root;
-					$row['lang'] 		= CMS_LANG;
-					$row['selector']	= $this->selector;
-					$row['last_field']	= $last_field;
-					$row['ed_key'] 		= $key;
-					$row['alt']		= CMS_NAME." | {$this->title}";
-
-					// скомпилируем блок методом класса и вернем код
-					$o_class = new $class($row);
-					$result .= $o_class->_view();
-					unset($o_class);
-					}
-				}
-			}
-		return $result;				
-		}
-		
-	// редактирование панели редактора
-	public function _edit()
-		{
-		global $editor_blocks;
-		$result = NULL;
-
-		// проверка на существование первого поля
 		if (!isset($this->storage[$this->selector][0]))
 			{
 			$this->storage[$this->selector][0] = [
@@ -700,44 +591,70 @@ class itEditor
 					],
 				];
 			}
-			
-		// обработаем все поля редактора (компиляторы должны иметь события!)
+		}
+
+	protected function editorBlockRow($row, $key, $last_field)
+		{
+		$row['table_name'] 	= $this->table_name;
+		$row['rec_id'] 		= $this->rec_id;
+		$row['name'] 		= $this->name;
+		$row['field'] 		= $this->field;
+		$row['column'] 		= $this->column;
+		$row['root'] 		= $this->root;
+		$row['lang'] 		= CMS_LANG;
+		$row['selector']	= $this->selector;
+		$row['last_field']	= $last_field;
+		$row['ed_key'] 		= $key;
+		$row['alt']		= CMS_NAME." | {$this->title}";
+		return $row;
+		}
+
+	protected function compileEditorStorage($mode)
+		{
+		global $editor_blocks;
+		$result = NULL;
+
+		if ($mode=='edit')
+			{
+			$this->ensureStorageField();
+			}
+
 		if (isset($this->storage[$this->selector]) AND is_array($this->storage[$this->selector]))
 			{
 			$last_field = count($this->storage[$this->selector])-1;
 			foreach ($this->storage[$this->selector] as $key=>$row)
 				{
-				if (!isset($row['type']) or ($row['type']==NULL))
+				if (!isset($row['type']) OR ($row['type']==NULL))
 					{
 					if (function_exists('add_error_message'))
-						add_error_message("<b>itEditor.class</b> Class (<b>$class</b>) not found in field #{$key} material #{$this->rec_id}.<br/><b>Converted to 'text'</b>");
+						{
+						add_error_message("<b>itEditor.class</b> Empty field type in field #{$key} material #{$this->rec_id}.<br/><b>Converted to 'text'</b>");
+						}
 					$row['type'] = 'text';
 					}
 
-				$class = $editor_blocks[$row['type']]['class'];
-				if (class_exists($class))
-					{ 
-					// дополним все данные, чтобы передать в обработчик класса
-					$row['table_name'] 	= $this->table_name;
-					$row['rec_id'] 		= $this->rec_id;
-					$row['name'] 		= $this->name;
-					$row['field'] 		= $this->field;
-					$row['column'] 		= $this->column;					
-					$row['root'] 		= $this->root;					
-					$row['lang'] 		= CMS_LANG;
-					$row['selector']	= $this->selector;
-					$row['last_field']	= $last_field;
-					$row['ed_key'] 		= $key;
-					$row['alt']		= CMS_NAME." | {$this->title}";
-
-					// скомпилируем блок методом класса и вернем код
-					$o_class = new $class($row);
-					$result .= $o_class->_edit();
+				$class = isset($editor_blocks[$row['type']]['class']) ? $editor_blocks[$row['type']]['class'] : NULL;
+				if ($class AND class_exists($class))
+					{
+					$o_class = new $class($this->editorBlockRow($row, $key, $last_field));
+					$result .= ($mode=='edit') ? $o_class->_edit() : $o_class->_view();
 					unset($o_class);
 					}
 				}
 			}
-		return $result;								
+		return $result;
+		}
+
+	// просмотр панели редактора
+	public function _view()
+		{
+		return $this->compileEditorStorage('view');
+		}
+		
+	// редактирование панели редактора
+	public function _edit()
+		{
+		return $this->compileEditorStorage('edit');
 		}		
 		
 	// по сути - это коомпилятор всех полей и связь с классами обработчиков
