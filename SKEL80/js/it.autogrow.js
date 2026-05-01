@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.26.02
-// hash: 5843b3c284f3b00295ef47b3583401e1fb44188dc3813d70427baf1cf8fc6ba7
-// date: 21 March 2019 20:47
-// ================ CRC ================
 /*
 	jQuery autoGrowInput v1.0.3
     Copyright (c) 2014 Simon Steinberger / Pixabay

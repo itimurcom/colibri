@@ -21,3 +21,6 @@
 - `M0 / P37 itForm2 field builder regression hotfix`: keeps canonical method names and restores safe defaults for list-like field creation.
 - `M0 / P39 itFeed and engine_items safe cleanup bundle`: carries visual `itFeed` cleanup plus a small safe `engine_items` cleanup without route/feed behavior changes.
 - `M0 / P40 engine_functions third cleanup pass`: removes stale visual noise and folds repeated random/json helper logic back into local shared primitives.
+
+## Comment cleanup rule
+Broad comment cleanup may remove generated CRC metadata and decorative separator lines, but it must not remove behavior notes, TODO/FIXME markers, license text, or comments that document runtime constraints. See `docs/PROJECT_COMMENT_NOISE_CLEANUP_STAGE.md`.

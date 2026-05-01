@@ -1,7 +1,5 @@
 <?php 
-//..............................................................................
 // проверяет человекопонятную ссылку товара
-//..............................................................................
 function check_item_url(&$item_rec)
 	{
 	if (is_null($item_rec['url_xml']) OR !isset($item_rec['url_xml'][CMS_LANG]) OR ($item_rec['url_xml'][CMS_LANG]==='') OR ($item_rec['url_xml'][CMS_LANG]===$item_rec['id'].'-'))
@@ -11,9 +9,7 @@ function check_item_url(&$item_rec)
 		}
 	}
 	
-//..............................................................................
 // обновляет человекопонятную ссылку товара
-//..............................................................................
 function update_item_url(&$item_rec)
 	{
 	$item_rec['url_xml'][CMS_LANG] = get_item_url($item_rec);
@@ -21,9 +17,7 @@ function update_item_url(&$item_rec)
 	}
 	
 
-//..............................................................................
 // возвращает человекопонятную ссылку товара из полей его записи
-//..............................................................................
 function get_item_url($item_rec)
 	{
 	global $cat_cat, $cat_relations;
@@ -35,9 +29,7 @@ function get_item_url($item_rec)
 	return translit_url("{$item_rec['id']}{$articul_str}{$title_str}{$tag_str}-".get_const($cat_cat[$cat_relations[$item_rec['category_id']]]['title']));
 	}
 	
-//..............................................................................
 // возвращает ID товара по его человекопонятной ссылке
-//..............................................................................
 function get_item_id_by_url($url)
 	{
 	$request = itMySQL::_request("SELECT `id` FROM `colibri_items` WHERE `url_xml` LIKE '%{$url}%'");

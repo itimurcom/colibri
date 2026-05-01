@@ -1,7 +1,5 @@
 <?php 
-//..............................................................................
 // возвращает код запроса для указанного артикула
-//..............................................................................
 function get_articul_sql($articul_str, $force_R=true)
 	{
 	$articul = strtoupper($articul_str);
@@ -44,9 +42,7 @@ function get_articul_sql($articul_str, $force_R=true)
 // 	echo $result;
 	return $result;
 	}
-//..............................................................................
 // возвращает запись товара по артикулу
-//..............................................................................
 function get_item_from_articul($articul, $table_name=DEFAULT_ITEM_TABLE, $db_prefix=DB_PREFIX)
 	{
 	$query = "SELECT * FROM {$db_prefix}{$table_name} WHERE 1 ".get_articul_sql($articul)." LIMIT 1";
@@ -54,9 +50,7 @@ function get_item_from_articul($articul, $table_name=DEFAULT_ITEM_TABLE, $db_pre
 	return is_array($request) ? $request[0] : NULL;
 	}
 
-//..............................................................................
 // возвращает номер категории по букве, -1 для репликанта или false если нет
-//..............................................................................
 function get_category_id_by_letter($letter='')
 	{
 	global $cat_cat;

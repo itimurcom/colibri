@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.50.01
-// hash: 643be8f63aa2cb67539341ad030838f35f05e48bb42b7e40ed7d12e8e1b2126a
-// date: 10 March 2021  9:27
-// ================ CRC ================
 function active_tab(element)
 	{
 	set_tab(element);

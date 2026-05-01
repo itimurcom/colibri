@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.50.05
-// hash: 7c295aefe37841f95d74b301ae3a08a99ce758a2b989a98e0ede0dce25e1590f
-// date: 28 May 2021  4:42
-// ================ CRC ================
 function f2_edstate(element)
 	{
 	var data = $(element).attr('rel');

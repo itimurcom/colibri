@@ -1,9 +1,4 @@
 <?php
-// ================ CRC ================
-// version: 1.39.02
-// hash: 27fcf7639f59ecaadf24589f6a96350ff85d3ab817308c5122af1a0cceb3ef61
-// date: 20 September 2019 15:39
-// ================ CRC ================
 itMySQL::_request(
 "CREATE TABLE `".DB_PREFIX."contents` (
  `id` int(11) NOT NULL AUTO_INCREMENT,

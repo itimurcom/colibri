@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.06
-// hash: 901a9fb793a606957decadd2368e4b77ed383038169257744aa5031a745ce4f1
-// date: 10 March 2021  9:27
-// ================ CRC ================
 $(document).ready(function()
 	{
 	set_more_feed();

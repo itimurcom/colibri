@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.08
-// hash: d3645a799d44075ed2b4b403d9292a46a239f2f1d697e9a30111a78d751d8954
-// date: 29 March 2021  0:44
-// ================ CRC ================
 var capchasitekey;
 $(document).ready(function()
 	{

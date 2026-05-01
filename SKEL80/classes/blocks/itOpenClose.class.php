@@ -1,9 +1,4 @@
 <?php
-// ================ CRC ================
-// version: 1.15.04
-// hash: 016f9ab69812cdfbc75c6b849cfb75031408aa2bd0d74bbd6e1e0c116394ec84
-// date: 10 March 2021  9:27
-// ================ CRC ================
 global $openclose_counter;
 $openclose_counter = (function_exists('rand_id')) ? rand_id() : 0;
 definition([
@@ -20,15 +15,11 @@ definition([
 	'CLOSE_ALL_OPENCLOSE'		=> 'close',
 	'DEFAULT_OPENCLOSE_ALERT'	=> true,	
 	]);
-//..............................................................................
 // itOpenClose : класс автоматизации акордеонов любого контента
-//..............................................................................
 class itOpenClose
 	{
 	public $name, $state, $open_text, $open_class, $close_text, $close_class, $length, $replace, $code, $set, $class, $alert;
-	//..............................................................................
 	// конструктор класса - создает элемент автоматического выбора данных
-	//..............................................................................
 	// options  
 	//
 	//	'content' 	=> отображаемый код, который прячется в контейтер
@@ -42,7 +33,6 @@ class itOpenClose
 	//
 	//	'close'		=> элемент кнопки 'закрыть' ['text', 'class']
 	//
-	//..............................................................................
 	public function __construct($code=NULL, $options=NULL)
 		{
 		global $openclose_counter, $_USER;
@@ -76,9 +66,7 @@ class itOpenClose
 		$this->compile();
 		}
 		
-	//..............................................................................
 	// конструктор готового кода
-	//..............................................................................
 	static function _create($code=NULL, $options=NULL)
 		{
 		$o_close = new itOpenClose($code, $options);
@@ -87,9 +75,7 @@ class itOpenClose
 		return $code;
 		}
 
-	//..............................................................................
 	// генерирует код календаря на основе установленных параметров и заносит в code
-	//..............................................................................
 	public function compile()
 		{
 		global $_USER;
@@ -144,9 +130,7 @@ class itOpenClose
 				}
 		}
 		
-	//..............................................................................
 	// возвращает код кнопки открыть все
-	//..............................................................................
 	static function openAllbtn($options=NULL)
 		{
 		$color = isset($options['color']) ? $options['color'] : '';
@@ -156,9 +140,7 @@ class itOpenClose
 			TAB."<span class='opencloseall {$color}{$class}' onclick='openclose_openAll(this);'{$rel}>".get_const('OPEN_ALL_OPENCLOSE')."</span>";
 		}
 
-	//..............................................................................
 	// возвращает код кнопки открыть все
-	//..............................................................................
 	static function closeAllbtn($options=NULL)
 		{
 		$color = isset($options['color']) ? $options['color'] : '';
@@ -168,9 +150,7 @@ class itOpenClose
 			TAB."<span class='opencloseall {$color}{$class}' onclick='openclose_closeAll(this);'{$rel}>".get_const('CLOSE_ALL_OPENCLOSE')."</span>";
 		}
 
-	//..............................................................................
 	// возвращает код аккордеона
-	//..............................................................................
 	public function code()
 		{
 		return $this->code;

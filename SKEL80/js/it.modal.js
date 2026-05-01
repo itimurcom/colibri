@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.03
-// hash: f4b9318d3949582f4477a92cb58d215491952679be8512814700cfb8d9ba0fef
-// date: 10 March 2021  9:27
-// ================ CRC ================
 $(document).ready(function()
 	{
 	set_modal_events();

@@ -1,9 +1,4 @@
 <?php
-// ================ CRC ================
-// version: 1.38.02
-// hash: 7e3c3b115746d404153ce66de8d5c1ce3cdb8dba1de31a545a0a558c349ef97d
-// date: 17 September 2019 17:56
-// ================ CRC ================
 itMySQL::_request(
 "CREATE TABLE `".DB_PREFIX."mails` (
  `id` bigint(20) NOT NULL AUTO_INCREMENT,

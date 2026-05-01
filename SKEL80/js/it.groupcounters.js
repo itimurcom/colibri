@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.27.03
-// hash: 4f65430da8cd5dd6d8ac08b123e6ef9a547aa1b9de366fac9a70fba37d8778b2
-// date: 29 March 2021 17:26
-// ================ CRC ================
 var counter_index;
 var counter_reset=5;
 

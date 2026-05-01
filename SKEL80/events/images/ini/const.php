@@ -1,9 +1,4 @@
 <?php
-// ================ CRC ================
-// version: 1.35.03
-// hash: 193c1778e22cfcfbef2a830caf7317bcb798929f9db74a3539f37f0220b19d09
-// date: 12 September 2019 17:55
-// ================ CRC ================
 definition([
 	'DEFAULT_IMAGES_TABLE'	=> 'contents',
 	'DEFAULT_IMAGES_FIELD'	=> 'images',

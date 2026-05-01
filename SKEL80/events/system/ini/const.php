@@ -1,9 +1,4 @@
 <?php
-// ================ CRC ================
-// version: 1.35.03
-// hash: 5eb3ab1c32adbcdf9362b4766b647664e2b3e09108ae39f82a700127e71233fe
-// date: 17 September 2019 17:56
-// ================ CRC ================
 definition([
 	// itHeader
 	'DEFAULT_DESC_LEN'		=> 155,

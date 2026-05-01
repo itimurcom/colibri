@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.01
-// hash: b31413f1e7c1bdb79a2dfa7ef7b73755734714a5c0268ff667585992e75774c3
-// date: 16 September 2018 17:02
-// ================ CRC ================
 function show_loader(text, color, nohide)
 	{
 	var progress = '';

@@ -1,9 +1,4 @@
 <?php
-// ================ CRC ================
-// version: 1.26.02
-// hash: 92c778860a1ac5c8fc10f12f01ae92990085322d9de27b37f01bbc7842f70295
-// date: 30 April 2021 16:04
-// ================ CRC ================
 /**
  * File: Browser.php
  * Author: Chris Schuld (http://chrisschuld.com/)

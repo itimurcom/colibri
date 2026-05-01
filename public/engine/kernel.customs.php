@@ -2,7 +2,6 @@
 /* установки пользователя - после подключения "ядра" */
 global $_USER, $_SETTINGS;
 	// email адрес администратора сайта
-	//.............................................................................
 	define('SITE_ADMIN_EMAIL_DEFAULT', 'ateliecolibri@gmail.com');
 	$_SETTINGS['SITE_ADMIN_EMAIL'] = array (
 		'name'		=> 'SITE_ADMIN_EMAIL',
@@ -13,7 +12,6 @@ global $_USER, $_SETTINGS;
 	$_SETTINGS['SITE_ADMIN_EMAIL']['value'] = itSettings::get('SITE_ADMIN_EMAIL', NULL);
 
 	// пользователь входа SMTP
-	//.............................................................................
 	define('SITE_SMTP_USER_DEFAULT', 'robot@'.$_SERVER['SERVER_NAME']);
 	$_SETTINGS['SITE_SMTP_USER'] = array (
 		'name'		=> 'SITE_SMTP_USER',
@@ -25,7 +23,6 @@ global $_USER, $_SETTINGS;
 
 
 	// пароль входа SMTP
-	//.............................................................................
 	define('SITE_SMTP_PASSWORD_DEFAULT', 'robotcolibri');
 	$_SETTINGS['SITE_SMTP_PASSWORD'] = array (
 		'name'		=> 'SITE_SMTP_PASSWORD',
@@ -37,7 +34,6 @@ global $_USER, $_SETTINGS;
 
 
 	// страница facebook
-	//.............................................................................
 	define('FB_PAGE_DEFAULT', 'https://www.facebook.com/rhythmicgymnasticsleotard/');
 	$_SETTINGS['FB_PAGE'] = array (
 		'name'		=> 'FB_PAGE',
@@ -49,7 +45,6 @@ global $_USER, $_SETTINGS;
 
 
 	// страница Инстаграм
-	//.............................................................................
 	define('IG_PAGE_DEFAULT', 'https://www.instagram.com/atelie_colibri/');
 	$_SETTINGS['IG_PAGE'] = array (
 		'name'		=> 'IG_PAGE',
@@ -61,7 +56,6 @@ global $_USER, $_SETTINGS;
 
 
 	// страница Твиттер
-	//.............................................................................
 	define('TW_PAGE_DEFAULT', '');
 	$_SETTINGS['TW_PAGE'] = array (
 		'name'		=> 'TW_PAGE',
@@ -75,7 +69,6 @@ global $_USER, $_SETTINGS;
 
 
 
-	//.............................................................................
 	define('DISCOUNT_DEFAULT', 0);
 	$_SETTINGS['DISCOUNT'] = [
 		'name'		=> 'DISCOUNT',

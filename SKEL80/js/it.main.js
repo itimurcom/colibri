@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.39.04
-// hash: 9235d7ad2a363004c996e7adaa48895d27305b78d5309b9c790a373422353a46
-// date: 28 May 2021  4:42
-// ================ CRC ================
 var modal_resize_interval 		= 100;
 var clear_new_interval 			= 5000;
 

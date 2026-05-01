@@ -1,25 +1,15 @@
 <?php
-// ================ CRC ================
-// version: 1.15.03
-// hash: 21ddf00717c7feddfec50431c177507111831038f060341c1a1c24bb06bc6fd2
-// date: 09 September 2019  5:10
-// ================ CRC ================
 global $category_counter;
 $category_counter = (function_exists('rand_id')) ? rand_id() : time();
 
 definition([
 	'DEFAULT_CATEGORY_TABLE'=> 'categories',
 	]);
-
-//..............................................................................
 // itCategory : класс управления категориями товаров / или контента
-//..............................................................................
 class itCategory
 	{
 	public $table_name, $rec_id, $name, $data, $field;
-	//..............................................................................
 	// конструктор класса
-	//..............................................................................
 	public function __construct($options=NULL)
 		{
 		global 	$category_counter;
@@ -32,27 +22,16 @@ class itCategory
 		
 		$this->data 		= itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
 		}
-
-	//..............................................................................
 	// сохраняет поле 
-	//..............................................................................	
 	public function store() 
 		{
 		$values = $this->data;
 		unset($values['id']);
 		itMySQL::_update_db_rec($this->table_name, $this->rec_id, $values);
 		}
-		
-		
-
-	//..............................................................................
 	// сравнивает две записи категории по названию
-	//..............................................................................	
 	static function cmp($a, $b) {return strcmp(get_field_by_lang($a['title_xml']),get_field_by_lang($b['title_xml']));}
-	
-	//..............................................................................
 	// возвращает дерево категорий с кнопками для управления
-	//..............................................................................	
 	static function prepare($status=NULL, $table_name=DEFAULT_CATEGORY_TABLE, $db_prefix=DB_PREFIX)
 		{
 		global $prepared_arr;
@@ -84,9 +63,7 @@ class itCategory
 					}
 			}
 		}	
-	//..............................................................................
 	// рекурсиваня функция массива категорий
-	//..............................................................................	
 	static function _prepare_row($node, $cats_arr, $deep)
 		{
 		global $prepared_arr;
@@ -103,10 +80,7 @@ class itCategory
 				}			
 			}
 		}
-		
-	//..............................................................................
 	// возвращает дерево категорий с кнопками для управления
-	//..............................................................................	
 	static function tree($status=NULL, $table_name=DEFAULT_CATEGORY_TABLE, $db_prefix=DB_PREFIX)
 		{
 		$query = "SELECT * FROM `{$db_prefix}{$table_name}` WHERE `status`".
@@ -139,9 +113,7 @@ class itCategory
 			return $result;
 			}
 		}	
-	//..............................................................................
 	// рекурсиваня функция дерва категорий
-	//..............................................................................	
 	static function _tree_row($node, $cats_arr, $deep)
 		{
 		$result = NULL;
@@ -155,11 +127,7 @@ class itCategory
 			}
 		return $result;
 		}
-		
-
-	//..............................................................................
 	// устанавливает родительскую категорию для категории
-	//..............................................................................	
 	static function set_parent($category_id=NULL, $parent_id=0, $table_name=DEFAULT_CATEGORY_TABLE, $db_prefix=DB_PREFIX)
 		{
 		if ($category_id==$parent_id)
@@ -177,10 +145,7 @@ class itCategory
 		//установим нового родителя для категории
 		itMySQL::_update_value_db($table_name, $category_id, $parent_id, 'parent_id');
 		}
-		
-	//..............................................................................
 	// удаление категории
-	//..............................................................................	
 	static function x($category_id=NULL, $table_name=DEFAULT_CATEGORY_TABLE, $db_prefix=DB_PREFIX)
 		{
 		$row = itMySQL::_get_rec_from_db($table_name, $category_id);
@@ -196,10 +161,7 @@ class itCategory
 		//установим нового родителя для категории
 		itMySQL::_update_value_db($table_name, $category_id, 'DELETED', 'status');
 		}
-		
-	//..............................................................................
 	// обработчик событий категории
-	//..............................................................................	
 	static function events($url='/', $path=UPLOADS_ROOT)
 		{
 		return category_events($url, $path);

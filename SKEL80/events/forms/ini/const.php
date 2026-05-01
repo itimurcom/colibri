@@ -1,9 +1,4 @@
 <?php
-// ================ CRC ================
-// version: 1.35.03
-// hash: af1c713555e63da3f04a62646d926d914db4ff42c67ea53d7a8c5beb7dec8321
-// date: 27 December 2019  6:56
-// ================ CRC ================
 definition($constants = [
 	'DEFAULT_UPGAL_COMPACT' => false,
 	'DEFAULT_UPGAL_CLASS'	=> 'upgal_div',

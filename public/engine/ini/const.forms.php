@@ -1,10 +1,7 @@
 <?php
 define('RECAPTCHA_KEY', '6LcuxIUaAAAAACJX9WJLPsPu0IjAH61jdkuMixzM');
 define('RECAPTCHA_SECRET', '6LcuxIUaAAAAAH6E-v_ZLaudIrQrvtLiKI0lvobo');
-
-//------------------------------------------------------------------------------
 // ФОРМЫ ДЛЯ РАЗМЕЩЕНИЯ НА СТРАНИЦАХ
-//------------------------------------------------------------------------------
 define ('DEFAULT_MORE_STATE', false);
 
 define ('FORM2_CONTACTS',	1);

@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.02
-// hash: 9e654bc6948f9b8365cece5e8ab1a8263b39c24337cb6ff34d300d6859adae2f
-// date: 15 December 2018  1:20
-// ================ CRC ================
 var upgal_delimiter = '|';
 
 $(document).ready(function()

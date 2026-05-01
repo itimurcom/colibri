@@ -1,7 +1,5 @@
 <?php
-//..............................................................................
 // генерирует ммассив товаров в поиске
-//..............................................................................
 function as_item_arr($table_name=DEFAULT_ITEM_TABLE, $db_prefix=DB_PREFIX)
 	{
 	$articul = strip_tags($_REQUEST['term']);
@@ -26,12 +24,7 @@ function as_item_arr($table_name=DEFAULT_ITEM_TABLE, $db_prefix=DB_PREFIX)
 		}
 	return $result;
 	}
-
-
-
-//..............................................................................
 // обрабатывает массив результата поиска товара
-//..............................................................................
 function get_item_auto_result($row=NULL)
 	{
 	if (isset($row['images']) and is_array($row['images']))

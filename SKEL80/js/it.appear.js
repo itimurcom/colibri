@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.02
-// hash: 299a4f9361fc05ba5561d9aef9a7cc2900ab3c08ef182d14b148d1e32a5b148a
-// date: 24 August 2019 16:44
-// ================ CRC ================
 // onScreen jQuery plugin v0.2.1
 // (c) 2011-2013 Ben Pickles
 //

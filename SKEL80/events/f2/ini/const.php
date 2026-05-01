@@ -1,9 +1,4 @@
 <?php
-// ================ CRC ================
-// version: 1.35.03
-// hash: e0993b30cd195e259d9decc2a468156e225431629f8e18c9f4b31611ab4f4f05
-// date: 01 August 2020 17:27
-// ================ CRC ================
 definition($constants = [
 		// кнопки
 		'DEFAULT_BUTTON_COLOR' 		=> 'blue',

@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.03
-// hash: da94fff3e2036ca0ed72cd955e1fff527c68029736a1f88a230fadd7cec42d1d
-// date: 09 September 2020 16:28
-// ================ CRC ================
 $(document).ready(function()
 	{
 	set_openclose();

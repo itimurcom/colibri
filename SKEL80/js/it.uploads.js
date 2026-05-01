@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.02
-// hash: fed0f9e7153f2e3f8d7eb69b1f03c944da7f36be94bf3497853c275601d100db
-// date: 15 December 2018  1:20
-// ================ CRC ================
 $(document).ready(function()
 	{
 	set_uploads_events();

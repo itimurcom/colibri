@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.03
-// hash: 23a3832fe085f5eb22e1c3dd689910277537ff3b1ed9d3f0992ea1a466813d14
-// date: 28 March 2019 13:17
-// ================ CRC ================
 $(document).ready(function()
     {
     set_fancybox_data();

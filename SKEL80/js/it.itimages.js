@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.01
-// hash: 1f1564fa5e2a726029d5ef952a16589d18bf2a49443126d9353d2963ce083625
-// date: 16 September 2018 17:02
-// ================ CRC ================
 function itimages_state(element)
 	{
 	var data = $(element).attr('rel');

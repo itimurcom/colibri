@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.04
-// hash: aa9bd15fef1706b6bdc8a740dbd6097b45870b09af02fd380288ddf55493fe0e
-// date: 01 August 2020 17:27
-// ================ CRC ================
 $(document).ready(function()
 	{
 	window.setInterval(function()

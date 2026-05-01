@@ -54,3 +54,6 @@ M0 / P39 note: `itFeed.class.php` had only visual separator/CRC cleanup; `engine
 
 ## M0 / P40 engine_functions third cleanup pass
 `SKEL80/kernel/engine_functions.php` now reuses local shared primitives for hash generation and JSON output, and stale CRC/decorative separator comments were removed. This remains direct cleanup inside the existing shared helper file.
+
+## Project-wide comment noise cleanup
+Generated CRC metadata blocks and decorative separator comments are considered visual legacy noise. They may be removed in broad cleanup patches when no runtime code is changed.

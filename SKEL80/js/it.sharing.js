@@ -1,8 +1,3 @@
-// ================ CRC ================
-// version: 1.15.02
-// hash: 5f716950ab78b3c24e0f78e1abfbb6023518055cb95f83bba506eaf177ab3556
-// date: 27 June 2019  9:14
-// ================ CRC ================
 function social_popup (type, url)
 	{
 	var p_link 	= url;

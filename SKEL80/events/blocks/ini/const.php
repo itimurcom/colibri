@@ -1,9 +1,4 @@
 <?php
-// ================ CRC ================
-// version: 1.35.03
-// hash: f096e167e85ea4fcebef44ffe2718e82041e5f88d153554a4754f196b525b48f
-// date: 28 May 2021  4:42
-// ================ CRC ================
 definition([
 	// itBlock
 	'DEFAULT_BLOCK_TABLE'	=> 'blocks',
