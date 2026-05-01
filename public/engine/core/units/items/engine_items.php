@@ -1,9 +1,6 @@
 <?php
 function get_items_slider($row)
 	{
-	global $_USER;
-	$result = NULL;
-
 	$o_slider = new itImages([
 		'table_name'	=> 'items',
 		'rec_id'	=> $row['id'],
@@ -92,7 +89,6 @@ function get_item_panel($item_id=NULL)
 	{
 	global $_USER, $cat_cat, $cat_relations, $plug_og, $_MARKUP;
 
-	$result = NULL;
 	$o_edit = new itEditor([
 		'table_name'	=> 'items',
 		'rec_id'	=> $item_id,
@@ -114,7 +110,6 @@ function get_item_panel($item_id=NULL)
 	$ext_code = $o_ext->container();
 	$o_b_all = get_item_compiled_block(BLOCK_ITEMALL);
 	$o_b_discl = get_item_compiled_block(BLOCK_ITEMDISCL, ['class' => 'bg_red']);
-	$admin_code = NULL;
 
 	$result =
 		get_item_serie_feed($o_edit->data).
@@ -160,7 +155,6 @@ function get_item_panel($item_id=NULL)
 				TAB."</div>".
 				TAB."<div class='siterow boxed'>".
 					((!($o_edit->data['is_shop'] OR is_for_sale($o_edit->data) AND !is_null($o_b_all->editor))) ? $o_b_all->editor->code() : NULL).
-					$admin_code.
 				TAB."</div>".
 				TAB."<div class='siterow boxed'>".$ext_code.TAB."</div>".
 			TAB."</div>".
@@ -364,8 +358,7 @@ function get_items_feed_row($row, $full=false)
 		return TAB."<div class='item_div boxed'>&nbsp;</div>";
 		}
 
-	global $_USER, $cat_cat;
-	$result = NULL;
+	global $_USER;
 
         $img_src = get_item_avatar_image($row);
         $title = get_item_articul($row)."<br/>".get_field_by_lang($row['title_xml'], CMS_LANG, '');
@@ -386,9 +379,7 @@ function get_items_feed_row($row, $full=false)
 		(!$full ? get_item_flags($row) : NULL).
 		(($row['is_shop'] OR is_for_sale($row))
 			? TAB."<div class='price sale rounded boxed'>".get_const('FOR_SALE')."</div>"
-			: (true
-				? TAB."<div class='price rounded shadow-white boxed'>{$row['price']}<small>&nbsp;$</small></div>"
-				: NULL)).
+			: TAB."<div class='price rounded shadow-white boxed'>{$row['price']}<small>&nbsp;$</small></div>").
         	TAB."<a href='{$link}' target='_blank'>".
         	TAB."<img class='avatar boxed{$animated}' src='{$img_src}'>".
         	TAB."<div class='title boxed'>{$title}</div>".

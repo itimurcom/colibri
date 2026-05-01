@@ -1,2 +1,0 @@
-# Remove obsolete static robots file after enabling dynamic robots.php
-public/robots.txt

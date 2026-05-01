@@ -1,15 +1,8 @@
 <?php
-// ================ CRC ================
-// version: 1.15.09
-// hash: 66b124c147958f086d9fead5ecbf677c34a2966b9b2f311c458e606273b5a345
-// date: 28 May 2021  4:42
-// ================ CRC ================
 global $feed_counter;
 $feed_counter = (function_exists('rand_id')) ? rand_id() : time();
 
-//..............................................................................
 // itFeed : класс построения бесконечной ленты данных из любых таблиц базы
-//..............................................................................
 class itFeed
 	{
 	public $table_name, $prefix, $fields, $condition, $group, $order;
@@ -19,9 +12,7 @@ class itFeed
 	public $element_id, $name, $position, $onefield, $field, $params;
 	public $MAXINBLOCK, $WASRESET, $COUNTAL, $field_rec;
 
-	//..............................................................................
 	// конструктор класса - создает блок и кнопку с параметрами из запроса
-	//..............................................................................
 	public function __construct($options=NULL)
 		{
 		global $feed_counter;
@@ -71,18 +62,14 @@ class itFeed
 		$this->start_feed();
 		}
 
-	//..............................................................................
 	// determines actual query limit for feed query; explicit limit has priority
-	//..............................................................................
 	public function resolve_query_limit()
 		{
 		$limit = intval($this->limit);
 		return ($limit > 0) ? $limit : 0;
 		}
 
-	//..............................................................................
 	// returns SQL LIMIT clause for current feed position
-	//..............................................................................
 	private function build_limit_clause($position=NULL, $limit=NULL)
 		{
 		if ($this->onefield)
@@ -100,9 +87,7 @@ class itFeed
 		return ($limit > 0) ? " LIMIT {$position},{$limit}" : " LIMIT {$position}";
 		}
 
-	//..............................................................................
 	// builds base query without limit for current feed
-	//..............................................................................
 	public function build_base_query()
 		{
 		if (is_null($this->sql))
@@ -118,17 +103,13 @@ class itFeed
 			(($this->order!='') ? " ORDER BY {$this->order}" : '');
 		}
 
-	//..............................................................................
 	// builds current feed query with limit clause
-	//..............................................................................
 	public function build_feed_query()
 		{
 		return $this->build_base_query().$this->build_limit_clause();
 		}
 
-	//..............................................................................
 	// calculates actual total count for SQL or function feeds
-	//..............................................................................
 	private function resolve_total_count()
 		{
 		if (!is_null($this->func))
@@ -158,9 +139,7 @@ class itFeed
 		return isset($request[0]['count']) ? intval($request[0]['count']) : 0;
 		}
 
-	//..............................................................................
 	// launches feed query/function source
-	//..............................................................................
 	private function start_feed()
 		{
 		if (!is_null($this->func) AND function_exists($this->func))
@@ -197,9 +176,7 @@ class itFeed
 			}
 		}
 
-	//..............................................................................
 	// switches direction for fewer-feed query
-	//..............................................................................
 	public function reverse_order()
 		{
 		$this->query = (strpos($this->query, "`id`<='")!==false)
@@ -207,9 +184,7 @@ class itFeed
 			: $this->query;
 		}
 
-	//..............................................................................
 	// gets rows for weighted feed display
-	//..............................................................................
 	public function weight_run()
 		{
 		global $show_as;
@@ -251,9 +226,7 @@ class itFeed
 		return $i;
 		}
 
-	//..............................................................................
 	// gets blocks for onefield processing
-	//..............................................................................
 	public function onefield_run()
 		{
 		$i=1;
@@ -287,9 +260,7 @@ class itFeed
 		return $i;
 		}
 
-	//..............................................................................
 	// gets feed rows by settings
-	//..............................................................................
 	public function run()
 		{
 		$i=1;
@@ -322,9 +293,7 @@ class itFeed
 		return $i++;
 		}
 
-	//..............................................................................
 	// callback resolver for one feed row
-	//..............................................................................
 	public function callback_func()
 		{
 		if (!function_exists($func = "get_{$this->name}_feed_row"))
@@ -335,9 +304,7 @@ class itFeed
 		return $func;
 		}
 
-	//..............................................................................
 	// prepares encrypted payload for more/fewer feed buttons
-	//..............................................................................
 	private function build_feed_payload($fewer=false)
 		{
 		$payload = [
@@ -377,18 +344,14 @@ class itFeed
 		return simple_encrypt(serialize($payload));
 		}
 
-	//..............................................................................
 	// resolves localized feed-button text by constant prefix and suffix
-	//..............................................................................
 	private function feed_button_text($prefix, $suffix='TEXT')
 		{
 		$const_name = "{$prefix}_".strtoupper($this->name)."_{$suffix}";
 		return get_const($const_name);
 		}
 
-	//..............................................................................
 	// returns common HTML attributes for more/fewer controls
-	//..............................................................................
 	private function feed_button_attrs($feed_code)
 		{
 		return " class='more_feed' id='{$this->element_id}' feed-rel='{$feed_code}'".
@@ -396,9 +359,7 @@ class itFeed
 			($this->appear ? ' appear' : '');
 		}
 
-	//..............................................................................
 	// builds more/fewer control HTML
-	//..............................................................................
 	private function build_feed_button($fewer=false)
 		{
 		$feed_code = $this->build_feed_payload($fewer);
@@ -412,33 +373,25 @@ class itFeed
 			TAB."</div>";
 		}
 
-	//..............................................................................
 	// returns more-button HTML
-	//..............................................................................
 	public function get_more_button()
 		{
 		return $this->build_feed_button(false);
 		}
 
-	//..............................................................................
 	// returns begin-of-feed marker for fewer mode
-	//..............................................................................
 	public function fewer_begin_text()
 		{
 		return TAB."	<div class='fewer_begin'>".$this->feed_button_text('FEWER', 'BEGIN')."</div>";
 		}
 
-	//..............................................................................
 	// returns fewer-button HTML
-	//..............................................................................
 	public function get_fewer_button()
 		{
 		return $this->build_feed_button(true);
 		}
 
-	//..............................................................................
 	// builds current feed block with optional more/fewer controls
-	//..............................................................................
 	public function get_feed_arr()
 		{
 		if (!($this->start AND $this->fewer))
@@ -460,9 +413,7 @@ class itFeed
 			}
 		}
 
-	//..............................................................................
 	// compiles weighted feed columns into HTML
-	//..............................................................................
 	private function compile_weight_rows()
 		{
 		$code = '';
@@ -474,9 +425,7 @@ class itFeed
 		return $code;
 		}
 
-	//..............................................................................
 	// wraps compiled feed code with controls and optional feed div
-	//..............................................................................
 	private function wrap_feed_code($code)
 		{
 		return
@@ -489,9 +438,7 @@ class itFeed
 			ready_val($this->rows['more']);
 		}
 
-	//..............................................................................
 	// compiles standard feed block to HTML
-	//..............................................................................
 	public function compile()
 		{
 		if ($this->async)
@@ -513,9 +460,7 @@ class itFeed
 		$this->code = $this->wrap_feed_code($this->code);
 		}
 
-	//..............................................................................
 	// returns feed rows without more/fewer control keys
-	//..............................................................................
 	private static function rows_without_controls($data, $reverse=false)
 		{
 		$rows = [];
@@ -529,17 +474,13 @@ class itFeed
 		return $rows;
 		}
 
-	//..............................................................................
 	// собираем блоки в общий код
-	//..............................................................................
 	static function compile_rows($data, $reverse=false)
 		{
 		return implode('', self::rows_without_controls($data, $reverse));
 		}
 
-	//..............................................................................
 	// returns one row from request or function data source
-	//..............................................................................
 	public function step()
 		{
 		return is_null($this->func)
@@ -547,9 +488,7 @@ class itFeed
 			: (isset($this->request[$this->position]) ? $this->request[$this->position] : NULL);
 		}
 
-	//..............................................................................
 	// returns total count; calculates lazily when disabled at startup
-	//..............................................................................
 	public function count_all()
 		{
 		if ($this->COUNTALL === NULL && !$this->total_count_resolved)
@@ -559,9 +498,7 @@ class itFeed
 		return intval($this->COUNTALL);
 		}
 
-	//..............................................................................
 	// explicitly calculates total count for current feed
-	//..............................................................................
 	public function collect_all()
 		{
 		$this->COUNTALL = $this->resolve_total_count();
@@ -569,9 +506,7 @@ class itFeed
 		return intval($this->COUNTALL);
 		}
 
-	//..............................................................................
 	// returns compiled HTML code for feed
-	//..............................................................................
 	public function code()
 		{
 		return $this->code;

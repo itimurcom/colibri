@@ -20,3 +20,6 @@
 Use canonical `itForm2` add-method names only. Legacy synonym names were removed in `docs/ITFORM2_CANONICAL_METHOD_NAMES_STAGE.md`.
 
 11. `M0 / P37 itForm2 field builder regression hotfix` keeps P36 canonical method names, but restores safe defaults for `SELECT` and `SET` editor field creation.
+
+## Recent cleanup stages
+- `M0 / P39 itFeed and engine_items safe cleanup bundle`: carries P38 visual `itFeed` cleanup plus a small safe `engine_items` cleanup without route/feed behavior changes.

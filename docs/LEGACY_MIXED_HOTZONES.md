@@ -49,3 +49,5 @@ Large shared form runtime with many repetitive field builder methods. Current cl
 
 ## P37 note
 `itForm2.class.php` canonical method migration remains active; P37 only fixes field-builder regressions for form-editor field creation and list-field metadata.
+
+M0 / P39 note: `itFeed.class.php` had only visual separator/CRC cleanup; `engine_items.php` had only unused-local and dead-ternary cleanup.
