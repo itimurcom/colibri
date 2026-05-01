@@ -184,14 +184,40 @@ class itFeed
 			: $this->query;
 		}
 
+
+	private function reset_run_state()
+		{
+		$this->rows = NULL;
+		$this->WASRESET = false;
+		}
+
+	private function restart_loop_if_needed()
+		{
+		if (!$this->loop)
+			{
+			return false;
+			}
+
+		$this->position = 0;
+		$this->start_feed();
+		$this->WASRESET = true;
+		return true;
+		}
+
+	private function with_row_context($row)
+		{
+		$row['table_name'] = $this->table_name;
+		$row['rec_id'] = $row['id'];
+		return $row;
+		}
+
 	// gets rows for weighted feed display
 	public function weight_run()
 		{
 		global $show_as;
 		$i=1;
 		$last = NULL;
-		$this->rows = NULL;
-		$this->WASRESET = false;
+		$this->reset_run_state();
 
 		while ($i<=$this->MAXINBLOCK)
 			{
@@ -209,8 +235,7 @@ class itFeed
 				decode_json_values($row);
 
 				$sum += $show_as[$row['show_as']]['size'];
-				$row['table_name'] = $this->table_name;
-				$row['rec_id'] = $row['id'];
+				$row = $this->with_row_context($row);
 				if ($sum<101)
 					{
 					$this->rows[$i][] = call_user_func($this->callback_func(), $row);
@@ -230,8 +255,7 @@ class itFeed
 	public function onefield_run()
 		{
 		$i=1;
-		$this->rows = NULL;
-		$this->WASRESET = false;
+		$this->reset_run_state();
 
 		if (is_null($this->field_rec) && ($record = mysqli_fetch_assoc($this->request)))
 			{
@@ -247,11 +271,8 @@ class itFeed
 				$field_row = (is_array($this->params)) ? array_merge($field_row, $this->params) : $field_row;
 				$this->rows[$i] = call_user_func($this->callback_func(), $field_row);
 				}
-			elseif ($this->loop)
+			elseif ($this->restart_loop_if_needed())
 				{
-				$this->position = 0;
-				$this->start_feed();
-				$this->WASRESET = true;
 				continue;
 				}
 			else break;
@@ -264,8 +285,7 @@ class itFeed
 	public function run()
 		{
 		$i=1;
-		$this->rows = NULL;
-		$this->WASRESET = false;
+		$this->reset_run_state();
 
 		while ($i<=$this->MAXINBLOCK)
 			{
@@ -275,16 +295,12 @@ class itFeed
 				decode_json_values($row);
 				if (!isset($this->sql))
 					{
-					$row['table_name'] = $this->table_name;
-					$row['rec_id'] = $row['id'];
+					$row = $this->with_row_context($row);
 					}
 				$this->rows[$i] = call_user_func($this->callback_func(), $row);
 				}
-			elseif ($this->loop)
+			elseif ($this->restart_loop_if_needed())
 				{
-				$this->position = 0;
-				$this->start_feed();
-				$this->WASRESET = true;
 				continue;
 				}
 			else break;

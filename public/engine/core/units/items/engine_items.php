@@ -279,11 +279,21 @@ function get_item_articul($item_rec=NULL)
 	return get_item_letter($item_rec)."_".stripslashes($item_rec['serie'])."_".stripslashes($item_rec['version']);
 	}
 
-function get_items_feed()
-	{
-	global $cat_cat, $plug_og, $_USER;
 
-	$view = ready_val($_REQUEST['view']);
+function get_items_feed_view_sql($view)
+	{
+	$map = [
+		'new'	=> ' AND `is_new`',
+		'econom'=> ' AND `is_econom`',
+		'shop'	=> ' AND `is_shop`',
+		];
+	return isset($map[$view]) ? $map[$view] : NULL;
+	}
+
+function get_items_feed_sql($view)
+	{
+	global $cat_cat, $_USER;
+
 	$sql = "SELECT * FROM `colibri_items` WHERE `status`='PUBLISHED' ".
 		(isset($cat_cat[$view]) ? "AND `category_id`='{$cat_cat[$view]['id']}' " : NULL).
 		(!$_USER->is_logged() ? "AND `images` NOT IN ('', '[]') " : NULL);
@@ -293,52 +303,62 @@ function get_items_feed()
 		$sql .= " AND `is_shop`<>'1'";
 		}
 
-	switch ($view)
-		{
-		case 'new' :
-			$sql .= ' AND `is_new`';
-			break;
-		case 'econom' :
-			$sql .= ' AND `is_econom`';
-			break;
-		case 'shop' :
-			$sql .= ' AND `is_shop`';
-			break;
-		}
+	return $sql.
+		get_items_feed_view_sql($view).
+		get_items_feed_regexp_filter('colors', 'filter_xml').
+		get_items_feed_regexp_filter('tags', 'tags_xml').
+		(ready_val($_SESSION['filter']['min']) ? " AND `price`>={$_SESSION['filter']['min']}" : NULL).
+		(ready_val($_SESSION['filter']['max']) ? " AND `price`<={$_SESSION['filter']['max']}" : NULL).
+		(isset($_REQUEST['anchor']) ? " AND `id`<='{$_REQUEST['anchor']}'" : '');
+	}
 
-	$sql .= get_items_feed_regexp_filter('colors', 'filter_xml');
-	$sql .= get_items_feed_regexp_filter('tags', 'tags_xml');
-	$sql .= ready_val($_SESSION['filter']['min']) ? " AND `price`>={$_SESSION['filter']['min']}" : NULL;
-	$sql .= ready_val($_SESSION['filter']['max']) ? " AND `price`<={$_SESSION['filter']['max']}" : NULL;
-	$sql .= isset($_REQUEST['anchor']) ? " AND `id`<='{$_REQUEST['anchor']}'" : '';
-
-	$order_str = get_items_feed_order();
-	$o_feed = new itFeed(get_items_feed_options($sql, $order_str));
+function get_items_compiled_feed($sql, $order_str, $fewer=false)
+	{
+	$o_feed = new itFeed(get_items_feed_options($sql, $order_str, $fewer));
 	$o_feed->compile();
+	return $o_feed;
+	}
 
-	$fewer_counter = NULL;
-	$o_fewer_code = NULL;
-	if (ready_val($_REQUEST['anchor']))
-		{
-		$o_fewer = new itFeed(get_items_feed_options($sql, $order_str, true));
-		$o_fewer->compile();
-		$o_fewer_code = ($fewer_counter = $o_fewer->count_all()) ? $o_fewer->code() : NULL;
-		unset($o_fewer);
-		}
+function get_items_fewer_feed_code($sql, $order_str)
+	{
+	if (!ready_val($_REQUEST['anchor'])) return ['counter' => NULL, 'code' => NULL];
 
-	$result =
+	$o_fewer = get_items_compiled_feed($sql, $order_str, true);
+	$counter = $o_fewer->count_all();
+	$result = ['counter' => $counter, 'code' => $counter ? $o_fewer->code() : NULL];
+	unset($o_fewer);
+	return $result;
+	}
+
+function get_items_feed_title_code($title, $counter)
+	{
+	return
 		TAB."<h1 class='tit'>".
-		get_const($plug_og['title'])."<br>".
-		"<small>( ".str_replace('[VALUE]', $o_feed->count_all() + $fewer_counter, get_const('PROPOSITONS_TITLE')).
+		get_const($title)."<br>".
+		"<small>( ".str_replace('[VALUE]', $counter, get_const('PROPOSITONS_TITLE')).
 		(isset($_SESSION['filter']['colors']) ? "<font size='2' color='green'> ✔ ".get_const('WITH_COLORS')."</font>" : NULL).
 		" )</small>".
-		TAB."</h1>".
+		TAB."</h1>";
+	}
+
+
+function get_items_feed()
+	{
+	global $plug_og;
+
+	$sql = get_items_feed_sql(ready_val($_REQUEST['view']));
+	$order_str = get_items_feed_order();
+	$o_feed = get_items_compiled_feed($sql, $order_str);
+	$fewer = get_items_fewer_feed_code($sql, $order_str);
+
+	$result =
+		get_items_feed_title_code($plug_og['title'], $o_feed->count_all() + $fewer['counter']).
 		TAB."<div class='ed_devider'></div>".
-			feed_selector().
-			TAB."<div class='siterow boxed'>".
-			$o_fewer_code.
-			$o_feed->code().
-			TAB."</div>";
+		feed_selector().
+		TAB."<div class='siterow boxed'>".
+		$fewer['code'].
+		$o_feed->code().
+		TAB."</div>";
 	unset($o_feed);
 	return $result;
 	}
@@ -360,30 +380,30 @@ function get_items_feed_row($row, $full=false)
 
 	global $_USER;
 
-        $img_src = get_item_avatar_image($row);
-        $title = get_item_articul($row)."<br/>".get_field_by_lang($row['title_xml'], CMS_LANG, '');
-        $link = get_item_runtime_url($row);
+	$img_src = get_item_avatar_image($row);
+	$title = get_item_articul($row)."<br/>".get_field_by_lang($row['title_xml'], CMS_LANG, '');
+	$link = get_item_runtime_url($row);
 
-        $animated_parent = $animated = NULL;
-        if (($row['id'] == $_REQUEST['rec_id']) OR ($row['id'] == ready_val($_REQUEST['anchor'])))
-        	{
-	        $animated_parent = ' animatedParent animateOnce';
-	        $animated = ' animated tada';
-        	}
+	$animated_parent = $animated = NULL;
+	if (($row['id'] == $_REQUEST['rec_id']) OR ($row['id'] == ready_val($_REQUEST['anchor'])))
+		{
+		$animated_parent = ' animatedParent animateOnce';
+		$animated = ' animated tada';
+		}
 
-        $full_str = $full ? ' full' : NULL;
-        return
-        	TAB."<div class='item_div boxed{$animated_parent}{$full_str}' id='item-{$row['id']}'>".
+	$full_str = $full ? ' full' : NULL;
+	return
+		TAB."<div class='item_div boxed{$animated_parent}{$full_str}' id='item-{$row['id']}'>".
         	wish_btn($row).
 		($_USER->is_logged() ? TAB."<div class='id'># {$row['id']}</div>" : NULL).
 		(!$full ? get_item_flags($row) : NULL).
 		(($row['is_shop'] OR is_for_sale($row))
 			? TAB."<div class='price sale rounded boxed'>".get_const('FOR_SALE')."</div>"
 			: TAB."<div class='price rounded shadow-white boxed'>{$row['price']}<small>&nbsp;$</small></div>").
-        	TAB."<a href='{$link}' target='_blank'>".
-        	TAB."<img class='avatar boxed{$animated}' src='{$img_src}'>".
-        	TAB."<div class='title boxed'>{$title}</div>".
-        	TAB."</a>".
+		TAB."<a href='{$link}' target='_blank'>".
+		TAB."<img class='avatar boxed{$animated}' src='{$img_src}'>".
+		TAB."<div class='title boxed'>{$title}</div>".
+		TAB."</a>".
 		TAB."</div>";
 	}
 

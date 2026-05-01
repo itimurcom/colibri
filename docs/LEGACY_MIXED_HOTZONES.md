@@ -60,3 +60,6 @@ Generated CRC metadata blocks and decorative separator comments are considered v
 
 ## M0 / P46 editor runtime event consolidation
 P46 consolidates repeated editor runtime paths inside `itEditor.class.php` and repeated editor JSON response paths inside `editor_events.func.php`. The change remains local to existing editor files and does not introduce a new action framework.
+
+## M0 / P47 catalog/feed runtime consolidation
+`engine_items.php` now keeps catalog feed SQL and feed orchestration in local helpers, while `itFeed.class.php` centralizes repeated run/reset/loop/context code. `public/more.php` was inspected and left unchanged because its current payload decode/render path is already thin.

@@ -27,3 +27,6 @@ Broad comment cleanup may remove generated CRC metadata and decorative separator
 
 ## M0 / P46 editor runtime event consolidation note
 `itEditor.class.php` and `SKEL80/events/editor/editor_events.func.php` are now treated as one editor runtime zone. Future editor cleanup should keep reducing local duplication in these existing files before considering any new editor boundary.
+
+## M0 / P47 catalog/feed runtime note
+Catalog feed cleanup stays local to `engine_items.php` and `itFeed.class.php`. Do not introduce a separate feed framework; keep feed SQL, feed object creation, and feed render orchestration grouped inside the existing files.
