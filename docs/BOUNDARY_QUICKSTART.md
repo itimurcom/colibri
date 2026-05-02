@@ -30,3 +30,6 @@ Broad comment cleanup may remove generated CRC metadata and decorative separator
 
 ## M0 / P52 editor events note
 `SKEL80/events/editor/editor_events.func.php` now reuses local event helpers for repeated editor creation and store+reload responses. Keep editor event cleanup local during M0; do not introduce a separate editor event dispatcher layer.
+
+## M0 / P53 itForm2 events note
+`SKEL80/events/f2/*.func.php` cleanup must stay controlled: do not change `add_*` methods, field storage format, or add/delete/move semantics while consolidating event responses and field settings UI.

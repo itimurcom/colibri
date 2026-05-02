@@ -63,3 +63,6 @@ P49 consolidates duplicated field runtime rendering inside `itForm2.class.php` w
 
 ## M0 / P52 `editor_events.func.php`
 P52 stabilizes repeated editor event runtime paths after the P45/P46 editor work. The patch keeps operation names and storage format unchanged while removing duplicated editor creation/store/reload code and the unreachable duplicate `ed_zoom` branch.
+
+## M0 / P53 `itForm2` event layer
+`f2_change_event.func.php` and `f2_events.func.php` now consolidate repeated SELECT/SET settings UI and JSON/reload response paths. This is event-layer cleanup only; `itForm2.class.php` and field storage semantics are unchanged.
