@@ -60,3 +60,6 @@ Generated CRC metadata blocks and decorative separator comments are considered v
 
 ## M0 / P49 `itForm2.class.php`
 P49 consolidates duplicated field runtime rendering inside `itForm2.class.php` while preserving public method names and form field storage. The form editor event files were intentionally left untouched in this patch.
+
+## M0 / P52 `editor_events.func.php`
+P52 stabilizes repeated editor event runtime paths after the P45/P46 editor work. The patch keeps operation names and storage format unchanged while removing duplicated editor creation/store/reload code and the unreachable duplicate `ed_zoom` branch.

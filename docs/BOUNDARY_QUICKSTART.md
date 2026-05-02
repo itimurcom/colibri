@@ -27,3 +27,6 @@ Broad comment cleanup may remove generated CRC metadata and decorative separator
 
 ## M0 / P49 itForm2 controlled runtime consolidation note
 `itForm2.class.php` now shares local field row/layout/render preparation between `_view_fields()` and `_edit_fields()`. Keep future form cleanup inside this class unless a later migration defines a real form boundary; do not reintroduce alias renames or field-storage changes during M0.
+
+## M0 / P52 editor events note
+`SKEL80/events/editor/editor_events.func.php` now reuses local event helpers for repeated editor creation and store+reload responses. Keep editor event cleanup local during M0; do not introduce a separate editor event dispatcher layer.

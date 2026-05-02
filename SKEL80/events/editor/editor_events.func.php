@@ -22,6 +22,26 @@ function editor_events_container($data, $state='edit')
 	return $value;
 	}
 
+
+function editor_events_repacked_editor($data)
+	{
+	return editor_events_repacked_editor($data);
+	}
+
+function editor_events_store_and_reload($o_editor, $reload)
+	{
+	$o_editor->store();
+	unset($o_editor);
+	return editor_events_reload($reload);
+	}
+
+function editor_events_store_and_ajax_reload($o_editor, $data)
+	{
+	$o_editor->store();
+	unset($o_editor);
+	return editor_events_ajax_reload($data);
+	}
+
 // обработчик событий редактора
 function editor_events($url, $path)
 	{	
@@ -66,7 +86,7 @@ function editor_events($url, $path)
 
 		// itEditor
 		case 'ed_text' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			if (!isset($o_editor->storage[$data['selector']][$data['ed_key']]['type']))
 				{
 				$o_editor->storage[$data['selector']][$data['ed_key']]['type'] = 'text';
@@ -79,32 +99,32 @@ function editor_events($url, $path)
 			}
 
 		case 'ed_remove' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			unset($o_editor->storage[$data['selector']][$data['ed_key']]);
 			if ($o_editor->sort($data['selector']))
 				{
-				$o_editor->store();
+				return editor_events_store_and_reload($o_editor, $reload);
 				}
 			unset($o_editor);
-			return editor_events_reload($reload);			
+			return editor_events_reload($reload);
 			}
 
 		case 'add_ed_text' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$index = $o_editor->insert_field($data['selector'], $data['ed_key'], 'text', '');
 			unset($o_editor);
 			return editor_events_reload($reload);
 			}
 
 		case 'up_ed_field' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$index = $o_editor->up_field($data['selector'],$data['ed_key']);
 			unset($o_editor);
-			return editor_events_reload($reload);			
+			return editor_events_reload($reload);
 			}
 
 		case 'down_ed_field' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$index = $o_editor->down_field($data['selector'],$data['ed_key']);
 			unset($o_editor);
 			return editor_events_reload($reload);
@@ -112,7 +132,7 @@ function editor_events($url, $path)
 
 
 		case 'ed_remove_avatar' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 	        	if (isset($o_editor->storage[$data['selector']][$data['ed_key']]['avatar'])) unset ($o_editor->storage[$data['selector']][$data['ed_key']]['avatar']);
 		        if (isset($o_editor->storage[$data['selector']][$data['ed_key']]['position'])) unset ($o_editor->storage[$data['selector']][$data['ed_key']]['position']);
 			$o_editor->store();
@@ -121,7 +141,7 @@ function editor_events($url, $path)
 			}
 
 		case 'ed_add_avatar' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$clear_name = clear_file_name($_FILES[DEFAULT_FILES_NAME]['name'][0]); //!!! [0];
 			$clear_name = check_uploaded_file($clear_name, $_FILES[DEFAULT_FILES_NAME]["tmp_name"][0], $path);
 
@@ -141,33 +161,24 @@ function editor_events($url, $path)
 			}
 
 		case 'ed_switch' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
-			if ((isset($o_editor->storage[$data['selector']][$data['ed_key']]['position'])) 
-				and ($o_editor->storage[$data['selector']][$data['ed_key']]['position'] == 'LEFT'))
-					{
-					$o_editor->storage[$data['selector']][$data['ed_key']]['position'] = 'RIGHT';
-					} else	{
-						$o_editor->storage[$data['selector']][$data['ed_key']]['position'] = 'LEFT';
-						}
-			$o_editor->store();
-			unset($o_editor);
-			return editor_events_reload($reload);
-			break;		
+			$o_editor = editor_events_repacked_editor($data);
+			$o_editor->storage[$data['selector']][$data['ed_key']]['position'] =
+				(isset($o_editor->storage[$data['selector']][$data['ed_key']]['position']) AND ($o_editor->storage[$data['selector']][$data['ed_key']]['position'] == 'LEFT'))
+					? 'RIGHT'
+					: 'LEFT';
+			return editor_events_store_and_reload($o_editor, $reload);
 			}
 
 		case 'ed_zoom' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$o_editor->switch_zoom($data['selector'], $data['ed_key']);
-			$o_editor->store();
-			unset($o_editor);
-			return editor_events_reload($reload);
-			break;		
+			return editor_events_store_and_reload($o_editor, $reload);
 			}
 
 		case 'add_ed_media' : {
 			if (in_array (itEdMedia::get_embed_source($_REQUEST['value']), unserialize(get_const('ALOWED_MEDIA'))) )
 				{
-				$o_editor = new itEditor(itEditor::_repack_data($data));;
+				$o_editor = editor_events_repacked_editor($data);
 				$index = $o_editor->insert_field($data['selector'], $data['ed_key'], 'media', $_REQUEST['value']);
 				$o_editor->store();
 				unset($o_editor);
@@ -178,22 +189,12 @@ function editor_events($url, $path)
 			return editor_events_reload($reload);
 			}
 
-		case 'ed_zoom' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
-			$o_editor->switch_zoom($data['selector'], $data['ed_key']);
-			$o_editor->store();
-			unset($o_editor);
-			cms_redirect_page("$url");
-			break;
-			}
 
 		case 'ed_change' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$o_editor->storage[$data['selector']][$data['ed_key']]['value'] = $_REQUEST['value'];
 			$o_editor->storage[$data['selector']][$data['ed_key']]['avatar'] = itEdMedia::get_media_preview($_REQUEST['value']);
-			$o_editor->store();
-			unset($o_editor);
-			return editor_events_reload($reload);			
+			return editor_events_store_and_reload($o_editor, $reload);
 			}
 
 		// события общего плана
@@ -302,7 +303,7 @@ function editor_events($url, $path)
 
 		// itEditor : события галлерей itEdGallery
 		case 'add_ed_gallery' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$o_editor->insert_field($data['selector'], $data['ed_key'], 'gallery', []);
 
 			foreach ($_FILES[DEFAULT_FILES_NAME]['name'] as $key => $name)
@@ -316,15 +317,12 @@ function editor_events($url, $path)
 					unset($value);
 					}
 				}
-			$o_editor->store();
-			unset($o_editor);
-			
-			return editor_events_ajax_reload($data);
+			return editor_events_store_and_ajax_reload($o_editor, $data);
 			}
 
 
 		case 'gal_add' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			foreach ($_FILES[DEFAULT_FILES_NAME]['name'] as $key => $name)
 				{
 				$clear_name = clear_file_name($name);
@@ -338,60 +336,46 @@ function editor_events($url, $path)
 					unset($value);
 					}
 				}
-			$o_editor->store();
-			unset($o_editor);
-			return editor_events_ajax_reload($data);
+			return editor_events_store_and_ajax_reload($o_editor, $data);
 			}
 
 		case 'gal_x' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			unset($o_editor->storage[$data['selector']][$data['ed_key']]['value'][$data['gallery_id']]);
 			$o_editor->sort_gallery($data['selector'], $data['ed_key']);
-			$o_editor->store();
-			unset($o_editor);
-			return editor_events_reload($reload);
+			return editor_events_store_and_reload($o_editor, $reload);
 			}
 
 		case 'gal_up' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$o_editor->gal_up($data['selector'],$data['ed_key'],$data['gallery_id']);
-			$o_editor->store();
-			unset($o_editor);
-			return editor_events_reload($reload);
+			return editor_events_store_and_reload($o_editor, $reload);
 			}
 
 		case 'gal_down' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$o_editor->gal_down($data['selector'],$data['ed_key'],$data['gallery_id']);
-			$o_editor->store();
-			unset($o_editor);
-			return editor_events_reload($reload);	
+			return editor_events_store_and_reload($o_editor, $reload);
 			}
 
 
 		case 'gal_n' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$o_editor->gal_move($data['selector'],$data['ed_key'],$data['gallery_id'], $_REQUEST['new_id']);
-			$o_editor->store();
-			unset($o_editor);
-			return editor_events_reload($reload);
+			return editor_events_store_and_reload($o_editor, $reload);
 			}
 			
 		case 'gal_link' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$o_editor->gal_link($data['selector'],$data['ed_key'],$data['gallery_id'], ($_REQUEST['value']) ? addhttp($_REQUEST['value']) : NULL);
-			$o_editor->store();
-			unset($o_editor);
-			return editor_events_reload($reload);
+			return editor_events_store_and_reload($o_editor, $reload);
 			}
 
 		case 'gal_text' : {
-			$o_editor = new itEditor(itEditor::_repack_data($data));
+			$o_editor = editor_events_repacked_editor($data);
 			$o_editor->gal_text($data['selector'],$data['ed_key'],$data['gallery_id'], $_REQUEST['value']);
-			$o_editor->store();
-			unset($o_editor);
-			return editor_events_reload($reload);
-			}			
+			return editor_events_store_and_reload($o_editor, $reload);
+			}
 			
 		// связанные новости
 		case 'related' : {
