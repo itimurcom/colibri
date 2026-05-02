@@ -25,11 +25,5 @@
 ## Comment cleanup rule
 Broad comment cleanup may remove generated CRC metadata and decorative separator lines, but it must not remove behavior notes, TODO/FIXME markers, license text, or comments that document runtime constraints. See `docs/PROJECT_COMMENT_NOISE_CLEANUP_STAGE.md`.
 
-## M0 / P46 editor runtime event consolidation note
-`itEditor.class.php` and `SKEL80/events/editor/editor_events.func.php` are now treated as one editor runtime zone. Future editor cleanup should keep reducing local duplication in these existing files before considering any new editor boundary.
-
-## M0 / P47 catalog/feed runtime note
-Catalog feed cleanup stays local to `engine_items.php` and `itFeed.class.php`. Do not introduce a separate feed framework; keep feed SQL, feed object creation, and feed render orchestration grouped inside the existing files.
-
-## M0 / P48 engine_mails note
-`public/engine/core/engine_mails.php` remains a project-side mail runtime file. Keep cleanup local: template preparation, admin/user payloads and mail-history modal helpers may be consolidated in place, but do not introduce a new mail framework during M0.
+## M0 / P49 itForm2 controlled runtime consolidation note
+`itForm2.class.php` now shares local field row/layout/render preparation between `_view_fields()` and `_edit_fields()`. Keep future form cleanup inside this class unless a later migration defines a real form boundary; do not reintroduce alias renames or field-storage changes during M0.

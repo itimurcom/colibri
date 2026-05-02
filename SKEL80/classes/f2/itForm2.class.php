@@ -605,6 +605,103 @@ class itForm2
         {
         }
 
+    protected function fieldBaseRow($row, $key, $last_field=NULL)
+        {
+        $row['table_name'] = $this->table_name;
+        $row['form_id'] = $this->form_id;
+        $row['rec_id'] = $this->rec_id;
+        $row['ed_key'] = $key;
+        $row['class'] = $this->class;
+
+        if (!is_null($last_field))
+            {
+            $row['last_field'] = $last_field;
+            }
+
+        return $row;
+        }
+
+    protected function fieldLayoutState($row)
+        {
+        return [
+            'compact' => (ready_val($row['compact'], false) ? ' compact' : ''),
+            'full' => (ready_val($row['more']) ? NULL : ' full'),
+            'special' => ($row['kind']=='TITLE' ? ' title' : ($row['kind']=='DESC' ? ' description' : NULL)),
+            'class' => (!empty($this->class) ? " {$this->class}" : NULL),
+            ];
+        }
+
+    protected function fieldMoreEditorZone($key, $compact, $edit=false)
+        {
+        $o_ed = new itEditor([
+            'table_name' => $this->table_name,
+            'rec_id' => $this->rec_id,
+            'column' => $this->column,
+            'field' => $this->field,
+            'root' => $key,
+            ]);
+
+        $result =
+            TAB."<div class=\"more boxed{$compact}\">".
+            ($edit ? $o_ed->container() : $o_ed->_view()).
+            TAB."</div>";
+        unset($o_ed);
+        return $result;
+        }
+
+    protected function isSetFieldOptionChecked($row)
+        {
+        if (($row['kind']!='SET') OR !isset($row['array']))
+            {
+            return false;
+            }
+
+        foreach($row['array'] as $option_row)
+            {
+            if (isset($_REQUEST["{$row['name']}_{$option_row['value']}"])
+                AND ($_REQUEST["{$row['name']}_{$option_row['value']}"]=='on'))
+                    {
+                    return true;
+                    }
+            }
+
+        return false;
+        }
+
+    protected function fieldValidationError($row, $options_checked, &$focus_str)
+        {
+        $focus_str = NULL;
+
+        if (!$this->error AND $this->accepted AND ready_val($row['required']) AND isset($row['element']) AND !isset($_SESSION['focus'])
+            AND (!isset($_REQUEST[$row['name']]) OR empty(trim($_REQUEST[$row['name']]))
+                OR (($row['kind']=='PHONE') AND !isPhone($_REQUEST[$row['name']]))
+                OR (($row['kind']=='EMAIL') AND !isEmail($_REQUEST[$row['name']])))
+            AND !$options_checked)
+            {
+            $_SESSION['focus']['element'] = ($row['kind']=='AUTO') ? "field-".$row['element'] : $row['element'];
+            $focus_str = " focus";
+            $this->error = true;
+            return
+                "<div id='error-{$row['element']}' class='modal_row error_msg f2_row focus'>".get_const('NEED_CORRECT')."</div>".
+                minify_js(
+                    "<script>
+                    $(document).ready(function(){
+                    $('#error-{$row['element']}').ScrollTo({duration:800, offsetTop:64, callback:function(){}});
+                    });
+                    </script>");
+            }
+
+        return NULL;
+        }
+
+    protected function debugFieldRow($data)
+        {
+        return
+            "<div class='f2_row 'style=\"".F2_DEBUGSTYLE."\">".
+            print_rr($data).
+            "</div>";
+        }
+
     public function _view_fields()
         {
         $code = NULL;
@@ -612,131 +709,45 @@ class itForm2
         if (is_array($this->fields_xml))
         foreach ($this->fields_xml as $key=>$row)
             {
-            $label_zone 	= NULL;
-            $editor_zone	= NULL;
-            $value_zone	= NULL;
-
-            $row['table_name']	= $this->table_name;
-            $row['form_id'] 	= $this->form_id;
-            $row['rec_id']		= $this->rec_id;
-            $row['ed_key']		= $key;
-            $row['class']		= $this->class;
-
-            $compact =
-                (ready_val($row['compact'], false) ? ' compact' : '');
-            $full =
-                (ready_val($row['more']) ? NULL : ' full');
-
+            $row = $this->fieldBaseRow($row, $key);
+            $layout = $this->fieldLayoutState($row);
             $label_zone = self::_label_zone($row);
             unset($row['class']);
 
-            if (ready_val($row['more']))
-                {
-                $o_ed = new itEditor([
-                    'table_name'	=> $this->table_name,
-                    'rec_id'	=> $this->rec_id,
-                    'column'	=> $this->column,
-                    'field'		=> $this->field,
-                    'root'		=> $key,
-                    ]);
-
-                $editor_zone =
-                    TAB."<div class=\"more boxed{$compact}\">".
-                    $o_ed->_view().
-                    TAB."</div>";
-                unset($o_ed);
-                }
-
-            switch($row['kind'])
-                {
-                case 'TITLE'	: { $special = ' title'; break; }
-                case 'DESC'		: { $special = ' description'; break; }
-                default			: { $special = NULL; break; }
-                }
+            $editor_zone = ready_val($row['more'])
+                ? $this->fieldMoreEditorZone($key, $layout['compact'])
+                : NULL;
 
             $row['no_label'] = ready_val($row['no_label'], true);
-
             $value_zone = function_exists($func = "_f2_".strtolower($row['kind'])."_view")
                 ? $func($row)
                 : add_error_message(debug_point("No field data handler for <b>".get_class($this)."</b> using type <b>{$row['kind']}</b>", debug_backtrace()));
 
             $focus_str = NULL;
-            $error_str = NULL;
-            $options_checked = false;
-
-            if ($row['kind']=='SET')
-                {
-                if (isset($row['array']))
-                foreach($row['array'] as $option_row)
-                    {
-                    if (isset($_REQUEST["{$row['name']}_{$option_row['value']}"])
-                        AND ($_REQUEST["{$row['name']}_{$option_row['value']}"]=='on'))
-                            {
-                            $options_checked = true;
-                            break;
-                            }
-                    } else	{
-                        }
-                }
-
-            if ( !$this->error AND $this->accepted )
-                {
-                if ( ready_val($row['required']) AND isset($row['element']) AND !isset($_SESSION['focus'])
-                    AND (!isset($_REQUEST[$row['name']]) OR empty(trim($_REQUEST[$row['name']]))
-                        OR (($row['kind']=='PHONE') AND !isPhone($_REQUEST[$row['name']]))
-                        OR (($row['kind']=='EMAIL') AND !isEmail($_REQUEST[$row['name']])) )
-                        )
-                    {
-                    if (!$options_checked)
-                        {
-                        $_SESSION['focus']['element'] =
-                            ($row['kind']=='AUTO')
-                                ? "field-".$row['element']
-                                : $row['element'];
-                        $error_str = "<div id='error-{$row['element']}' class='modal_row error_msg f2_row focus'>".get_const('NEED_CORRECT')."</div>".
-                        minify_js(
-                            "<script>
-                            $(document).ready(function(){
-                            $('#error-{$row['element']}').ScrollTo({duration:800, offsetTop:64, callback:function(){}});
-                            });
-                            </script>");;
-                        $focus_str = " focus";
-                        $this->error = true;
-                        }
-                    }
-                }
-
-            $class_str	= !empty($this->class)	? " {$this->class}" : NULL;
+            $error_str = $this->fieldValidationError($row, $this->isSetFieldOptionChecked($row), $focus_str);
 
             if (!isset($row['element']))
                 {
                 var_dump($row['element']);
                 echo print_rr($row); die;
                 }
-            $code.= !mempty($label_zone, $editor_zone, $value_zone)
-                ? 	$error_str.
-                    TAB."<div id='container-{$row['element']}' class=\"modal_row f2_row{$special}{$compact}{$class_str}{$focus_str}\">".
+
+            $code .= !mempty($label_zone, $editor_zone, $value_zone)
+                ? $error_str.
+                    TAB."<div id='container-{$row['element']}' class=\"modal_row f2_row{$layout['special']}{$layout['compact']}{$layout['class']}{$focus_str}\">".
                     $label_zone.
                     $editor_zone.
-                    TAB."<div class=\"value boxed{$compact}{$full}\">".$value_zone.TAB."</div>".
+                    TAB."<div class=\"value boxed{$layout['compact']}{$layout['full']}\">".$value_zone.TAB."</div>".
                     TAB."</div>"
                 : NULL;
-
             }
+
         $this->accepted = !$this->error;
         return $code;
         }
 
     public function _edit_fields()
         {
-        function debug_f2_field($data)
-            {
-            return
-                "<div class='f2_row 'style=\"".F2_DEBUGSTYLE."\">".
-                print_rr($data).
-                "</div>".
-                "";
-            }
         global $form_blocks;
         $code = NULL;
 
@@ -748,70 +759,31 @@ class itForm2
         if (is_array($this->fields_xml))
         foreach ($this->fields_xml as $key=>$row)
             {
-            $label_zone 	= NULL;
-            $editor_zone	= NULL;
-            $value_zone	= NULL;
-
-            $row['table_name']	= $this->table_name;
-            $row['form_id'] 	= $this->form_id;
-            $row['rec_id']		= $this->rec_id;
-            $row['ed_key']		= $key;
-            $row['last_field']	= count($this->fields_xml)-1;
-            $row['class']		= $this->class;
-
-            $compact =
-                (ready_val($row['compact'], false) ? ' compact' : '');
-            $full =
-                (ready_val($row['more']) ? NULL : ' full');
-
+            $row = $this->fieldBaseRow($row, $key, count($this->fields_xml)-1);
+            $layout = $this->fieldLayoutState($row);
             $label_zone = self::_label_zone_edit($row);
             unset($row['class']);
 
-            if (ready_val($row['more']))
-                {
-                $o_ed = new itEditor([
-                    'table_name'	=> $this->table_name,
-                    'rec_id'	=> $this->rec_id,
-                    'column'	=> $this->column,
-                    'field'		=> $this->field,
-                    'root'		=> $key,
-                    ]);
-
-                $editor_zone =
-                    TAB."<div class=\"more boxed{$compact}\">".
-                    $o_ed->container().
-                    TAB."</div>";
-                unset($o_ed);
-                }
-
-            switch($row['kind'])
-                {
-                case 'TITLE'	: { $special = ' title'; break; }
-                case 'DESC'	: { $special = ' description'; break; }
-                default		: { $special = NULL; break; }
-                }
+            $editor_zone = ready_val($row['more'])
+                ? $this->fieldMoreEditorZone($key, $layout['compact'], true)
+                : NULL;
 
             $row['no_label'] = ready_val($row['no_label'], true);
-
             $value_zone = function_exists($func = "_f2_".strtolower($row['kind'])."_edit")
                 ? $func($row)
                 : add_error_message(debug_point("No field EDIT handler for <b>".get_class($this)."</b> using type <b>{$row['kind']}</b>", debug_backtrace()));
 
-            $class_str	= !empty($this->class)	? " {$this->class}" : NULL;
-
-            $code.= !mempty($label_zone, $editor_zone, $value_zone)
-                ?
-                    TAB."<div class=\"modal_row f2_row edit protected{$special}{$compact}{$class_str}\">".
+            $code .= !mempty($label_zone, $editor_zone, $value_zone)
+                ? TAB."<div class=\"modal_row f2_row edit protected{$layout['special']}{$layout['compact']}{$layout['class']}\">".
                     $label_zone.
                     $editor_zone.
-                    TAB."<div class=\"value boxed{$compact}\">".$value_zone.TAB."</div>".
+                    TAB."<div class=\"value boxed{$layout['compact']}\">".$value_zone.TAB."</div>".
                     TAB."</div>".
                     f2_button_set($row).
-                    ( $this->debug ? debug_f2_field($row) : NULL).
-                    ""
-
+                    ($this->debug ? $this->debugFieldRow($row) : NULL)
                 : NULL;
             }
+
         return $code;
         }
 
@@ -1155,7 +1127,7 @@ class itForm2
         }
     }
 
-function _arguments($params, $defaults_arr=NULL, &$result)
+function _arguments($params, $defaults_arr=NULL, &$result=NULL)
     {
     $result_arr = NULL;
     if (is_array($params) AND is_array($params[0]))

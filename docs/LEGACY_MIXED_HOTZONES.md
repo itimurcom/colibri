@@ -58,11 +58,5 @@ M0 / P39 note: `itFeed.class.php` had only visual separator/CRC cleanup; `engine
 ## Project-wide comment noise cleanup
 Generated CRC metadata blocks and decorative separator comments are considered visual legacy noise. They may be removed in broad cleanup patches when no runtime code is changed.
 
-## M0 / P46 editor runtime event consolidation
-P46 consolidates repeated editor runtime paths inside `itEditor.class.php` and repeated editor JSON response paths inside `editor_events.func.php`. The change remains local to existing editor files and does not introduce a new action framework.
-
-## M0 / P47 catalog/feed runtime consolidation
-`engine_items.php` now keeps catalog feed SQL and feed orchestration in local helpers, while `itFeed.class.php` centralizes repeated run/reset/loop/context code. `public/more.php` was inspected and left unchanged because its current payload decode/render path is already thin.
-
-## M0 / P48 `engine_mails.php`
-`engine_mails.php` now has a smaller local mail-template path and runtime-host-safe admin item links. The file still intentionally owns project-side mail composition and mail-history UI until a later, explicit mail boundary is defined.
+## M0 / P49 `itForm2.class.php`
+P49 consolidates duplicated field runtime rendering inside `itForm2.class.php` while preserving public method names and form field storage. The form editor event files were intentionally left untouched in this patch.
