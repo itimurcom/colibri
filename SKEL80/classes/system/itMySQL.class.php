@@ -124,17 +124,7 @@ class itMySQL
 
 		if ($request_row = mysqli_fetch_assoc($request))
 			{
-			foreach ($request_row as $key=>$row)
-				{
-				$value = !empty($row) ? html_entity_decode($row, ENT_QUOTES, 'UTF-8') : $row;
-				if (!doubleval($value) and ($value_rec = json_decode($value, true)))
-					{
-					$result[$key] = $value_rec;
-					} else 	{
-						$result[$key] = $value;
-						}
-				}
-
+			$result = $this->normalize_db_row($request_row);
 			$result['table_name'] = $table_name;
 			$result['rec_id'] = $rec_id;
 			return $result;
@@ -178,17 +168,7 @@ class itMySQL
 
 		while ($row = mysqli_fetch_assoc($request))
 			{
-			foreach ($row as $key=>$value_row)
-				{
-				$value = html_entity_decode ($value_row, ENT_QUOTES, 'UTF-8');
-				if (!doubleval($value) and ($value_rec = json_decode($value, true)))
-					{
-					$result[$key] = $value_rec;
-					} else 	{
-						$result[$key] = $value;
-						}
-				}
-
+			$result = $this->normalize_db_row($row);
 			$result['table_name'] = $table_name;
 			$result['rec_id'] = ready_val($row['id'], NULL);
 			$res_arr[] = $result;
@@ -200,7 +180,7 @@ class itMySQL
 	// безобъектная версия получения массив данных из базы по критериям
 	static function _get_arr_from_db($table_name=NULL, $condition=1, $order_by=NULL, $limit=NULL)
 		{
-		$db = new itMysQL();
+		$db = new itMySQL();
 		$result = $db->get_arr_from_db($table_name, $condition, $order_by, $limit);
 		unset($db);
 		return $result;
@@ -306,9 +286,20 @@ class itMySQL
 	// езобъектная версия функции сбраса автоинкримента на последнее значение + 1
 	static function _reset_autoinc($table_name)
 		{
-		$db = new itMysql();
+		$db = new itMySQL();
 		$db->reset_autoinc($table_name);
 		unset($db);
+		}
+
+	// нормализует строку результата из БД единым способом для всех read-path
+	private function normalize_db_row($row)
+		{
+		$result = [];
+		foreach ($row as $key=>$value)
+			{
+			$result[$key] = $this->normalize_db_value($value);
+			}
+		return $result;
 		}
 
 	// нормализует одно значение из БД для PHP 8+: HTML decode + NULL-safe JSON
@@ -355,13 +346,7 @@ class itMySQL
 			{
 			while ($row = mysqli_fetch_assoc($request))
 				{
-				foreach ($row as $key=>$row)
-					{
-					$line[$key] = $this->normalize_db_value($row);
-					}
-
-				$result[] = $line;
-				unset($line);
+				$result[] = $this->normalize_db_row($row);
 				}
 			} else $result = $request;
 		$counter = mysqli_affected_rows($this->db);
@@ -373,7 +358,7 @@ class itMySQL
 		{
 //		if (empty($query)) {debug_print_backtrace(); return;}
 		
-		$db = new itMysQL();
+		$db = new itMySQL();
 		$result = $db->request($query, $array, $counter);
 		unset($db);
 		return $result;
@@ -443,7 +428,7 @@ class itMySQL
 	// безобъектная модель вставки данных
 	static function _insert_rec($table_name=NULL, $values_arr=NULL, $rec_id=NULL, &$counter=NULL)
 		{
-		$db = new itMysQL();
+		$db = new itMySQL();
 		$rec_id = $db->insert_rec($table_name, $values_arr, $rec_id, $counter);
 		unset($db);
 		return $rec_id;
@@ -452,7 +437,7 @@ class itMySQL
 	// безобъектная модель замены местами две записи в базе
 	static function _exchange($table_name=NULL, $rec_id='NULL', $value='NULL')
 		{
-		$db = new itMysQL();
+		$db = new itMySQL();
 		$db->exchange($table_name, $rec_id, $value);
 		unset($db);
 		}
@@ -477,7 +462,7 @@ class itMySQL
 	// безобъектная модель вставки данных
 	static function _multi_request($query)
 		{
-		$db = new itMysQL();
+		$db = new itMySQL();
 		$request = $db->multi_request($query);
 		unset($db);
 		return $request;
