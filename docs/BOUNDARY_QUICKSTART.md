@@ -30,3 +30,6 @@ Broad comment cleanup may remove generated CRC metadata and decorative separator
 
 ## M0 / P47 catalog/feed runtime note
 Catalog feed cleanup stays local to `engine_items.php` and `itFeed.class.php`. Do not introduce a separate feed framework; keep feed SQL, feed object creation, and feed render orchestration grouped inside the existing files.
+
+## M0 / P48 engine_mails note
+`public/engine/core/engine_mails.php` remains a project-side mail runtime file. Keep cleanup local: template preparation, admin/user payloads and mail-history modal helpers may be consolidated in place, but do not introduce a new mail framework during M0.

@@ -42,13 +42,7 @@ function get_colibri_mail_profile($form_id)
 		}
 	$meas = $form_id - FORM2_MEASUREMENT + 1;
 	$title_color = isset($_MEASURMENT[$form_id]['mailcolor']) ? $_MEASURMENT[$form_id]['mailcolor'] : 'blue';
-	return [
-		'subject_user' => NULL,
-		'subject_admin' => str_replace('[VALUE]', $meas, ADMIN_MEASUREMENT_ACCEPT_TITLE).(isset($_REQUEST['order']) ? " № {$_REQUEST['order']} от {$_REQUEST['email']}" : NULL),
-		'address' => false,
-		'agreement' => false,
-		'prepared_title' => get_colibri_mail_heading($title_color, "МЕРКИ тип {$meas} для {$_REQUEST['order']}"),
-	];
+	return ['subject_user' => NULL, 'subject_admin' => str_replace('[VALUE]', $meas, ADMIN_MEASUREMENT_ACCEPT_TITLE).(isset($_REQUEST['order']) ? " № {$_REQUEST['order']} от {$_REQUEST['email']}" : NULL), 'address' => false, 'agreement' => false, 'prepared_title' => get_colibri_mail_heading($title_color, "МЕРКИ тип {$meas} для {$_REQUEST['order']}")];
 	}
 
 function get_colibri_mail_request_rows($table_name, $form_id)
@@ -66,11 +60,16 @@ function get_colibri_mail_body($inline_style, $request_rows, $options=[])
 		"</div>";
 	}
 
+function get_colibri_mail_template_result($prepared, $subject)
+	{
+	$mail = ['prepared' => $prepared, 'subject' => $subject]; itMailTemplate::_code($mail); return $mail['result'];
+	}
+
 function patch_colibri_admin_mail_articul(&$message)
 	{
 	if (!isset($_REQUEST['articul']) || !($item_rec = get_item_from_articul($_REQUEST['articul']))) return;
 	$img_str = (isset($item_rec['images']) AND is_array($item_rec['images'])) ? "<img style='display:table' src='".get_thumbnail($item_rec['images'][0], 'ADV_AVATAR')."'/>" : NULL;
-	$link = "<div style='text-aling:center'><a href='".SERVER_HTTP_DEBUG."/".CMS_LANG."/items/{$item_rec['id']}/' target='_blank'>{$img_str}<span>{$_REQUEST['articul']}</span></a></div>";
+	$link = "<div style='text-align:center'><a href='".CMS_CURRENT_BASE_URL."/".CMS_LANG."/items/{$item_rec['id']}/' target='_blank'>{$img_str}<span>{$_REQUEST['articul']}</span></a></div>";
 	$message = str_replace($_REQUEST['articul'], $link, $message);
 	}
 
@@ -78,6 +77,7 @@ function get_colibri_admin_mail_subject($now, $subject_admin)
 	{
 	return CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)", strtotime($now), CMS_LANG)." {$subject_admin}";
 	}
+
 
 function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TABLE)
 	{
@@ -87,17 +87,14 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 	$request_rows = get_colibri_mail_request_rows($table_name, $form_id);
 	$now = mysql_now();
 
-	$mail_of_user = ['prepared' => get_colibri_mail_body($inline_style, $request_rows, ['agreement' => $profile['agreement']]), 'subject' => $profile['subject_user']];
-	itMailTemplate::_code($mail_of_user);
-
-	$admin_mail = ['prepared' => get_colibri_mail_body($inline_style, $request_rows, ['prepared_title' => $profile['prepared_title'], 'address' => $profile['address']]), 'subject' => $profile['subject_admin']];
-	itMailTemplate::_code($admin_mail);
-	patch_colibri_admin_mail_articul($admin_mail['result']);
+	$mail_of_user = get_colibri_mail_template_result(get_colibri_mail_body($inline_style, $request_rows, ['agreement' => $profile['agreement']]), $profile['subject_user']);
+	$admin_mail = get_colibri_mail_template_result(get_colibri_mail_body($inline_style, $request_rows, ['prepared_title' => $profile['prepared_title'], 'address' => $profile['address']]), $profile['subject_admin']);
+	patch_colibri_admin_mail_articul($admin_mail);
 
 	$mails = [];
 	if (SEND_USER_MAILS)
 		{
-		$mails[] = ['from' => $_SETTINGS['SITE_ADMIN_EMAIL']['value'], 'to' => $_REQUEST['email'], 'subject' => $profile['subject_user'], 'message' => $mail_of_user['result']];
+		$mails[] = ['from' => $_SETTINGS['SITE_ADMIN_EMAIL']['value'], 'to' => $_REQUEST['email'], 'subject' => $profile['subject_user'], 'message' => $mail_of_user];
 		}
 
 	$mails[] = [
@@ -105,15 +102,14 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 		'to' => trim($_SETTINGS['SITE_ADMIN_EMAIL']['value']),
 		'reply' => trim($_REQUEST['email']),
 		'subject' => get_colibri_admin_mail_subject($now, $profile['subject_admin']),
-		'message' => $admin_mail['result'],
+		'message' => $admin_mail,
 		'user' => trim($_SETTINGS['SITE_SMTP_USER']['value']),
 		'password' => trim($_SETTINGS['SITE_SMTP_PASSWORD']['value']),
 	];
-
 	itMailings::_send_arr($mails, true);
 	$o_mailer = new itMailer();
 	unset($o_mailer);
-	return (!is_null($profile['subject_user']) ? TAB."<div class='tit'>".CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)", strtotime($now), CMS_LANG).$profile['subject_user']."</div>" : NULL).TAB."<div class='mailsend boxed'>{$mail_of_user['result']}</div>";
+	return (!is_null($profile['subject_user']) ? TAB."<div class='tit'>".CMS_NAME." (".CMS_LANG.") : ".skel80_strftime_compat("[ %d %b %Y ] (%a)", strtotime($now), CMS_LANG).$profile['subject_user']."</div>" : NULL).TAB."<div class='mailsend boxed'>{$mail_of_user}</div>";
 	}
 
 function get_mailing_history_feed_options($email=NULL)
@@ -198,6 +194,11 @@ function get_mail_preview_event($row=NULL)
 	return TAB."<a href='#/' data-reveal-id='mail-history-modal' class='green' onclick='return skel80OpenMailHistoryModal(this);' data-mail-id='{$mail_id}' data-mail-status='{$status}'>👁</a>";
 	}
 
+function get_mailing_history_action_form($form_id, $mail_id_id, $op_id, $op)
+	{
+	return TAB."<form id='{$form_id}' action='/ed_field.php' method='POST' accept-charset='utf-8'>".TAB."<input type='hidden' name='mail_id' id='{$mail_id_id}' value=''>".TAB."<input type='hidden' name='op' id='{$op_id}' value='{$op}'>".TAB."</form>";
+	}
+
 function get_mailing_history_shared_modal()
 	{
 	$ok_label = get_const('BUTTON_OK');
@@ -206,14 +207,8 @@ function get_mailing_history_shared_modal()
 	$remove_label = get_const('BUTTON_REMOVE');
 	return TAB."<div class='reveal-modal large' id='mail-history-modal' data-animation='fade'>".
 		TAB."<iframe id='mail-history-frame' src='about:blank' class='mailpattern boxed'></iframe>".
-		TAB."<form id='mail-history-spam-form' action='/ed_field.php' method='POST' accept-charset='utf-8'>".
-		TAB."<input type='hidden' name='mail_id' id='mail-history-spam-mail-id' value=''>".
-		TAB."<input type='hidden' name='op' id='mail-history-spam-op' value='spam'>".
-		TAB."</form>".
-		TAB."<form id='mail-history-remove-form' action='/ed_field.php' method='POST' accept-charset='utf-8'>".
-		TAB."<input type='hidden' name='mail_id' id='mail-history-remove-mail-id' value=''>".
-		TAB."<input type='hidden' name='op' id='mail-history-remove-op' value='mail_x'>".
-		TAB."</form>".
+		get_mailing_history_action_form('mail-history-spam-form', 'mail-history-spam-mail-id', 'mail-history-spam-op', 'spam').
+		get_mailing_history_action_form('mail-history-remove-form', 'mail-history-remove-mail-id', 'mail-history-remove-op', 'mail_x').
 		TAB."<div class='buttons_div'>".
 		TAB."<span class='itButton bg_blue ok close-reveal-modal' id='mail-history-ok'>{$ok_label}</span>".
 		TAB."<span class='itButton submit bg_brown' id='mail-history-spam-button' onclick='document.getElementById(&quot;mail-history-spam-form&quot;).submit();'>{$spam_label}</span>".

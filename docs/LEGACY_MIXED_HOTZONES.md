@@ -63,3 +63,6 @@ P46 consolidates repeated editor runtime paths inside `itEditor.class.php` and r
 
 ## M0 / P47 catalog/feed runtime consolidation
 `engine_items.php` now keeps catalog feed SQL and feed orchestration in local helpers, while `itFeed.class.php` centralizes repeated run/reset/loop/context code. `public/more.php` was inspected and left unchanged because its current payload decode/render path is already thin.
+
+## M0 / P48 `engine_mails.php`
+`engine_mails.php` now has a smaller local mail-template path and runtime-host-safe admin item links. The file still intentionally owns project-side mail composition and mail-history UI until a later, explicit mail boundary is defined.
