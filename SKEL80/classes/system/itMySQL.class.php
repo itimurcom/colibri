@@ -205,20 +205,29 @@ class itMySQL
 		unset($db);
 		return $result;
 		}
+	// готовит PHP-значение к безопасной записи в SQL-строку legacy runtime
+	static function prepare_sql_value($value)
+		{
+		if (is_array($value))
+			{
+			$value = count($value) ? json_encode($value, JSON_ALLOWED) : NULL;
+			}
+
+		return ($value !== NULL) ? "'".addslashes((string)$value)."'" : 'NULL';
+		}
+
+	// готовит один SET-фрагмент для UPDATE legacy runtime
+	static function prepare_update_pair($key, $value)
+		{
+		return "`{$key}` = ".itMySQL::prepare_sql_value($value);
+		}
+
 	// записывает данные в поле таблицы
 	public function update_value_db($table_name=NULL, $rec_id=NULL, $value=NULL, $field='')
 		{
 		if ( ($rec_id==NULL) or ($table_name==NULL ) ) return;
 
-		if (is_array($value))
-			{
-			$value = json_encode($value, JSON_ALLOWED);
-			}
-
-		if ($value !== NULL)
-			{
-			$value = "'".addslashes($value)."'";
-			} else $value = 'NULL';
+		$value = itMySQL::prepare_sql_value($value);
 
 		$query = "UPDATE {$this->db_prefix}$table_name";
 		$query .= " SET `$field` = $value"; // без кавычек!
@@ -246,16 +255,7 @@ class itMySQL
 		// запаковываем в JSON
 		foreach ($data as $key=>$row)
 			{
-			if (is_array($row))
-				{
-				if (count($row)!=NULL)
-					{
-					$row = json_encode($row, JSON_ALLOWED);
-					} else $row=NULL;
-				}
-
-			$rows[] = "`{$key}` = ".
-				(($row !== NULL) ? "'".addslashes($row)."'" : 'NULL');
+			$rows[] = itMySQL::prepare_update_pair($key, $row);
 			}
 
 		$query = "UPDATE {$this->db_prefix}$table_name".
@@ -400,14 +400,7 @@ class itMySQL
 			{
 			foreach ($values_arr as $key=>$row)
 				{
-				if (is_array($row))
-					{
-					if (count($row)!=NULL)
-						{
-						$row = json_encode($row, JSON_ALLOWED);
-						} else $row=NULL;
-					}					
-				$values[] = !is_null($row) ? "'".addslashes($row)."'" : 'NULL';
+				$values[] = itMySQL::prepare_sql_value($row);
 				}
 			return "( ".implode(', ', $values)." )";
 			}
