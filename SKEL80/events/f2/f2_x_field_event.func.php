@@ -1,5 +1,5 @@
 <?php
-// возвращает кнопку для удаления поля                                         *
+// возвращает кнопку для удаления поля
 function f2_x_field_event($row)
 	{
 	definition([
@@ -7,25 +7,9 @@ function f2_x_field_event($row)
 		]);
 	if ($row['last_field']=='0') return;
 
-	$o_modal = new itModal();
-	$o_modal->set_size('small');
-	$o_modal->set_animation('fadeAndPop');
-
-	$o_form = new itForm2();
-	$o_form->add_title(str_replace('[VALUE]', "{$row['kind']} #".($row['ed_key']+1), get_const('QUERY_ED_REMOVE')));
-
-	$row['op'] = 'f2_x';
-	$o_form->add_data($row);
-	
-	$o_form->add_button(get_const('BUTTON_REMOVE'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"f2_edreload('#".itForm2::_container_id($row)."');"], 'red' );	
-	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
-
-	$o_modal->add_field($o_form->_view());
- 	$o_modal->compile();
-
-	$o_button = new itButton(get_const('BUTTON_ED_REMOVE'), 'modal', ['class' => 'admin', 'form' => $o_modal->form_id()], 'red' );
-	$result = $o_button->code().$o_modal->code();
-	unset($o_button, $o_form, $o_modal);
-	return $result;
+	list($o_modal, $o_form) = f2_control_modal_form($row, 'QUERY_ED_REMOVE');
+	f2_control_add_data($o_form, $row, 'f2_x');
+	f2_control_modal_buttons($o_form, $o_modal, $row, 'BUTTON_REMOVE', 'red');
+	return f2_control_modal_code($o_modal, $o_form, 'BUTTON_ED_REMOVE', 'red');
 	}
 ?>

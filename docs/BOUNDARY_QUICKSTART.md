@@ -33,3 +33,6 @@ Broad comment cleanup may remove generated CRC metadata and decorative separator
 
 ## M0 / P53 itForm2 events note
 `SKEL80/events/f2/*.func.php` cleanup must stay controlled: do not change `add_*` methods, field storage format, or add/delete/move semantics while consolidating event responses and field settings UI.
+
+## M0 / P54 f2 control events note
+`SKEL80/events/f2/*` may share local control helpers for modal/button/reload assembly, but field storage and public operation names must remain stable during M0.

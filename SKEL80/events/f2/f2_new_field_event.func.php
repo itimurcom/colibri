@@ -6,33 +6,15 @@ function f2_new_field_event($row)
 		'QUERY_NEW_FILED'	=> 'Выберите тип поля',
 		]);
 	global $form2_defaults;
-	$table_name = isset($row['table_name']) ? $row['table_name'] : $table_name;
-	
-//	if ($row['last_field']=='0') return;
 
-	$o_modal = new itModal();
-	$o_modal->set_size('small');
-	$o_modal->set_animation('fadeAndPop');
-
-	$o_form = new itForm2();
-	$o_form->add_title(str_replace('[VALUE]', "{$row['kind']} #".($row['ed_key']+1), get_const('QUERY_NEW_FILED')));
+	list($o_modal, $o_form) = f2_control_modal_form($row, 'QUERY_NEW_FILED');
 	$o_form->add_selector([
 		'array'	=> $form2_defaults,
 		'name'	=> 'kind',
 		]);
 
-	$row['op'] = 'f2_field';
-	$o_form->add_data($row);
-	
-	$o_form->add_button(get_const('BUTTON_OK'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"f2_edreload('#".itForm2::_container_id($row)."');"], 'blue' );	
-	$o_form->add_button(get_const('BUTTON_CANCEL'), 'close', ['form' => $o_modal->form_id()], 'green' );	
-
-	$o_modal->add_field($o_form->_view());
- 	$o_modal->compile();
-
-	$o_button = new itButton(get_const('BUTTON_PLUS_FILED'), 'modal', ['class' => 'admin', 'form' => $o_modal->form_id()], 'green' );
-	$result = $o_button->code().$o_modal->code();
-	unset($o_button, $o_form, $o_modal);
-	return $result;
+	f2_control_add_data($o_form, $row, 'f2_field');
+	f2_control_modal_buttons($o_form, $o_modal, $row, 'BUTTON_OK', 'blue');
+	return f2_control_modal_code($o_modal, $o_form, 'BUTTON_PLUS_FILED', 'green');
 	}
 ?>

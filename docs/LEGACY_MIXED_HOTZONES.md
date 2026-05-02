@@ -66,3 +66,6 @@ P52 stabilizes repeated editor event runtime paths after the P45/P46 editor work
 
 ## M0 / P53 `itForm2` event layer
 `f2_change_event.func.php` and `f2_events.func.php` now consolidate repeated SELECT/SET settings UI and JSON/reload response paths. This is event-layer cleanup only; `itForm2.class.php` and field storage semantics are unchanged.
+
+## M0 / P54 f2 control event consolidation
+The f2 control event files now share local helpers for reload JS, hidden data, ajax buttons and new/remove modals. The cleanup deliberately avoids `itForm2.class.php` and keeps field add/delete/move operations unchanged.
