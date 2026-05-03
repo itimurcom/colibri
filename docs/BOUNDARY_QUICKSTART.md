@@ -51,3 +51,6 @@ Customer/auth cleanup stays project-side under `public/engine/core/units/users/`
 
 ## M0 / P61 order/contact controller note
 Order/contact/measurement/register controllers are project-side MVC flow files. Keep cleanup local to controller runtime unless a later migration defines a real shared form-page boundary.
+
+## M0 / P62 item filter cleanup note
+`public/engine/core/units/items/engine_filters.php` is still project-side catalog runtime. Keep filter session keys and JS entrypoints stable; cleanup should stay local unless a later item/catalog boundary is explicitly defined.

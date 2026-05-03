@@ -19,92 +19,117 @@ function set_color_filter($color=NULL)
 function filter_color_selector()
 	{
 	global $item_colors, $color_seq;
-
 	$color_seq = 0;
 
-	if (is_array($item_colors))
+	if (!is_array($item_colors)) return NULL;
+
+	$result = TAB."<div class='col_selector boxed' data-sequence='35'>".
+		TAB."<div class='color_set'>";
+	foreach ($item_colors as $row)
 		{
-		$result = TAB."<div class='col_selector boxed' data-sequence='35'>".
-			TAB."<div class='color_set'>";
-
-		foreach ($item_colors as $key=>$row)
-			{
-			$result .= get_color_selector_row($row);
-			}
-
-		$color_seq++;
-		$result .= TAB."<span class='col_sel no_shadow rounded' data-id='{$color_seq}' title='".get_const('CLEAR_COLOR')."' onclick=\"select_filter('NULL','');\"></span>".
-			TAB."</div>".
-			TAB."</div>";
+		$result .= get_color_selector_row($row);
 		}
-	return $result;
+
+	$color_seq++;
+	return $result.
+		TAB."<span class='col_sel no_shadow rounded' data-id='{$color_seq}' title='".get_const('CLEAR_COLOR')."' onclick=\"select_filter('NULL','');\"></span>".
+		TAB."</div>".
+		TAB."</div>";
 	}
 
 function get_color_selector_row($row)
 	{
 	global $color_seq;
 	$color_seq++;
-	$selected = (isset($_SESSION['filter']['colors'][$row['value']])) ? " selected" : "";
-	return ($row['show']==1) ? TAB."<span class='col_sel{$selected} rounded' data-id='{$color_seq}' title='".get_const($row['title'])."' style='background:{$row['color']};' onclick=\"select_filter('{$row['value']}', '');\"></span>" : "";
+	if ($row['show']!=1) return NULL;
+
+	$selected = isset($_SESSION['filter']['colors'][$row['value']]) ? ' selected' : '';
+	return TAB."<span class='col_sel{$selected} rounded' data-id='{$color_seq}' title='".get_const($row['title'])."' style='background:{$row['color']};' onclick=\"select_filter('{$row['value']}', '');\"></span>";
+	}
+
+function filter_item_color_event_data($item_rec, $value, $legacy=false)
+	{
+	$data = [
+		'id'	=> $item_rec['id'],
+		'value'	=> $value,
+		];
+	return $legacy ? simple_encrypt(serialize($data)) : itEditor::event_data($data);
+	}
+
+function filter_item_color_selected_class($item_rec, $value)
+	{
+	return (is_array($item_rec['filter_xml']) AND in_array($value, $item_rec['filter_xml'])) ? ' selected' : '';
+	}
+
+function filter_item_admin_color_span($item_rec, $row, $class='col_sel rounded', $legacy=false)
+	{
+	$selected = filter_item_color_selected_class($item_rec, $row['value']);
+	$data = filter_item_color_event_data($item_rec, $row['value'], $legacy);
+	return TAB."<span class='{$class}{$selected}' rel='{$data}' style='background:{$row['color']};' title='".get_const($row['title'])."' onclick=\"select_item_color(this);\"></span>";
+	}
+
+function filter_item_admin_clear_span($item_rec, $class='col_sel no_shadow rounded', $legacy=false)
+	{
+	$data = filter_item_color_event_data($item_rec, NULL, $legacy);
+	return TAB."<span class='{$class}' rel='{$data}' title='".get_const('CLEAR_COLOR')."' onclick=\"select_item_color(this);\" clear></span>";
+	}
+
+function filter_item_public_color_span($row, $class='col_sel rounded small')
+	{
+	global $item_colors;
+	if (!isset($item_colors[$row])) return NULL;
+
+	$onclick = !isset($_SESSION['filter']['colors'][$row])
+		? "onclick=\"select_filter('{$row}', '/".CMS_LANG."/items/'"
+		: "onclick=\"window.location.href='/".CMS_LANG."/items/'\"";
+	return "<span class='{$class}' title='".get_const($item_colors[$row]['title'])."' style='background:{$item_colors[$row]['color']};' {$onclick});\"></span>";
+	}
+
+function filter_item_color_set($item_rec, $class='col_selector boxed', $legacy=false)
+	{
+	global $item_colors;
+	if (!is_array($item_colors)) return NULL;
+
+	$result = TAB."<div class='{$class}'>".
+		TAB."<div class='color_set'>";
+	foreach ($item_colors as $row)
+		{
+		$result .= filter_item_admin_color_span($item_rec, $row, $legacy ? 'col_sel' : 'col_sel rounded', $legacy);
+		}
+
+	return $result.
+		filter_item_admin_clear_span($item_rec, $legacy ? 'col_sel no_shadow' : 'col_sel no_shadow rounded', $legacy).
+		TAB."</div>".
+		TAB."</div>";
+	}
+
+function filter_item_public_color_set($item_rec, $class='col_selector item', $with_title=true, $span_class='col_sel rounded small')
+	{
+	if (!is_array($item_rec['filter_xml'])) return NULL;
+
+	$result = TAB."<div class='{$class}'>".
+		($with_title ? TAB."<div class='subselect'>".get_const('COLOR_SELECTOR')." :</div>" : NULL).
+		TAB."<div class='color_set'>";
+	foreach ($item_rec['filter_xml'] as $row)
+		{
+		$result .= filter_item_public_color_span($row, $span_class);
+		}
+
+	return $result.
+		TAB."</div>".
+		TAB."</div>";
 	}
 
 function filter_item_color_selector($item_rec)
 	{
-	global $_USER, $item_colors;
+	global $_USER;
 
-	$result = NULL;
+	$result = $_USER->is_logged()
+		? filter_item_color_set($item_rec)
+		: filter_item_public_color_set($item_rec);
 
-	if ($_USER->is_logged())
-		{
-		if (is_array($item_colors))
-			{
-			$result =
-				TAB."<div class='col_selector boxed'>".
-				TAB."<div class='color_set'>";
-
-			foreach ($item_colors as $key=>$row)
-				{
-				$selected = (is_array($item_rec['filter_xml']) and in_array($row['value'], $item_rec['filter_xml'])) ? " selected" : "";
-
-				$data = itEditor::event_data([
-					'id'	=> $item_rec['id'],
-					'value'	=> $row['value'],
-					]);
-				$result .= TAB."<span class='col_sel rounded {$selected}' rel='{$data}' style='background:{$row['color']};' title='".get_const($row['title'])."' onclick=\"select_item_color(this);\"></span>";
-				}
-
-			$data = itEditor::event_data([
-				'id'	=> $item_rec['id'],
-				'value'	=> NULL,
-				]);
-
-			$result .=
-				TAB."<span class='col_sel no_shadow rounded' rel='{$data}' title='".get_const('CLEAR_COLOR')."' onclick=\"select_item_color(this);\" clear></span>".
-				TAB."</div>".
-				TAB."</div>";
-			}
-		} else	{
-			if (is_array($item_rec['filter_xml']))
-				{
-				$result =
-					TAB."<div class='col_selector item'>".
-					TAB."<div class='subselect'>".get_const('COLOR_SELECTOR')." :</div>".
-					TAB."<div class='color_set'>";
-				foreach ($item_rec['filter_xml'] as $key=>$row)
-					{
-					if (isset($item_colors[$row]))
-						{
-						$onclick = !isset($_SESSION['filter']['colors'][$row]) ? "onclick=\"select_filter('{$row}', '/".CMS_LANG."/items/'" : "onclick=\"window.location.href='/".CMS_LANG."/items/'\"";
-						$result .= "<span class='col_sel rounded small' title='".get_const($item_colors[$row]['title'])."' style='background:{$item_colors[$row]['color']};' {$onclick});\"></span>";
-						}
-					}
-				$result .=
-					TAB."</div>".
-					TAB."</div>";
-				}
-			}
 	return ($result)
-		? 	TAB."<div class='colors boxed'>".
+		? TAB."<div class='colors boxed'>".
 			$result.
 			TAB."</div>"
 		: NULL;
@@ -112,63 +137,18 @@ function filter_item_color_selector($item_rec)
 
 function item_color_selector($item_rec)
 	{
-	global $_USER, $item_colors;
+	global $_USER;
 
-	$result = '';
+	$result = $_USER->is_logged()
+		? filter_item_color_set($item_rec, "col_selector' id='col_selector", true)
+		: filter_item_public_color_set($item_rec, "col_selector' id='col_selector", false, 'col_sel');
 
-	if ($_USER->is_logged())
-		{
-		if (is_array($item_colors))
-			{
-			$result =
-				TAB."<div class='col_selector' id='col_selector'>".
-				TAB."<div class='color_set'>";
-			foreach ($item_colors as $key=>$row)
-				{
-				$options = simple_encrypt(serialize([
-					'id'	=> $item_rec['id'],
-					'value'	=> $row['value'],
-					]));
-
-				$selected = (is_array($item_rec['filter_xml']) and in_array($row['value'], $item_rec['filter_xml'])) ? " selected" : "";
-				$result .= TAB."<span class='col_sel{$selected}' rel='{$options}' style='background:{$row['color']};' title='".get_const($row['title'])."' onclick=\"select_item_color(this);\"></span>";
-				}
-			$options = simple_encrypt(serialize([
-				'id'	=> $item_rec['id'],
-				'value'	=> NULL,
-				]));
-
-			$result .=
-				TAB."<span class='col_sel no_shadow' rel='{$options}' title='".get_const('CLEAR_COLOR')."' onclick=\"select_item_color(this);\" clear></span>".
-				TAB."</div>".
-				TAB."</div>";
-			}
-		} else	{
-			if (is_array($item_rec['filter_xml']))
-				{
-				$result =
-					TAB."<div class='col_selector' id='col_selector'>".
-					TAB."<div class='color_set'>";
-				foreach ($item_rec['filter_xml'] as $key=>$row)
-					{
-					if (isset($item_colors[$row]))
-						{
-						$onclick = !isset($_SESSION['filter']['colors'][$row]) ? "onclick=\"select_filter('{$row}', '/".CMS_LANG."/items/'" : "onclick=\"window.location.href='/".CMS_LANG."/items/'\"";
-						$result .= "<span class='col_sel' title='".get_const($item_colors[$row]['title'])."' style='background:{$item_colors[$row]['color']};' {$onclick});\"></span>";
-						}
-					}
-				$result .=
-					TAB."</div>".
-					TAB."</div>";
-				}
-			}
-	return !empty($result) ? "<span class='col_sel_title'>".get_const('COLOR_SELECTOR')." : </span>".$result : "";
+	return !empty($result) ? "<span class='col_sel_title'>".get_const('COLOR_SELECTOR')." : </span>".$result : '';
 	}
 
 function set_item_color($item_id=NULL, $value=NULL)
 	{
 	$item_rec = itMySQL::_get_rec_from_db('items', $item_id);
-
 	$item_rec['filter_xml'] = !is_array($item_rec['filter_xml']) ? [] : $item_rec['filter_xml'];
 
 	if(is_array($item_rec['filter_xml']) and (($key = array_search($value, $item_rec['filter_xml'])) !== false))
@@ -184,69 +164,64 @@ function set_item_color($item_id=NULL, $value=NULL)
 	itMySQL::_update_value_db('items', $item_id, $item_rec['filter_xml'], 'filter_xml');
 	}
 
+function get_items_sort_options()
+	{
+	return [
+		[
+		'title'	=> get_const('NEWFIRST_TITLE'),
+		'value'	=> 'new',
+		],
+		[
+		'title'	=> get_const('PRICE_UP_TITLE'),
+		'value'	=> 'price_up',
+		],
+		[
+		'title'	=> get_const('PRICE_DOWN_TITLE'),
+		'value'	=> 'price_down',
+		],
+		];
+	}
+
 function get_items_sort_selector()
 	{
+	$o_selector = new itSelector([
+		'array' 	=> get_items_sort_options(),
+		'titles'	=> 'title',
+		'values'	=> 'value',
+		'name'		=> 'sort',
+		'compact'	=> true,
+		'value'		=> ready_val($_SESSION['filter']['sort']),
+		'no_label'	=> true,
+		'ajax'		=> 'sort_price(this);',
+		'element_id'	=> 'sortsel',
+		]);
+	$result = $o_selector->code();
+	unset($o_selector);
+	return $result;
+	}
 
-	$prepared_arr['itemsort'] =
-		[
-			0 => [
-				'title'		=> get_const('NEWFIRST_TITLE'),
-				'value'		=> 'new',
-			],
-
-			1 => [
-				'title'		=> get_const('PRICE_UP_TITLE'),
-				'value'		=> 'price_up',
-			],
-
-			2 => [
-				'title'		=> get_const('PRICE_DOWN_TITLE'),
-				'value'		=> 'price_down',
-			],
+function get_items_price_bounds($table_name='items', $db_prefix=DB_PREFIX, $step=10)
+	{
+	$sql = "SELECT MAX(`price`) as max, MIN(`price`) AS min FROM `{$db_prefix}{$table_name}` WHERE`status`='PUBLISHED'";
+	$request=itMySQL::_request($sql);
+	return [
+		'min'	=> $request[0]['min'] - ($request[0]['min'] % $step),
+		'max'	=> $step*ceil($request[0]['max']/$step),
 		];
-
-	if (isset($prepared_arr['itemsort']))
-		{
-		$options = [
-			'array' 	=> $prepared_arr['itemsort'],
-			'titles'    => 'title',
-			'values'	=> 'value',
-			'name'		=> 'sort',
-			'compact'	=> true,
-			'value'		=> ready_val($_SESSION['filter']['sort']),
-			'no_label'	=> true,
-			'ajax'		=> 'sort_price(this);',
-			'element_id'	=> 'sortsel',
-			];
-
-		$o_selector = new itSelector($options);
-		$result = $o_selector->code();
-		}
-
-	return
-		$result.
-		"";
 	}
 
 function get_items_price_selector($table_name='items', $db_prefix=DB_PREFIX)
 	{
-	$step = 10;
-
-	$sql = "SELECT MAX(`price`) as max, MIN(`price`) AS min FROM `{$db_prefix}{$table_name}` WHERE`status`='PUBLISHED'";
-	$request=itMySQL::_request($sql);
-
-	$db_min = $request[0]['min'] - ($request[0]['min'] % $step);
-	$db_max = $step*ceil($request[0]['max']/$step);
-
-	$min = ready_val($_SESSION['filter']['min']) ? $_SESSION['filter']['min'] : $db_min;
-	$max = ready_val($_SESSION['filter']['max']) ? $_SESSION['filter']['max'] : $db_max;
+	$bounds = get_items_price_bounds($table_name, $db_prefix);
+	$min = ready_val($_SESSION['filter']['min']) ? $_SESSION['filter']['min'] : $bounds['min'];
+	$max = ready_val($_SESSION['filter']['max']) ? $_SESSION['filter']['max'] : $bounds['max'];
 
 	return minify_js("<script>
     $(function() {
       $('#slider-range').slider({
         range: true,
-        min: {$db_min},
-        max: {$db_max},
+        min: {$bounds['min']},
+        max: {$bounds['max']},
         values: [{$min}, {$max}],
         slide: function(event, ui) {
           $('#amount_min').html('$' + ui.values[0]);

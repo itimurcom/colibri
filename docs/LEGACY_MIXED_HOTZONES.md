@@ -84,3 +84,6 @@ The user admin/social area now has local helpers for admin link buttons, login m
 
 ## M0 / P61 order/contact controller cleanup
 The order/contact/measurement/register controller pass removed stale controller fragments and reduced duplicated register focus-error JavaScript while preserving routes, form ids and submit operation names.
+
+## M0 / P62 `engine_filters.php`
+Item/catalog filter rendering was consolidated locally. Color selector spans, item color event data, sort options, and price bounds now have local helper paths while preserving existing filter/session/JS behavior.
