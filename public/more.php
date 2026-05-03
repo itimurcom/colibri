@@ -1,6 +1,11 @@
 <?php
 include ("engine/kernel.php");
 
+function more_request_value($key='', $default=NULL)
+	{
+	return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+	}
+
 function more_handle_named_operation($operation=NULL)
 	{
 	switch ($operation)
@@ -39,9 +44,10 @@ function more_render_feed_payload($payload=[])
 	return ['result' => '1', 'value' => $body];
 	}
 
-if (isset($_REQUEST['op']))
+$operation = more_request_value('op');
+if (!is_null($operation))
 	{
-	$result = more_handle_named_operation($_REQUEST['op']);
+	$result = more_handle_named_operation($operation);
 	if (!is_null($result))
 		{
 		return skel80_json_response($result);
@@ -50,7 +56,7 @@ if (isset($_REQUEST['op']))
 
 return skel80_json_response(
 	more_render_feed_payload(
-		more_decode_feed_payload(ready_val($_REQUEST['data']))
+		more_decode_feed_payload(more_request_value('data'))
 	)
 );
 ?>

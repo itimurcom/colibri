@@ -2,7 +2,12 @@
 include ("engine/kernel.php");
 global $user;
 
-if (isset ($_REQUEST['op']) and ($_REQUEST['op']=='login'))
+function soclogin_request_value($key='', $default=NULL)
+	{
+	return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+	}
+
+if (soclogin_request_value('op')=='login')
 	{
 	itUserReg::oauth();
 	} 

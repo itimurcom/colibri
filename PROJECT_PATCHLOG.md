@@ -42,3 +42,10 @@
   - stabilized customer lookup/PIN helpers against empty DB rows and incomplete customer payloads
   - guarded login/register/ajax PIN events against missing request keys during first render and AJAX retries
   - preserved public function names, form flow, mail transport, DB schema, and runtime architecture
+
+- M0 / P73R environment-safe utility entrypoint stabilization bundle
+  - replaced the rejected P73 direction with a bounded public utility-entrypoint guard pass
+  - removed the old `public/img.php` debug abort that printed `PICTURE_ROOT` and stopped image handling
+  - guarded optional request/session/server reads in `img.php`, `more.php`, `login.php`, `mailbody.php`, `maillogo.php`, and `soclogin.php`
+  - preserved bootstrap/config/env order, routes, DB schema, storage format, public entrypoint names, and existing redirect/render flows
+  - added `docs/ENVIRONMENT_SAFE_UTILITY_ENTRYPOINT_STABILIZATION_STAGE.md` with scope, removal note, and manual checks
