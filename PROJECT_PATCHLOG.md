@@ -49,3 +49,12 @@
   - guarded optional request/session/server reads in `img.php`, `more.php`, `login.php`, `mailbody.php`, `maillogo.php`, and `soclogin.php`
   - preserved bootstrap/config/env order, routes, DB schema, storage format, public entrypoint names, and existing redirect/render flows
   - added `docs/ENVIRONMENT_SAFE_UTILITY_ENTRYPOINT_STABILIZATION_STAGE.md` with scope, removal note, and manual checks
+
+- M0 / P74 form editor AJAX guard stabilization bundle
+  - added guarded form-editor AJAX operation/kind reads in `SKEL80/events/f2/f2_events.func.php`
+  - centralized `itForm2` field-kind normalization and safer initialization for temporary modal/control forms
+  - stabilized form-field insert/change paths against missing or stale field metadata
+  - declared existing runtime properties across `itForm2` field-control classes to reduce PHP 8.x deprecation output in AJAX responses
+  - guarded `itSet2` selected-value reads when the stored value is empty or non-array
+  - preserved form storage format, routes, bootstrap/config/env behavior, and existing form editor UI flow
+  - added `docs/FORM_EDITOR_AJAX_GUARD_STABILIZATION_STAGE.md`

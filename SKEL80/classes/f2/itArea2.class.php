@@ -5,7 +5,7 @@ $area_counter = (function_exists('rand_id')) ? rand_id() : time();
 // itArea2 : класс построения поля текста для формы (2.1)
 class itArea2
 	{
-	public $element_id, $code, $type, $name, $value, $ajax,$placeholder, $label, $compact, $form_id;
+	public $element_id, $code, $type, $name, $value, $ajax, $class, $placeholder, $label, $compact, $form_id, $no_label, $max;
 
 	// конструктор класса - создает поле ввода текста
 	public function __construct($options=NULL)

@@ -10,6 +10,16 @@ function f2_events_ok($extra=[])
 	return f2_events_response(array_merge(['result' => 1], $extra));
 	}
 
+function f2_events_request_value($key, $default=NULL)
+	{
+	return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+	}
+
+function f2_events_normalized_kind($default='INPUT')
+	{
+	return itForm2::normalize_field_kind(f2_events_request_value('kind', $default), $default);
+	}
+
 function f2_events_container($data, $state)
 	{
 	$o_form2 = new itForm2($data);
@@ -26,21 +36,26 @@ function f2_events_reload($data, $state='edit')
 function f2_events($url, $path)
 	{
 	$data = itEditor::_redata();
+	$operation = f2_events_request_value('op');
+	if (!$operation)
+		{
+		return false;
+		}
 
-	switch ($_REQUEST['op'])
+	switch ($operation)
 		{
 		case 'f2_change' :
 			itForm2::_change($_REQUEST);
 			return f2_events_response(['result' => 1], 0);
 
 		case 'f2_field' :
-			$data['kind'] = $_REQUEST['kind'];
+			$data['kind'] = f2_events_normalized_kind();
 			$data['name'] = NULL;
 			itForm2::_insert_field($data);
 			return f2_events_response(['result' => 1], 0);
 
 		case 'f2_edstate' :
-			$state = ($data['state'] == 'view') ? 'edit' : 'view';
+			$state = (ready_val($data['state']) == 'view') ? 'edit' : 'view';
 			return f2_events_reload($data, $state);
 
 		case 'f2_edreload' :
@@ -58,5 +73,7 @@ function f2_events($url, $path)
 			itForm2::_field_x($data);
 			return f2_events_ok(['show'=> false]);
 		}
+
+	return false;
 	}
 ?>

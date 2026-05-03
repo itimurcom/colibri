@@ -6,7 +6,7 @@ $datepicker_counter = rand_id();
 class itDate2
 	{
 	public $code;
-	public $value, $type, $options, $name, $element_id, $title, $value_mysql, $time, $image, $label, $compact, $clear, $no_label;
+	public $value, $type, $options, $name, $element_id, $title, $value_mysql, $time, $image, $label, $compact, $clear, $no_label, $form_id, $class, $ajax, $grow, $hour, $minute;
 	
 	// конструктор класса - создает элемент управления выбора даты
 	public function __construct($options=NULL)

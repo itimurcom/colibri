@@ -5,13 +5,11 @@ $upgal_counter = rand_id();
 // itUpGal2 : класс построение поля ввода галереи изображений для формы (2.1)
 class itUpGal2
 	{
-	public $element_id, $code, $name, $value, $ajax, 
-		$label, $compact, $form_id,
-		
-		$upgal_class, $upgal_field,
-		
+	public $element_id, $code, $name, $value, $ajax,
+		$label, $compact, $form_id, $no_label,
+		$upgal_class, $upgal_field, $upgal_img,
 		$gallery_field, $files_field, $data_field,
-		$btn_code, $gallery_code;
+		$label_compact, $field_compact, $btn_code, $gallery_code;
 
 	// конструктор класса - создает поле ввода текста
 	public function __construct($options=NULL)

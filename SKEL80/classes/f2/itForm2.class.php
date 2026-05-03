@@ -77,20 +77,31 @@ class itForm2
         $this->init($options);
         }
 
+    public static function normalize_field_kind($kind, $default='INPUT')
+        {
+        global $form2_defaults;
+
+        $default = isset($form2_defaults[$default]) ? $default : 'INPUT';
+        $kind = strtoupper((string) ready_val($kind, $default));
+
+        return isset($form2_defaults[$kind]) ? $kind : $default;
+        }
+
     public function index_name($kind)
         {
+        $kind = self::normalize_field_kind($kind);
         $index = 1;
         if ($kind!='HIDDEN')
             {
             if (is_array($this->fields_xml))
                 foreach($this->fields_xml as $row)
                     {
-                    if ($row['kind'] == $kind)
+                    if (isset($row['kind']) && ($row['kind'] == $kind))
                         {
                         $index++;
                         }
                     }
-            } else $index = count($this->hiddens_xml) + 1;
+            } else $index = (is_array($this->hiddens_xml) ? count($this->hiddens_xml) : 0) + 1;
         return strtolower($kind).$index;
         }
 
@@ -99,6 +110,7 @@ class itForm2
         global $form_count;
         $form_count ++;
 
+        $options = is_array($options) ? $options : [];
         $this->error = false;
 
         if  (isset($options['rec_id']) AND is_array($this->data = itMySQL::_get_rec_from_db($this->table_name, $this->rec_id = $options['rec_id']))) {
@@ -244,7 +256,11 @@ class itForm2
     {
         global $form2_defaults;
 
-        $field = $form2_defaults[$kind]['default'];
+        $kind = self::normalize_field_kind($kind);
+        $default = isset($form2_defaults[$kind]['default']) && is_array($form2_defaults[$kind]['default'])
+            ? $form2_defaults[$kind]['default']
+            : [];
+        $field = $default;
         $field['kind'] = $kind;
 
         if (in_array($kind, ['SELECT', 'SET'], true)) {
@@ -273,8 +289,9 @@ class itForm2
 
     public function insert_field($data=NULL)
     {
+        $data = is_array($data) ? $data : [];
         $ed_key = ready_val($data['ed_key']);
-        $kind = ready_val($data['kind'], 'INPUT');
+        $kind = self::normalize_field_kind(ready_val($data['kind'], 'INPUT'));
 
         $this->insertCollectionItem('fields_xml', $ed_key, $this->buildInsertedField($kind, $data));
         }
@@ -328,8 +345,9 @@ class itForm2
 
     public function insert_button($data=NULL)
         {
+        $data = is_array($data) ? $data : [];
         $ed_key = ready_val($data['ed_key']);
-        $kind = ready_val($data['kind'], 'INPUT');
+        $kind = self::normalize_field_kind(ready_val($data['kind'], 'INPUT'));
 
         $this->insertCollectionItem('buttons_xml', $ed_key, $this->buildInsertedButton($kind, $data));
         }
@@ -987,13 +1005,21 @@ class itForm2
 
     static function _change($options)
         {
+        $options = is_array($options) ? $options : [];
         if (!isset($options['ed_key'])) return;
 
         $key = $options['ed_key'];
 
         $o_form2 = new itForm2($options);
+        if (!is_array($o_form2->fields_xml))
+            {
+            unset($o_form2);
+            return;
+            }
+
         if (isset($o_form2->fields_xml[$key]))
             {
+            $options['kind'] = self::normalize_field_kind(ready_val($options['kind'], ready_val($o_form2->fields_xml[$key]['kind'], 'INPUT')));
             if (isset($o_form2->fields_xml[$key]['label']) AND !isset($o_form2->fields_xml[$key]['label'][CMS_LANG]) AND !is_array($o_form2->fields_xml[$key]['label']))
                 unset($o_form2->fields_xml[$key]['label']);
 

@@ -6,7 +6,7 @@ $input_counter = rand_id();
 // itInput2 : класс построение поля ввода для формы (2.1)
 class itInput2
 	{
-	public $element_id, $code, $type, $name, $value, $ajax, $class, $placeholder, $label, $compact, $form_id, $no_label;
+	public $element_id, $code, $type, $name, $value, $ajax, $class, $placeholder, $label, $compact, $form_id, $no_label, $grow, $min, $max, $multi, $readonly;
 
 	// конструктор класса - создает поле ввода текста
 	public function __construct($options=NULL)

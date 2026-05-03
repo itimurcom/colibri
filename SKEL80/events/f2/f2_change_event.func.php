@@ -105,6 +105,9 @@ function f2_change_editor_settings($row)
 
 function f2_change_event($row)
 	{
+	$row = is_array($row) ? $row : [];
+	$row['kind'] = itForm2::normalize_field_kind(ready_val($row['kind'], 'INPUT'));
+
 	definition([
 		'F2_TITLES'	=> 'Надписи (в каждой строке по одной)',
 		'F2_VALUES'	=> 'Значения (в каждой строке по одному)',
@@ -116,9 +119,11 @@ function f2_change_event($row)
 	$o_modal->set_animation('fadeAndPop');
 
 	$o_form = new itForm2();
+	$ed_key = isset($row['ed_key']) ? $row['ed_key'] : 0;
+	$kind_title = isset($form2_defaults[$row['kind']]['title']) ? $form2_defaults[$row['kind']]['title'] : 'F2_INPUT';
 	$o_form->add_title(mstr_replace([
-		'[VALUE]' 	=> "{$row['kind']} #".($row['ed_key']+1),
-		'[KIND]'	=> get_const($form2_defaults[$row['kind']]['title']),
+		'[VALUE]' 	=> "{$row['kind']} #".($ed_key+1),
+		'[KIND]'	=> get_const($kind_title),
 		], get_const('F2_CHANGE_TITLE')));
 
 	$o_form->add_button(get_const('BUTTON_OK'), 'ajaxsubmit', ['form' => $o_form->form_id(), 'ajax'=>"f2_edreload('#".itForm2::_container_id($row)."');"], 'blue' );

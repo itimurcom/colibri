@@ -5,7 +5,7 @@ $button_counter = (function_exists('rand_id')) ? rand_id() : 0;
 // itButton2 : класс построение управляющей кнопки для форм (версия 2.1)
 class itButton2
 	{
-	public $code;
+	public $code, $type, $element_id, $title, $hint, $color, $class, $ajax, $form_id, $href, $target, $src, $name, $accept, $show, $files_field, $rel_data, $reldata;
 
 	// конструктор класса - создает кнопку и управление для нее по параметрам:
 	public function __construct($options=NULL)

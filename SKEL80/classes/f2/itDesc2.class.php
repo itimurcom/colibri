@@ -5,7 +5,7 @@ $desc_counter = (function_exists('rand_id')) ? rand_id() : time();
 // itDesc2 : класс построения поля описания группы полей для формы (2.1)
 class itDesc2
 	{
-	public $element_id, $code, $type, $name, $value, $ajax, $class, $placeholder, $label, $compact, $form_id;
+	public $element_id, $code, $type, $name, $value, $ajax, $class, $placeholder, $label, $compact, $form_id, $no_label;
 
 	// конструктор класса - создает поле ввода текста
 	public function __construct($options=NULL)

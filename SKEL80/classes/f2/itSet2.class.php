@@ -4,7 +4,7 @@ $set_counter = rand_id();
 // itSet2 : класс построения поля набора для формы (2.1)
 class itSet2
 	{
-	public $code, $sel_rec, $type, $name, $element_id, $options, $value, $ajax ;
+	public $code, $sel_rec, $type, $name, $element_id, $options, $value, $ajax, $form_id, $class, $label, $no_label, $compact, $array, $titles, $values, $colors;
 
 	// конструктор класса - создает поле множественного выбора из набора данных
 	public function __construct($options=NULL)
@@ -62,7 +62,10 @@ class itSet2
 				$title = is_array($tmp = ready_val($row[$this->titles], "{$index}")) ? get_field_by_lang($row[$this->titles]) : get_const($tmp);
 				$value = isset($row[$this->values]) ? $row[$this->values] : "autooption{$index}";
 				
-				$checked = (ready_val($this->value["$value"]) OR (isset($_REQUEST["{$this->name}_{$value}"]) AND ($_REQUEST["{$this->name}_{$value}"]=='on'))) ? ' checked' : '';
+				$current_value = is_array($this->value) && isset($this->value["$value"])
+					? $this->value["$value"]
+					: NULL;
+				$checked = (ready_val($current_value) OR (isset($_REQUEST["{$this->name}_{$value}"]) AND ($_REQUEST["{$this->name}_{$value}"]=='on'))) ? ' checked' : '';
 				
 				$color_str = isset($row[$this->colors]) ? " {$row[$this->colors]}" : NULL;
 				$compile_code .= 

@@ -5,7 +5,7 @@ $autoselect_counter = rand_id();
 // itAutoSelect2 : класс автоматического выбора данных по поиску (2.1)
 class itAutoSelect2
 	{
-	public $code, $element_id, $type, $class, $action, $op, $placeholder, $compact, $text;
+	public $code, $element_id, $name, $type, $class, $action, $op, $placeholder, $compact, $text, $value, $label, $no_label, $ajax, $form_id;
 	// конструктор класса - создает элемент автоматического выбора данных
 	public function __construct($options=NULL)
 		{
