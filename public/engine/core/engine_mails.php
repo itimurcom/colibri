@@ -3,15 +3,38 @@ define('SEND_USER_MAILS', 0);
 define('NOT_PINCODE'," AND `subject` NOT REGEXP ('PIN')");
 define('HAS_PINCODE'," AND `subject` REGEXP ('PIN')");
 
+function colibri_mail_request_value($key, $default=NULL)
+	{
+	return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+	}
+
+function colibri_mail_request_text($key, $default='')
+	{
+	$value = colibri_mail_request_value($key, $default);
+	return trim((string)$value);
+	}
+
+function colibri_mail_setting_value($key, $default='')
+	{
+	global $_SETTINGS;
+	return isset($_SETTINGS[$key]['value']) ? trim((string)$_SETTINGS[$key]['value']) : $default;
+	}
+
+function colibri_mail_address_part($key)
+	{
+	$value = colibri_mail_request_text($key);
+	return $value !== '' ? ", ".$value : NULL;
+	}
+
 function get_full_address_request()
 	{
 	return "<div style='margin-top:0 16px;'><span style='color: blue;'>".get_const('FULL_ADDRESS_TITLE')."&nbsp;:</span>&nbsp;".
-		"{$_REQUEST['name']}".
-		(!empty($_REQUEST['address']) ? ", ".$_REQUEST['address'] : NULL).
-		(!empty($_REQUEST['address2']) ? ", ".$_REQUEST['address2'] : NULL).
-		(!empty($_REQUEST['citi']) ? ", ".$_REQUEST['citi'] : NULL).
-		(!empty($_REQUEST['country']) ? ", ".$_REQUEST['country'] : NULL).
-		(!empty($_REQUEST['index']) ? ", ".$_REQUEST['index'] : NULL).
+		colibri_mail_request_text('name').
+		colibri_mail_address_part('address').
+		colibri_mail_address_part('address2').
+		colibri_mail_address_part('citi').
+		colibri_mail_address_part('country').
+		colibri_mail_address_part('index').
 		"</div>";
 	}
 
@@ -27,22 +50,27 @@ function mailtemplate_script(&$options)
 
 function get_colibri_mail_heading($color, $title)
 	{
+	$email = colibri_mail_request_text('email');
 	return "<div style='font-size:1.2em; margin-top:16px; font-weight:bold;color:{$color};'>{$title}</div>".
-		"<div class='info'><span class='label'>email</span>&nbsp;:&nbsp;{$_REQUEST['email']}</div>";
+		"<div class='info'><span class='label'>email</span>&nbsp;:&nbsp;{$email}</div>";
 	}
 
 function get_colibri_mail_profile($form_id)
 	{
 	global $_MEASURMENT;
+	$name = colibri_mail_request_text('name');
+	$email = colibri_mail_request_text('email');
+	$order = colibri_mail_request_text('order');
 	switch ($form_id)
 		{
-		case FORM2_CONTACTS : return ['subject_user' => USER_CONTACT_ACCEPT_TITLE, 'subject_admin' => ADMIN_CONTACT_ACCEPT_TITLE, 'address' => false, 'agreement' => false, 'prepared_title' => get_colibri_mail_heading('brown', "СООБЩЕНИЕ от {$_REQUEST['name']}")];
-		case FORM2_ORDER : return ['subject_user' => NULL, 'subject_admin' => ADMIN_ORDER_ACCEPT_TITLE, 'address' => true, 'agreement' => true, 'prepared_title' => get_colibri_mail_heading('blue', "ЗАКАЗ от {$_REQUEST['name']}")];
-		case FORM2_BUY : return ['subject_user' => USER_BUY_ACCEPT_TITLE, 'subject_admin' => ADMIN_BUY_ACCEPT_TITLE, 'address' => true, 'agreement' => false, 'prepared_title' => get_colibri_mail_heading('red', "ИЗ МАГАЗИНА от {$_REQUEST['name']}")];
+		case FORM2_CONTACTS : return ['subject_user' => USER_CONTACT_ACCEPT_TITLE, 'subject_admin' => ADMIN_CONTACT_ACCEPT_TITLE, 'address' => false, 'agreement' => false, 'prepared_title' => get_colibri_mail_heading('brown', "СООБЩЕНИЕ от {$name}")];
+		case FORM2_ORDER : return ['subject_user' => NULL, 'subject_admin' => ADMIN_ORDER_ACCEPT_TITLE, 'address' => true, 'agreement' => true, 'prepared_title' => get_colibri_mail_heading('blue', "ЗАКАЗ от {$name}")];
+		case FORM2_BUY : return ['subject_user' => USER_BUY_ACCEPT_TITLE, 'subject_admin' => ADMIN_BUY_ACCEPT_TITLE, 'address' => true, 'agreement' => false, 'prepared_title' => get_colibri_mail_heading('red', "ИЗ МАГАЗИНА от {$name}")];
 		}
 	$meas = $form_id - FORM2_MEASUREMENT + 1;
 	$title_color = isset($_MEASURMENT[$form_id]['mailcolor']) ? $_MEASURMENT[$form_id]['mailcolor'] : 'blue';
-	return ['subject_user' => NULL, 'subject_admin' => str_replace('[VALUE]', $meas, ADMIN_MEASUREMENT_ACCEPT_TITLE).(isset($_REQUEST['order']) ? " № {$_REQUEST['order']} от {$_REQUEST['email']}" : NULL), 'address' => false, 'agreement' => false, 'prepared_title' => get_colibri_mail_heading($title_color, "МЕРКИ тип {$meas} для {$_REQUEST['order']}")];
+	$subject_details = $order !== '' ? " № {$order} от {$email}" : NULL;
+	return ['subject_user' => NULL, 'subject_admin' => str_replace('[VALUE]', $meas, ADMIN_MEASUREMENT_ACCEPT_TITLE).$subject_details, 'address' => false, 'agreement' => false, 'prepared_title' => get_colibri_mail_heading($title_color, "МЕРКИ тип {$meas} для {$order}")];
 	}
 
 function get_colibri_mail_request_rows($table_name, $form_id)
@@ -52,9 +80,10 @@ function get_colibri_mail_request_rows($table_name, $form_id)
 
 function get_colibri_mail_body($inline_style, $request_rows, $options=[])
 	{
+	$rows = is_array($request_rows) ? implode('', $request_rows) : '';
 	return "<div style='{$inline_style}'>".
 		(!empty($options['prepared_title']) ? "<div>{$options['prepared_title']}</div><br/>" : NULL).
-		implode('', $request_rows).
+		$rows.
 		(!empty($options['address']) ? get_full_address_request() : NULL).
 		(!empty($options['agreement']) ? "<div style='color:green;'><b>".str_replace("\n", "<br/><br/>", "\n".USER_AGREEMENT)."</b></div>" : NULL).
 		"</div>";
@@ -62,15 +91,18 @@ function get_colibri_mail_body($inline_style, $request_rows, $options=[])
 
 function get_colibri_mail_template_result($prepared, $subject)
 	{
-	$mail = ['prepared' => $prepared, 'subject' => $subject]; itMailTemplate::_code($mail); return $mail['result'];
+	$mail = ['prepared' => $prepared, 'subject' => $subject];
+	itMailTemplate::_code($mail);
+	return isset($mail['result']) ? $mail['result'] : '';
 	}
 
 function patch_colibri_admin_mail_articul(&$message)
 	{
-	if (!isset($_REQUEST['articul']) || !($item_rec = get_item_from_articul($_REQUEST['articul']))) return;
-	$img_str = (isset($item_rec['images']) AND is_array($item_rec['images'])) ? "<img style='display:table' src='".get_thumbnail($item_rec['images'][0], 'ADV_AVATAR')."'/>" : NULL;
-	$link = "<div style='text-align:center'><a href='".CMS_CURRENT_BASE_URL."/".CMS_LANG."/items/{$item_rec['id']}/' target='_blank'>{$img_str}<span>{$_REQUEST['articul']}</span></a></div>";
-	$message = str_replace($_REQUEST['articul'], $link, $message);
+	$articul = colibri_mail_request_text('articul');
+	if ($articul === '' || !($item_rec = get_item_from_articul($articul))) return;
+	$img_str = (isset($item_rec['images'][0])) ? "<img style='display:table' src='".get_thumbnail($item_rec['images'][0], 'ADV_AVATAR')."'/>" : NULL;
+	$link = "<div style='text-align:center'><a href='".CMS_CURRENT_BASE_URL."/".CMS_LANG."/items/{$item_rec['id']}/' target='_blank'>{$img_str}<span>{$articul}</span></a></div>";
+	$message = str_replace($articul, $link, $message);
 	}
 
 function get_colibri_admin_mail_subject($now, $subject_admin)
@@ -81,7 +113,6 @@ function get_colibri_admin_mail_subject($now, $subject_admin)
 
 function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TABLE)
 	{
-	global $_SETTINGS;
 	$profile = get_colibri_mail_profile($form_id);
 	$inline_style = "font-size:14px; font-family:Helvetica,Arial;";
 	$request_rows = get_colibri_mail_request_rows($table_name, $form_id);
@@ -92,19 +123,23 @@ function send_colibri_mails($form_id=FORM2_CONTACTS, $table_name=DEFAULT_FORM_TA
 	patch_colibri_admin_mail_articul($admin_mail);
 
 	$mails = [];
-	if (SEND_USER_MAILS)
+	$email = colibri_mail_request_text('email');
+	$smtp_user = colibri_mail_setting_value('SITE_SMTP_USER');
+	$smtp_password = colibri_mail_setting_value('SITE_SMTP_PASSWORD');
+	$admin_email = colibri_mail_setting_value('SITE_ADMIN_EMAIL');
+	if (SEND_USER_MAILS && $email !== '')
 		{
-		$mails[] = ['from' => $_SETTINGS['SITE_ADMIN_EMAIL']['value'], 'to' => $_REQUEST['email'], 'subject' => $profile['subject_user'], 'message' => $mail_of_user];
+		$mails[] = ['from' => $admin_email, 'to' => $email, 'subject' => $profile['subject_user'], 'message' => $mail_of_user];
 		}
 
 	$mails[] = [
-		'from' => trim($_SETTINGS['SITE_SMTP_USER']['value']),
-		'to' => trim($_SETTINGS['SITE_ADMIN_EMAIL']['value']),
-		'reply' => trim($_REQUEST['email']),
+		'from' => $smtp_user,
+		'to' => $admin_email,
+		'reply' => $email,
 		'subject' => get_colibri_admin_mail_subject($now, $profile['subject_admin']),
 		'message' => $admin_mail,
-		'user' => trim($_SETTINGS['SITE_SMTP_USER']['value']),
-		'password' => trim($_SETTINGS['SITE_SMTP_PASSWORD']['value']),
+		'user' => $smtp_user,
+		'password' => $smtp_password,
 	];
 	itMailings::_send_arr($mails, true);
 	$o_mailer = new itMailer();

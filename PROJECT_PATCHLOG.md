@@ -36,3 +36,9 @@
   - added guarded request reads in itSite for controller/view/lang/table/record defaults
   - hardened itLang against stale session language values and incomplete language rows
   - fixed language switch link generation for URLs without an existing language prefix
+
+- M0 / P72 customer mail request payload stabilization bundle
+  - centralized guarded request/settings reads in the customer form-mail runtime path
+  - stabilized customer lookup/PIN helpers against empty DB rows and incomplete customer payloads
+  - guarded login/register/ajax PIN events against missing request keys during first render and AJAX retries
+  - preserved public function names, form flow, mail transport, DB schema, and runtime architecture

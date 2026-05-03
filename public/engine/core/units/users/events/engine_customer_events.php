@@ -1,4 +1,21 @@
 <?php 
+function customer_event_request_value($key, $default=NULL)
+	{
+	return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+	}
+
+function customer_event_request_ready_value($key, $default=NULL)
+	{
+	$value = customer_event_request_value($key);
+	return ready_val($value, $default);
+	}
+
+function customer_event_user_data($key, $default='')
+	{
+	global $_USER;
+	return isset($_USER->data) && is_array($_USER->data) && isset($_USER->data[$key]) ? $_USER->data[$key] : $default;
+	}
+
 function customer_event_panel($id, $title, $body, $class='cus-form boxed bordered rounded', $body_class='body boxed', $link=NULL)
 	{
 	return
@@ -78,7 +95,7 @@ function customer_login_event(&$login)
 	$o_form = customer_enter_form($form_id, '/'.CMS_LANG.'/register/', 'enter', 'submit', ['show' => true]);
 	$result = $o_form->_view();
 
-	$login = ($o_form->accepted AND (ready_val($_REQUEST['op'])=='enter'));
+	$login = ($o_form->accepted AND (customer_event_request_ready_value('op')=='enter'));
 	unset($o_form);
  	return customer_event_panel(NULL, get_const('ENTER_PAGE_TITLE'), $result);
 	}
@@ -113,7 +130,7 @@ function customer_register_event(&$register)
 		}
 
 	$result = $o_form->container();
-	$register = ($o_form->accepted AND (ready_val($_REQUEST['op'])=='register'));
+	$register = ($o_form->accepted AND (customer_event_request_ready_value('op')=='register'));
 	unset($o_form);
 
 	return
@@ -130,28 +147,28 @@ function customer_edit_event()
 
 	if (!$_USER->is_logged('ANY')) return;
 
-	list($o_modal, $o_form) = customer_modal_form(str_replace ('[VALUE]', $_USER->data['email'], get_const('QUERY_EDIT_USER')));
+	list($o_modal, $o_form) = customer_modal_form(str_replace ('[VALUE]', customer_event_user_data('email'), get_const('QUERY_EDIT_USER')));
 
 	$o_form->add_input([
 		'name'		=> 'name',
-		'value'		=> $_USER->data['name'],
+		'value'		=> customer_event_user_data('name'),
 		'label'		=> get_const('USER_NAME'),
 		'compact'	=> true,
 		]);
 	$o_form->add_input([
 		'name'		=> 'address',
-		'value'		=> $_USER->data['social'],
+		'value'		=> customer_event_user_data('social'),
 		'label'		=> get_const('USER_ADDRESS'),
 		]);
 	$o_form->add_phone([
 		'name'		=> 'phone',
-		'value'		=> $_USER->data['phone'],
+		'value'		=> customer_event_user_data('phone'),
 		'label'		=> get_const('USER_PHONE'),
 		'compact'	=> true,
 		]);
 	$o_form->add_data([
 		'table_name'	=> DEFAULT_USER_TABLE,
-		'rec_id'	=> $_USER->data['id'],
+		'rec_id'	=> customer_event_user_data('id'),
 		'op'		=> 'user_edit',
 		]);
 	customer_modal_add_ok_cancel($o_form, $o_modal);
@@ -163,9 +180,9 @@ function customer_edit_event()
 
 	return
 		TAB."<div class='list admin'>".
-		customer_profile_row(get_const('USER_NAME'), $_USER->data['name']).
-		customer_profile_row(get_const('USER_ADDRESS'), $_USER->data['social']).
-		customer_profile_row(get_const('USER_PHONE'), $_USER->data['phone']).
+		customer_profile_row(get_const('USER_NAME'), customer_event_user_data('name')).
+		customer_profile_row(get_const('USER_ADDRESS'), customer_event_user_data('social')).
+		customer_profile_row(get_const('USER_PHONE'), customer_event_user_data('phone')).
 		TAB."</div>".
 		$result;
 	}
@@ -179,7 +196,7 @@ function customer_ajaxlogin_event(&$login)
 
 	$o_form = customer_enter_form('cus_enter', '/ed_field.php', 'ajaxenter', 'ajaxsubmit', ['ajax' => 'refine_events();']);
 	$result = $o_form->_view();
-	$login = ($o_form->accepted AND (ready_val($_REQUEST['op'])=='ajaxenter'));
+	$login = ($o_form->accepted AND (customer_event_request_ready_value('op')=='ajaxenter'));
 	unset($o_form);
 
 	return customer_event_panel('ajaxlogin', get_const('ENTER_PAGE_TITLE'), $result, 'cus-form bordered rounded', 'body boxed', TAB."<a target='_blank' class='change blue' href='/".CMS_LANG."/register/'>".get_const('BUTTON_REGISTER')."</a>");
@@ -211,22 +228,22 @@ function customer_ajaxpin_event(&$pined)
 		'user_ip'	=> get_user_ip(),
 		'op'		=> 'ajaxpin',
 		'form_id'	=> $form_id,
-		'path'		=> "{$_REQUEST['controller']}/{$_REQUEST['view']}",
+		'path'		=> customer_event_request_value('controller', '').'/'.customer_event_request_value('view', ''),
 		]);
 	$o_form->add_button(get_const('BUTTON_ENTER'), 'ajaxsubmit', ['form'=>$o_form->form_id()], 'green');
 	$result = $o_form->_view();
 
 	$id_of_user = NULL;
 	$pined = ($o_form->accepted
-		AND (ready_val($_REQUEST['op'])=='ajaxpin')
-		AND ($id_of_user = user_by_pin($_REQUEST['ajaxpin'])));
+		AND (customer_event_request_ready_value('op')=='ajaxpin')
+		AND ($id_of_user = user_by_pin(customer_event_request_value('ajaxpin'))));
 
 	if ($pined)
 		{
 		itMySQL::_update_value_db('users', $id_of_user, 'ACTIVE', 'status');
 		$_USER->login($id_of_user);
 
-		$do_replace = ($_REQUEST['path'] =='register/pin')
+		$do_replace = (customer_event_request_value('path') =='register/pin')
 			? "window.location.href = '".CMS_CURRENT_BASE_URL."/".CMS_LANG."/cabinet/';"
 			: "$('#ajaxpin').remove();".js_replace_userdata();
 		$result = "<script>{$do_replace}</script>";
@@ -235,7 +252,7 @@ function customer_ajaxpin_event(&$pined)
 	return ($id_of_user===false)
 		? TAB.customer_ajaxlogin_event($login).ajax_error_focus('cus_enter-logemail', 'EXPIRED_PIN')
 		: customer_event_panel('ajaxpin', get_const('ENTER_PIN_TITLE'), $result).
-			((!$pined AND ready_val($_REQUEST['ajaxpin']))
+			((!$pined AND customer_event_request_ready_value('ajaxpin'))
 				? ajax_error_focus('pin_enter-ajaxpin', 'ERROR_PIN')
 				: ($pined ? "<script>go_cabinet('".CMS_CURRENT_BASE_URL."/".CMS_LANG."/cabinet/');</script>" : NULL));
 	}
