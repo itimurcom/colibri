@@ -90,3 +90,6 @@ Item/catalog filter rendering was consolidated locally. Color selector spans, it
 
 ## M0 / P63 buy/cabinet/friends controllers
 Remaining customer-facing controllers are being cleaned locally. P63 keeps routes, form ids, session keys, and shared-core behavior unchanged while reducing old inline assembly and stale commented controller fragments.
+
+## M0 / P64 recent controller regression stabilization
+A targeted stabilization pass fixed a controller-helper global-scope issue in `controller.friends.php` and removed unused `itEditor::_redata()` assignments from buy/cabinet controllers. Keep post-cleanup controller patches stabilizing until current runtime is manually checked.

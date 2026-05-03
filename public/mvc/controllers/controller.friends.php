@@ -17,6 +17,7 @@ function friends_controller_feed()
 
 function friends_controller_content($o_feed, &$title)
 	{
+	global $_USER;
 	$row = itMySQL::_get_rec_from_db('contents', BLOCK_FRIENDS);
 	if (!$row)
 		{

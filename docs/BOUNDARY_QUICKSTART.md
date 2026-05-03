@@ -57,3 +57,6 @@ Order/contact/measurement/register controllers are project-side MVC flow files. 
 
 ## M0 / P63 controller cleanup note
 Project-side controller cleanup may add local helpers inside the controller file when that reduces repeated rendering/flow code. Do not move these helpers into shared-core during M0.
+
+## M0 / P64 recent controller stabilization note
+After broad project-side controller cleanup, verify helper functions that use globals inside function scope. In PHP, controller-local helper functions must explicitly declare globals such as `$_USER` when they use them.

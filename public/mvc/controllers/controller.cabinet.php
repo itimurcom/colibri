@@ -20,7 +20,6 @@ function cabinet_controller_content()
 	}
 
 $_CONTENT['admin'] = get_admin_button_set();
-$data = itEditor::_redata();
 
 if (!$_USER->is_logged('ANY'))
 	{
@@ -30,7 +29,7 @@ if (!$_USER->is_logged('ANY'))
 transfer_wishlist();
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
-$_CONTENT['content'] .= cabinet_controller_content();
+$_CONTENT['content'] = cabinet_controller_content();
 $plug_og['subtitle'] 	= get_const('CMS_NAME');
 $plug_og['title'] 	= get_const('NODE_CABINET');
 ?>
