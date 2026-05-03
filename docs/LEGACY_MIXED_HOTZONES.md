@@ -75,3 +75,6 @@ Catalog/feed remains an active runtime hotspot. P57 keeps the existing `itFeed` 
 
 ## M0 / P58 editor media/gallery second pass
 Editor gallery upload and gallery move/delete metadata handling are still legacy-hotzone code. P58 consolidates repeated gallery event handling and adds guards around partial gallery `text/link/value` metadata without changing public editor API.
+
+## M0 / P59 customer/auth runtime cleanup
+`engine_customer_events.php` and `engine_customers.php` were consolidated locally around repeated customer form/modal/auth helper logic. Existing public functions and route/session behavior remain the boundary.

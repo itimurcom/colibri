@@ -1,42 +1,55 @@
 <?php
-function customer_by_email($email=NULL, $table_name=DEFAULT_USER_TABLE, $db_prefix=DB_PREFIX)
+function customer_find_first($sql)
 	{
-	if (empty($email)) return;
-	return is_array($request = itMySQL::_request("SELECT * FROM `{$db_prefix}{$table_name}` WHERE `email`='{$email}' LIMIT 1"))
-		? $request[0]
-		: false;
-	}
-
-function customer_by_phone($phone=NULL, $table_name=DEFAULT_USER_TABLE, $db_prefix=DB_PREFIX)
-	{
-	if (empty($phone)) return;
-	$phone = mstr_replace([
-		'(' 	=> '',
-		')'	=> '',
-		'+'	=> '',
-		'-'	=> '',
-		], $phone);
-	$sql = "SELECT * FROM `{$db_prefix}{$table_name}` WHERE `phone`='{$phone}' OR `phone`='+{$phone}' LIMIT 1";
 	return is_array($request = itMySQL::_request($sql))
 		? $request[0]
 		: false;
 	}
 
+function customer_by_email($email=NULL, $table_name=DEFAULT_USER_TABLE, $db_prefix=DB_PREFIX)
+	{
+	if (empty($email)) return;
+	return customer_find_first("SELECT * FROM `{$db_prefix}{$table_name}` WHERE `email`='{$email}' LIMIT 1");
+	}
+
+function customer_normalize_phone($phone)
+	{
+	return mstr_replace([
+		'(' 	=> '',
+		')'	=> '',
+		'+'	=> '',
+		'-'	=> '',
+		], $phone);
+	}
+
+function customer_by_phone($phone=NULL, $table_name=DEFAULT_USER_TABLE, $db_prefix=DB_PREFIX)
+	{
+	if (empty($phone)) return;
+	$phone = customer_normalize_phone($phone);
+	return customer_find_first("SELECT * FROM `{$db_prefix}{$table_name}` WHERE `phone`='{$phone}' OR `phone`='+{$phone}' LIMIT 1");
+	}
+
 function user_by_pin($pincode=NULL, $table_name=DEFAULT_PIN_TABLE, $db_prefix=DB_PREFIX)
 	{
-	return  (is_array($request = itMySQL::_request("SELECT * FROM `{$db_prefix}{$table_name}` WHERE `pin`='{$pincode}' LIMIT 1")))
-		? ( (strtotime('now') > strtotime($request[0]['expire']) )
-			? false
-			: $request[0]['user_id'] )
+	$request = customer_find_first("SELECT * FROM `{$db_prefix}{$table_name}` WHERE `pin`='{$pincode}' LIMIT 1");
+	return is_array($request)
+		? ((strtotime('now') > strtotime($request['expire'])) ? false : $request['user_id'])
 		: NULL;
+	}
+
+function customer_smtp_credentials()
+	{
+	global $_SETTINGS;
+	return [
+		'user'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
+		'password'	=> trim($_SETTINGS['SITE_SMTP_PASSWORD']['value']),
+		];
 	}
 
 function create_pin($customer=NULL)
 	{
 	if (!defined('HTTP_PATH'))
 		define('HTTP_PATH', CMS_CURRENT_BASE_URL_SLASH);
-
-	global $_SETTINGS;
 
 	$pincode = rand_id();
 	$values_arr = [
@@ -57,16 +70,17 @@ function create_pin($customer=NULL)
 		];
 
 	itMailTemplate::_code($m_code, false);
+	$smtp = customer_smtp_credentials();
 
 	$mails[] =[
-	'from'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
-	'to'		=> trim($customer['email']),
-	'reply'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
-	'subject'	=> $m_code['subject'],
-	'message'	=> $m_code['result'],
-	'user'		=> trim($_SETTINGS['SITE_SMTP_USER']['value']),
-	'password'	=> trim($_SETTINGS['SITE_SMTP_PASSWORD']['value']),
-	];
+		'from'		=> $smtp['user'],
+		'to'		=> trim($customer['email']),
+		'reply'		=> $smtp['user'],
+		'subject'	=> $m_code['subject'],
+		'message'	=> $m_code['result'],
+		'user'		=> $smtp['user'],
+		'password'	=> $smtp['password'],
+		];
 
 	itMailings::_send_arr($mails, true);
 

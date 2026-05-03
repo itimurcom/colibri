@@ -42,3 +42,6 @@ After editor/form/DB cleanup passes, stabilization patches may fix discovered re
 
 ## M0 / P58 editor media/gallery second pass note
 Gallery event cleanup must stay inside `SKEL80/events/editor/editor_events.func.php` and `SKEL80/classes/editor/itEditor.class.php` during M0. Keep the old public editor event names and gallery method names stable.
+
+## M0 / P59 customer/auth runtime note
+Customer/auth cleanup stays project-side under `public/engine/core/units/users/`. Keep public event function names stable and avoid creating a separate auth framework during M0.
