@@ -21,14 +21,16 @@ function transfer_wishlist()
 
 function load_wishlist($id_of_user=NULL)
 	{
-	return (is_array($wish_list = itMySQL::_request("SELECT * FROM `colibri_wishlist` WHERE `user_id`='{$id_of_user}'")))
+	$wish_list = itMySQL::_request("SELECT * FROM `colibri_wishlist` WHERE `user_id`='{$id_of_user}'");
+	return (is_array($wish_list) AND isset($wish_list[0]['list_xml']))
 		? $wish_list[0]['list_xml']
 		: [];
 	}
 
 function store_wishlist($id_of_user=NULL, $wish_arr=NULL)
 	{
-	if (is_array($wish_list = itMySQL::_request("SELECT * FROM `colibri_wishlist` WHERE `user_id`='{$id_of_user}'")))
+	$wish_list = itMySQL::_request("SELECT * FROM `colibri_wishlist` WHERE `user_id`='{$id_of_user}'");
+	if (is_array($wish_list) AND isset($wish_list[0]['id']))
 		{
 		itMySQL::_update_value_db('wishlist', $wish_list[0]['id'], $wish_arr, 'list_xml');
 		} else	{
@@ -41,7 +43,8 @@ function store_wishlist($id_of_user=NULL, $wish_arr=NULL)
 
 function wishlist($forced=false)
 	{
-	if (!$forced AND !in_array(ready_val($_REQUEST['controller']), str_getcsv(get_const('ALOW_WISHLIST')))) return;
+	$controller = isset($_REQUEST['controller']) ? ready_val($_REQUEST['controller']) : NULL;
+	if (!$forced AND !in_array($controller, str_getcsv(get_const('ALOW_WISHLIST')))) return;
 
 	return !is_null($result = wishlist_body($counter))
 		?	TAB."<div class='widget bordered rounded'>".
@@ -61,7 +64,7 @@ function wishlist_body(&$counter)
 	$counter = 0;
 
 	$wish_arr = $_USER->is_logged('ANY')
-		? $prepared_arr['wishlist']
+		? (isset($prepared_arr['wishlist']) && is_array($prepared_arr['wishlist']) ? $prepared_arr['wishlist'] : [])
 		: ( (isset($_SESSION['wishlist']) AND is_array($_SESSION['wishlist']))
 			? $_SESSION['wishlist']
 			: []
@@ -99,7 +102,7 @@ function wish($data)
 	global $_USER, $prepared_arr;
 	if ($_USER->is_logged('ANY'))
 		{
-		if (is_array($prepared_arr['wishlist']))
+		if (isset($prepared_arr['wishlist']) AND is_array($prepared_arr['wishlist']))
 			{
 			if (($key = array_search($data['rec_id'],  $prepared_arr['wishlist'])) !== false) {
 				unset($prepared_arr['wishlist'][$key]);
@@ -128,7 +131,7 @@ function is_wish($item_id=NULL)
 
 	if ($_USER->is_logged('ANY'))
 		{
-		return(is_array($prepared_arr['wishlist']) AND in_array($item_id, $prepared_arr['wishlist']));
+		return(isset($prepared_arr['wishlist']) AND is_array($prepared_arr['wishlist']) AND in_array($item_id, $prepared_arr['wishlist']));
 		} else {
 			return (isset($_SESSION['wishlist']) AND is_array($_SESSION['wishlist']) AND (array_search($item_id, $_SESSION['wishlist'])!==false));
 			}

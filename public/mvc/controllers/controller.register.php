@@ -1,4 +1,9 @@
 <?php 
+function register_controller_request_value($key)
+	{
+	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	}
+
 $_CONTENT['admin'] = get_admin_button_set();
 
 global $_USER;
@@ -39,7 +44,7 @@ $_CONTENT['content'] =
 
 if ($do_login)
 	{
-	if (is_array($customer = customer_by_email(ready_val($_REQUEST['logemail']))))
+	if (is_array($customer = customer_by_email(register_controller_request_value('logemail'))))
 		{
 		create_pin($customer);		
 		cms_redirect_page('/'.CMS_LANG.'/register/pin/');
@@ -50,13 +55,13 @@ if ($do_login)
 
 
 $already = false;
-if (ready_val($_REQUEST['email']) AND ($customer = customer_by_email(ready_val($_REQUEST['email']))))
+if (register_controller_request_value('email') AND ($customer = customer_by_email(register_controller_request_value('email'))))
 	{
 	$_CONTENT['content'] .= $register_focus_error('cus_register-email', 'ALREADY_HAVE');
 	$already = true;
 	}
 
-if (ready_val($_REQUEST['phone']) AND ($customer = customer_by_phone(ready_val($_REQUEST['phone']))))
+if (register_controller_request_value('phone') AND ($customer = customer_by_phone(register_controller_request_value('phone'))))
 	{
 	$_CONTENT['content'] .= $register_focus_error('cus_register-phone', 'ALREADY_HAVE');
 	$already = true;

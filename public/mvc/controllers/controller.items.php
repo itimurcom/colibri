@@ -2,14 +2,19 @@
 $_CONTENT['admin'] = get_admin_button_set();
 global $cat_cat, $cat_more;
 
+function items_controller_request_value($key)
+	{
+	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	}
+
 function items_controller_view()
 	{
-	return ready_val($_REQUEST['view']);
+	return items_controller_request_value('view');
 	}
 
 function items_controller_rec_id()
 	{
-	return ready_val($_REQUEST['rec_id']);
+	return items_controller_request_value('rec_id');
 	}
 
 function items_controller_redirect_to_item_url($rec_id)
@@ -47,9 +52,10 @@ switch($view)
 	{
 	case 'items' :
 		{
-		if (isset($_REQUEST['url']))
+		$item_url = items_controller_request_value('url');
+		if (!is_null($item_url))
 			{
-			$_REQUEST['rec_id'] = get_item_id_by_url($_REQUEST['url']);
+			$_REQUEST['rec_id'] = get_item_id_by_url($item_url);
 			}
 		elseif (items_controller_rec_id()!=='')
 			{

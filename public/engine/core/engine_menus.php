@@ -1,7 +1,7 @@
 <?php
 function colibri_menu_request_value($key)
 	{
-	return ready_val($_REQUEST[$key]);
+	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
 	}
 
 function colibri_menu_row_value($row, $key)

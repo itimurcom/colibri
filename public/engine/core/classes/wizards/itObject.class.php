@@ -23,6 +23,7 @@ class itObject
 	public function __construct($options=NULL)
 		{
 		global $object_counter;
+		$options = is_array($options) ? $options : [];
 		$object_counter ++;
 
 		$this->name 		= "object-{$object_counter}";
@@ -46,12 +47,13 @@ class itObject
 
 	public function get_wizard()
 		{
+		$this->wizard = [];
 		if (isset($this->data[$this->cat_field]))
 			{
 			$cat_rec['parent_id'] = $this->data[$this->cat_field];
 			$i=0;
 			$wiz_arr=[];
-			while ($cat_rec['parent_id']!=0)
+			while (isset($cat_rec['parent_id']) AND $cat_rec['parent_id']!=0)
 				{
 				$i++;
 				$options = [
@@ -60,7 +62,8 @@ class itObject
 				];
 
 				$o_wizard = new itWizard($options);
-				$wiz_arr[$i] = $cat_rec = $o_wizard->ed_rec;
+				$cat_rec = is_array($o_wizard->ed_rec) ? $o_wizard->ed_rec : [];
+				$wiz_arr[$i] = $cat_rec;
 				unset($o_wizard);
 				if ($i>5) break;
 				}
@@ -69,27 +72,32 @@ class itObject
 				krsort($wiz_arr);
 				foreach($wiz_arr as $key=>$row)
 					{
-					if (is_array($row[$this->wiz_field]))
+					if (isset($row[$this->wiz_field]) AND is_array($row[$this->wiz_field]))
 						{
 						foreach ($row[$this->wiz_field] as $wiz_key=>$wiz_row)
 							{
+							if (!isset($wiz_row['name'])) continue;
 							$this->wizard[$wiz_row['name']] = $wiz_row;
 							$this->wizard[$wiz_row['name']]['value']
 								= isset($this->data[$this->wiz_values][$wiz_row['name']]) ? $this->data[$this->wiz_values][$wiz_row['name']] : NULL;
 
 							$value_text  = is_null($this->wizard[$wiz_row['name']]['value']) ? get_const('NO_DATA') : $this->wizard[$wiz_row['name']]['value'];
 
-							if (!in_array($wiz_row['type'], unserialize(WIZARD_NOTITLES)))
+							$type = isset($wiz_row['type']) ? $wiz_row['type'] : DEFAULT_WIZARD_TYPE;
+							if (!in_array($type, unserialize(WIZARD_NOTITLES)))
 								{
-								foreach($wiz_row['titles'][CMS_LANG] as $sel_key=>$sel_row)
+								$sel_arr = [];
+								$titles = isset($wiz_row['titles'][CMS_LANG]) && is_array($wiz_row['titles'][CMS_LANG]) ? $wiz_row['titles'][CMS_LANG] : [];
+								foreach($titles as $sel_key=>$sel_row)
 									{
+									if (!isset($wiz_row['values'][$sel_key])) continue;
 									$sel_arr[$wiz_row['values'][$sel_key]] =
 										[
 										'title'	=> get_const($sel_row),
 										'value'	=> $wiz_row['values'][$sel_key],
 										];
 									}
-								$value_text = ready_val($sel_arr[$value_text]['title'], 'NO_DATA');
+								$value_text = isset($sel_arr[$value_text]['title']) ? $sel_arr[$value_text]['title'] : get_const('NO_DATA');
 								}
 							$this->wizard[$wiz_row['name']]['text']	= $value_text;
 							$this->wizard[$wiz_row['name']]['table_name']	= $this->table_name;
@@ -194,7 +202,7 @@ class itObject
 		{
 		if (is_array($this->wizard))
 			{
-			$row = [];
+			$rows = [];
 			if (function_exists('get_object_wizard_row_event'))
 			foreach($this->wizard as $key=>$row)
 				{
@@ -229,8 +237,10 @@ class itObject
 	protected function objectFormSelectOptions($row)
 		{
 		$sel_arr = [];
-		foreach($row['titles'][CMS_LANG] as $sel_key=>$sel_row)
+		$titles = isset($row['titles'][CMS_LANG]) && is_array($row['titles'][CMS_LANG]) ? $row['titles'][CMS_LANG] : [];
+		foreach($titles as $sel_key=>$sel_row)
 			{
+			if (!isset($row['values'][$sel_key])) continue;
 			$sel_arr[$row['values'][$sel_key]] = [
 				'title'	=> get_const($sel_row),
 				'value'	=> $row['values'][$sel_key],
@@ -314,6 +324,7 @@ class itObject
 		global $wiz_types;
 		if (is_array($this->wizard))
 			{
+			$rows = [];
 			foreach ($this->wizard as $wiz_key=>$wiz_row)
 				{
 				$rows[] =
@@ -330,13 +341,25 @@ class itObject
 
 	static function _form_update($options=NULL)
 		{
+		$options = is_array($options) ? $options : [];
 		$options['category_table'] 	= ready_val($options['category_table'], DEFAULT_CATEGORY_TABLE);
 		$options['table_name']		= ready_val($options['table_name'], DEFAULT_OBJECT_TABLE);
 		$options['wiz_field']		= ready_val($options['wiz_field'], DEFAULT_WIZARD_FIELD);
 
 		$cat_field = ready_val($options['cat_field'], DEFAULT_CAT_FIELD);
 
+		if (!isset($options[$cat_field]))
+			{
+			add_error_message('ERROR_OPTIONS_OBJECT');
+			return;
+			}
+
 		$o_object = new itObject(['table_name' => $options['table_name'], 'rec_id' => $options[$cat_field]]);
+		if (!is_array($o_object->wizard))
+			{
+			unset($o_object);
+			return;
+			}
 
 		foreach($o_object->wizard as $wiz_key => $wiz_row)
 			{

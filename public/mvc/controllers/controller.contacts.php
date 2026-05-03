@@ -1,10 +1,15 @@
 <?php 
+function contacts_controller_request_value($key)
+	{
+	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	}
+
 $_CONTENT['admin'] = get_admin_button_set();
 
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
-$contacts_view = ready_val($_REQUEST['view']);
+$contacts_view = contacts_controller_request_value('view');
 if ($contacts_view != 'thankyou')
 	{
 $o_form = new itForm2([
@@ -27,7 +32,7 @@ $o_form->add_button(get_const('BUTTON_CLEAR'), 'a', ['ajax'=>"f2_reset('".$o_for
 
 if ($_USER->is_logged()) $o_form->store();
 
-$contact_item_id = ready_val($_REQUEST['rec_id']);
+$contact_item_id = contacts_controller_request_value('rec_id');
 if(intval($contact_item_id) AND $row=itMySQL::_get_rec_from_db('items', $contact_item_id))
 	{
 	$_REQUEST['articul'] = get_item_articul($row);
@@ -66,7 +71,7 @@ $_CONTENT['content'] =
 			: NULL);
 
 
-if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='contacts'))
+if ($o_form->accepted AND (contacts_controller_request_value('op')=='contacts'))
 	{
 	_check_v3reCaptcha();
 	$_SESSION['thankyoucountacts'] = send_colibri_mails(FORM2_CONTACTS);		

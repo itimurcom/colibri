@@ -5,7 +5,8 @@ define ('LASTSEEN_ARR','LASTSEEN');
 
 function get_lastseen_arr()
 	{
-	return ready_val($_SESSION[SESSION_PREFIX.LASTSEEN_ARR]);
+	$key = SESSION_PREFIX.LASTSEEN_ARR;
+	return isset($_SESSION[$key]) ? ready_val($_SESSION[$key]) : NULL;
 	}
 
 function set_lastseen_arr($last_arr = NULL)
@@ -17,7 +18,7 @@ function push_lastseen_item($item_id=NULL)
 	{
 	if ($item_id == NULL)
 		{
-		$item_id = ready_val($_REQUEST['rec_id']);
+		$item_id = isset($_REQUEST['rec_id']) ? ready_val($_REQUEST['rec_id']) : NULL;
 		}
 
 if ($last_arr = get_lastseen_arr())

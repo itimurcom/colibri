@@ -1,9 +1,14 @@
 <?php 
+function order_controller_request_value($key)
+	{
+	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	}
+
 $_CONTENT['admin'] = get_admin_button_set();
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
-$order_view = ready_val($_REQUEST['view']);
+$order_view = order_controller_request_value('view');
 if ($order_view != 'thankyou')
 	{
 $o_form = new itForm2([
@@ -27,7 +32,7 @@ if ($_USER->is_logged()) $o_form->store();
 	
 
 $focus_str = NULL;
-$order_item_id = ready_val($_REQUEST['rec_id']);
+$order_item_id = order_controller_request_value('rec_id');
 if(intval($order_item_id) AND $row=itMySQL::_get_rec_from_db('items', $order_item_id))
 	{
 	$_REQUEST['articul'] = get_item_articul($row);
@@ -63,7 +68,7 @@ $_CONTENT['content'] =
 			: NULL);
 
 
-if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='order'))
+if ($o_form->accepted AND (order_controller_request_value('op')=='order'))
 	{
 	_check_v3reCaptcha();
 	$_SESSION['thankyouorder'] = send_colibri_mails(FORM2_ORDER);

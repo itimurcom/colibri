@@ -1,29 +1,34 @@
 <?php 
+function measurement_controller_request_value($key)
+	{
+	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	}
+
 global $_MEASURMENT;
 $_CONTENT['admin'] = get_admin_button_set();
-if (ready_val($_REQUEST['op']) == 'encode')
+if (measurement_controller_request_value('op') == 'encode')
 	{
 	$keycode = urlencode(itEditor::event_data([
 		'start'	=> 1,
-		'order'		=> ready_val($_REQUEST['order']),
-		'email'		=> ready_val($_REQUEST['email']),
-		'form_id'	=> ready_val($_REQUEST['form_id']),	
+		'order'		=> measurement_controller_request_value('order'),
+		'email'		=> measurement_controller_request_value('email'),
+		'form_id'	=> measurement_controller_request_value('form_id'),	
 		]));
 	cms_redirect_page("/".CMS_LANG."/measurement/?key={$keycode}");
 	}
 
 $order_data = 
-	ready_val($_REQUEST['order'])
+	measurement_controller_request_value('order')
 		? [
-		'order'		=> ready_val($_REQUEST['order']),
-		'email'		=> ready_val($_REQUEST['email']),	
-		'form_id'	=> ready_val($_REQUEST['form_id']),
+		'order'		=> measurement_controller_request_value('order'),
+		'email'		=> measurement_controller_request_value('email'),	
+		'form_id'	=> measurement_controller_request_value('form_id'),
 		]	
-		: (isset($_REQUEST['key'])
-			? @unserialize(simple_decrypt($_REQUEST['key']))
+		: (!is_null(measurement_controller_request_value('key'))
+			? @unserialize(simple_decrypt(measurement_controller_request_value('key')))
 			: NULL);
 
-if (isset($_REQUEST['key']) AND empty($order_data))
+if (!is_null(measurement_controller_request_value('key')) AND empty($order_data))
 	{
 	$_CONTENT['content'] = 
 			TAB."<div class='tit'>".get_const('MEASUREMENT_ERROR')."</div>";
@@ -37,10 +42,10 @@ $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
 
-$measurement_view = ready_val($_REQUEST['view']);
+$measurement_view = measurement_controller_request_value('view');
 if ($measurement_view != 'thankyou')
 	{
-	if (is_null($order_data) AND !ready_val($_REQUEST['email']))
+	if (is_null($order_data) AND !measurement_controller_request_value('email'))
 		{
 		if (!$_USER->is_logged())
 			{
@@ -107,7 +112,7 @@ $_CONTENT['content'] =
 	TAB."<h1 class='tit white{$title_color}'>{$order_str}</h1>".
 	$o_editor->container();
 	
-if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='measurement'))
+if ($o_form->accepted AND (measurement_controller_request_value('op')=='measurement'))
 	{
 	$_REQUEST['email'] = $order_data['email'];
 	$_SESSION['thankyoumeasuremet'] = send_colibri_mails($order_data['form_id']);

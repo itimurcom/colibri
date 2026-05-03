@@ -19,6 +19,7 @@ class itWizard
 	public function __construct($options=NULL)
 		{
 		global $wizard_counter;
+		$options = is_array($options) ? $options : [];
 		$wizard_counter ++;
 
 		$this->name 		= "wizard-{$wizard_counter}";
@@ -95,6 +96,7 @@ class itWizard
 
 	static function wizard_options($options=NULL)
 		{
+		$options = is_array($options) ? $options : [];
 		return [
 			'table_name'	=> ready_val($options['table_name'], DEFAULT_WIZARD_TABLE),
 			'rec_id'	=> ready_val($options['rec_id']),
@@ -121,8 +123,14 @@ class itWizard
 		if (is_array($options) AND isset($options[$option_key]))
 			{
 			$state = itWizard::wizard_from_options($options);
-			$options = $state['options'];
+			$options = $state['options'] + $options;
 			$o_wizard = $state['wizard'];
+			if (!is_array($o_wizard->data) OR !isset($o_wizard->data[$options['key']]))
+				{
+				add_error_message('ERROR_NO_KEY_DATA');
+				unset($o_wizard);
+				return;
+				}
 			if ($localized)
 				{
 				$o_wizard->data[$options['key']][$row_key][CMS_LANG] = $options[$option_key];
@@ -216,18 +224,25 @@ class itWizard
 			$state = itWizard::wizard_from_options($options);
 			$options = $state['options'] + $options;
 			$o_wizard = $state['wizard'];
+			if (!is_array($o_wizard->data) OR !isset($o_wizard->data[$options['key']]))
+				{
+				add_error_message('ERROR_NO_KEY_DATA');
+				unset($o_wizard);
+				return;
+				}
+			$row = $o_wizard->data[$options['key']];
 
-			$options['titles'] 	= ready_val($options['titles'], $o_wizard->data[$options['key']]['titles']);
-			$options['type'] 	= ready_val($options['type'], $o_wizard->data[$options['key']]['type']);
-			$options['values'] 	= ready_val($options['values'], $o_wizard->data[$options['key']]['values']);
-			$options['label'] 	= ready_val($options['label'], $o_wizard->data[$options['key']]['label']);
+			$options['titles'] 	= ready_val($options['titles'], isset($row['titles']) ? $row['titles'] : NULL);
+			$options['type'] 	= ready_val($options['type'], isset($row['type']) ? $row['type'] : DEFAULT_WIZARD_TYPE);
+			$options['values'] 	= ready_val($options['values'], isset($row['values']) ? $row['values'] : NULL);
+			$options['label'] 	= ready_val($options['label'], isset($row['label']) ? $row['label'] : NULL);
+			$options['name'] 	= ready_val($options['name'], isset($row['name']) ? $row['name'] : DEFAULT_WIZARD_NAME);
 
 			$o_wizard->data[$options['key']] = [
-				'title'		=> $options['title'],
-				'type'		=> $options['type'],
-				'values'	=> $options['values'],
-				'default'	=> $options['default'],
 				'name'		=> $options['name'],
+				'type'		=> $options['type'],
+				'titles'	=> $options['titles'],
+				'values'	=> $options['values'],
 				'label'		=> $options['label'],
 				];
 			$o_wizard->store();

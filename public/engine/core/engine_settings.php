@@ -1,4 +1,9 @@
 <?php 
+function settings_request_value($key)
+	{
+	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	}
+
 function get_settings_form($class='', $data=[], $form_options=[])
 	{
 	$o_form = new itForm2(array_merge(['class' => $class], $form_options));
@@ -67,8 +72,8 @@ function get_password_panel()
 		'form_id'	=> 'adminpass',
 		'reCaptcha'	=> false,
 		]);
-	add_settings_input($o_form, 'введите пароль', 'new_password', ready_val($_REQUEST['new_password']), true);
-	add_settings_input($o_form, 'повторите пароль', 'new_password2', ready_val($_REQUEST['new_password2']), true);
+	add_settings_input($o_form, 'введите пароль', 'new_password', settings_request_value('new_password'), true);
+	add_settings_input($o_form, 'повторите пароль', 'new_password2', settings_request_value('new_password2'), true);
 	return settings_panel_code($o_form, 'calculator big');
 	}
 

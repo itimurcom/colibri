@@ -1,7 +1,12 @@
 <?php 
+function buy_controller_request_value($key)
+	{
+	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	}
+
 function buy_controller_item_id()
 	{
-	return isset($_REQUEST['selected_id']) ? $_REQUEST['selected_id'] : (isset($_REQUEST['rec_id']) ? $_REQUEST['rec_id'] : NULL);
+	return !is_null(buy_controller_request_value('selected_id')) ? buy_controller_request_value('selected_id') : buy_controller_request_value('rec_id');
 	}
 
 function buy_controller_item_preview($item_id, &$item_row)
@@ -72,7 +77,7 @@ $_CONTENT['admin'] = get_admin_button_set();
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
-if (ready_val($_REQUEST['view']) == 'thankyou')
+if (buy_controller_request_value('view') == 'thankyou')
 	{
 	$_CONTENT['content'] = buy_controller_thankyou_content();
 	$plug_og['subtitle'] 	= get_const('CMS_NAME');
@@ -93,7 +98,7 @@ if($item_row)
 		], get_const('BUY_MESSAGE_TITLE'));
 	}
 
-if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='buy'))
+if ($o_form->accepted AND (buy_controller_request_value('op')=='buy'))
 	{
 	_check_v3reCaptcha();
 	$_SESSION['thankyoubuy'] = send_colibri_mails(FORM2_BUY);
