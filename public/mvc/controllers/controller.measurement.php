@@ -1,24 +1,23 @@
 <?php 
 global $_MEASURMENT;
 $_CONTENT['admin'] = get_admin_button_set();
-$data = itEditor::_redata();
-if ($_REQUEST['op'] == 'encode')
+if (ready_val($_REQUEST['op']) == 'encode')
 	{
 	$keycode = urlencode(itEditor::event_data([
 		'start'	=> 1,
-		'order'		=> $_REQUEST['order'],
-		'email'		=> $_REQUEST['email'],
-		'form_id'	=> $_REQUEST['form_id'],	
+		'order'		=> ready_val($_REQUEST['order']),
+		'email'		=> ready_val($_REQUEST['email']),
+		'form_id'	=> ready_val($_REQUEST['form_id']),	
 		]));
 	cms_redirect_page("/".CMS_LANG."/measurement/?key={$keycode}");
 	}
 
 $order_data = 
-	isset($_REQUEST['order'])
+	ready_val($_REQUEST['order'])
 		? [
-		'order'		=> $_REQUEST['order'],
-		'email'		=> $_REQUEST['email'],	
-		'form_id'	=> $_REQUEST['form_id'],
+		'order'		=> ready_val($_REQUEST['order']),
+		'email'		=> ready_val($_REQUEST['email']),	
+		'form_id'	=> ready_val($_REQUEST['form_id']),
 		]	
 		: (isset($_REQUEST['key'])
 			? @unserialize(simple_decrypt($_REQUEST['key']))
@@ -38,9 +37,10 @@ $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
 
-if ($_REQUEST['view'] != 'thankyou')
+$measurement_view = ready_val($_REQUEST['view']);
+if ($measurement_view != 'thankyou')
 	{
-	if (is_null($order_data) AND !isset($_REQUEST['email']))
+	if (is_null($order_data) AND !ready_val($_REQUEST['email']))
 		{
 		if (!$_USER->is_logged())
 			{
@@ -109,7 +109,7 @@ $_CONTENT['content'] =
 //	TAB."<div class='siterow boxed glass' style='font-size:1.4em;text-align:center; padding:1.2em;'>{$order_str}</div>".
 	$o_editor->container();
 	
-if ($o_form->accepted AND ($_REQUEST['op']=='measurement'))
+if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='measurement'))
 	{
 	$_REQUEST['email'] = $order_data['email'];
 	$_SESSION['thankyoumeasuremet'] = send_colibri_mails($order_data['form_id']);

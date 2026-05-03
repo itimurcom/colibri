@@ -5,7 +5,6 @@ if ($_USER->is_logged('ANY'))
 	cms_redirect_page("/".CMS_LANG.'/cabinet/');
 	}
 
-$data = itEditor::_redata();
 
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();

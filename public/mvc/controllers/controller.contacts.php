@@ -1,11 +1,11 @@
 <?php 
 $_CONTENT['admin'] = get_admin_button_set();
-$data = itEditor::_redata();
 
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
-if ($_REQUEST['view'] != 'thankyou')
+$contacts_view = ready_val($_REQUEST['view']);
+if ($contacts_view != 'thankyou')
 	{
 $o_form = new itForm2([
 	'rec_id'	=> FORM2_CONTACTS,
@@ -27,7 +27,8 @@ $o_form->add_button(get_const('BUTTON_CLEAR'), 'a', ['ajax'=>"f2_reset('".$o_for
 
 if ($_USER->is_logged()) $o_form->store();
 
-if(intval($_REQUEST['rec_id']) AND $row=itMySQL::_get_rec_from_db('items', $_REQUEST['rec_id']))
+$contact_item_id = ready_val($_REQUEST['rec_id']);
+if(intval($contact_item_id) AND $row=itMySQL::_get_rec_from_db('items', $contact_item_id))
 	{
 	$_REQUEST['articul'] = get_item_articul($row);
 	$_REQUEST['message'] = mstr_replace([

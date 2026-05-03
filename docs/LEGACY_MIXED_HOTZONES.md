@@ -93,3 +93,6 @@ Remaining customer-facing controllers are being cleaned locally. P63 keeps route
 
 ## M0 / P64 recent controller regression stabilization
 A targeted stabilization pass fixed a controller-helper global-scope issue in `controller.friends.php` and removed unused `itEditor::_redata()` assignments from buy/cabinet controllers. Keep post-cleanup controller patches stabilizing until current runtime is manually checked.
+
+## M0 / P65 form page controllers
+The form page controllers now use safer local request guards for optional `view`, `rec_id`, `order`, `email`, `form_id`, `op`, `phone`, and `logemail` values. This is a stabilization pass after recent project-side controller cleanup bundles.

@@ -1,8 +1,7 @@
 <?php 
 $_CONTENT['admin'] = get_admin_button_set();
-$data = itEditor::_redata();
 
-global $_USER, $_SETTINGS;
+global $_USER;
 
 if ($_USER->is_logged('ANY'))
 	{
@@ -44,7 +43,7 @@ $_CONTENT['content'] =
 
 if ($do_login)
 	{
-	if (is_array($customer = customer_by_email($_REQUEST['logemail'])))
+	if (is_array($customer = customer_by_email(ready_val($_REQUEST['logemail']))))
 		{
 		create_pin($customer);		
 		cms_redirect_page('/'.CMS_LANG.'/register/pin/');
@@ -55,13 +54,13 @@ if ($do_login)
 
 
 $already = false;
-if (!empty($_REQUEST['email']) AND ($customer = customer_by_email($_REQUEST['email'])))
+if (ready_val($_REQUEST['email']) AND ($customer = customer_by_email(ready_val($_REQUEST['email']))))
 	{
 	$_CONTENT['content'] .= $register_focus_error('cus_register-email', 'ALREADY_HAVE');
 	$already = true;
 	}
 
-if (!empty($_REQUEST['phone']) AND ($customer = customer_by_phone($_REQUEST['phone'])))
+if (ready_val($_REQUEST['phone']) AND ($customer = customer_by_phone(ready_val($_REQUEST['phone']))))
 	{
 	$_CONTENT['content'] .= $register_focus_error('cus_register-phone', 'ALREADY_HAVE');
 	$already = true;

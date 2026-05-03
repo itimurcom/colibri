@@ -6,7 +6,8 @@ $data = itEditor::_redata();
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
-if ($_REQUEST['view'] != 'thankyou')
+$order_view = ready_val($_REQUEST['view']);
+if ($order_view != 'thankyou')
 	{
 $o_form = new itForm2([
 	'rec_id'	=> FORM2_ORDER,
@@ -29,8 +30,8 @@ if ($_USER->is_logged()) $o_form->store();
 	
 
 $focus_str = NULL;
-$images_str = NULL;
-if(intval($_REQUEST['rec_id']) AND $row=itMySQL::_get_rec_from_db('items', $_REQUEST['rec_id']))
+$order_item_id = ready_val($_REQUEST['rec_id']);
+if(intval($order_item_id) AND $row=itMySQL::_get_rec_from_db('items', $order_item_id))
 	{
 	$_REQUEST['articul'] = get_item_articul($row);
 	$_SESSION['focus']['element'] = $o_form->form_id()."-articul";
@@ -56,7 +57,6 @@ $title = !is_null($o_editor->data) ? get_field_by_lang($o_editor->data['title_xm
 $_CONTENT['content'] = 
 	TAB."<div class='block'>".
 	TAB."<h1 class='tit'>{$title}</h1>".
-	$images_str.
 		TAB."<div class='siterow boxed'>".
 			$o_editor->container().
 		TAB."</div>".

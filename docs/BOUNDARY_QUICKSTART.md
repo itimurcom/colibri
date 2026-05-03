@@ -60,3 +60,6 @@ Project-side controller cleanup may add local helpers inside the controller file
 
 ## M0 / P64 recent controller stabilization note
 After broad project-side controller cleanup, verify helper functions that use globals inside function scope. In PHP, controller-local helper functions must explicitly declare globals such as `$_USER` when they use them.
+
+## M0 / P65 form page controller guard note
+Contact, order, measurement, register and pin controllers should avoid direct optional `$_REQUEST[...]` reads on normal page loads. Keep request guards local to the controller and do not move them into shared-core during M0.
