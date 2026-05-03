@@ -41,7 +41,6 @@ if(intval($contact_item_id) AND $row=itMySQL::_get_rec_from_db('items', $contact
 	$focus_str = "<script>$('#{$_SESSION['focus']['element']}').closest('.modal_row.f2_row').addClass('focusblue');</script>";
 	}
 
-// контейнер после данных!!!
 $form_container = 
 	customer_ajaxlogin_event($login).
 	$o_form->container().
@@ -80,7 +79,6 @@ if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='contacts'))
 $_CONTENT['content'] .= TAB."</div>";
 unset($o_form, $o_editor);
 
-// opengraph
 $plug_og['subtitle'] 	= get_const('CMS_NAME');
 $plug_og['title'] 	= get_const('NODE_CONTACTS');
 } else	{

@@ -99,3 +99,6 @@ The form page controllers now use safer local request guards for optional `view`
 
 ## M0 / P66 controller entrypoint stabilization
 Remaining project-side controllers were cleaned in place. Historical test/debug comment blocks were removed from `controller.test.php`; item/settings/mailing controller entrypoints now use local helpers and safer request reads without changing routes.
+
+## M0 / P67 controller residual request stabilization
+The remaining project-side controller entrypoints had a residual cleanup pass after P64-P66. The main runtime fix was `controller.order.php`: the submit branch now checks `$_REQUEST['op']` directly after removing the unused `_redata()` value.

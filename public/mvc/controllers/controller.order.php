@@ -1,8 +1,5 @@
 <?php 
 $_CONTENT['admin'] = get_admin_button_set();
-$data = itEditor::_redata();
-
-
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
@@ -40,7 +37,6 @@ if(intval($order_item_id) AND $row=itMySQL::_get_rec_from_db('items', $order_ite
 	$focus_str = "<script>$('#{$_SESSION['focus']['element']}').closest('.modal_row.f2_row').addClass('focusblue');</script>";
 	}
 	
-// контейнер после данных!!!
 $form_container =
 	customer_ajaxlogin_event($login).
 	$o_form->container().
@@ -67,7 +63,7 @@ $_CONTENT['content'] =
 			: NULL);
 
 
-if ($o_form->accepted AND (ready_val($data['op'])=='order'))
+if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='order'))
 	{
 	_check_v3reCaptcha();
 	$_SESSION['thankyouorder'] = send_colibri_mails(FORM2_ORDER);
@@ -80,7 +76,6 @@ if ($o_form->accepted AND (ready_val($data['op'])=='order'))
 $_CONTENT['content'] .= TAB."</div>";
 unset($o_form);
 
-// opengraph
 $plug_og['subtitle'] 	= get_const('CMS_NAME');
 $plug_og['title'] 	= get_const('NODE_ORDER');
 } else	{

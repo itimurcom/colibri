@@ -66,3 +66,6 @@ Contact, order, measurement, register and pin controllers should avoid direct op
 
 ## M0 / P66 controller entrypoint note
 Project-side MVC controllers may have local helper functions when that reduces repeated request guards or page assembly. Do not turn this into a new controller framework during M0.
+
+## M0 / P67 controller residual request stabilization note
+Project-side controllers should not read optional `$_REQUEST` keys directly when the route can be opened without those parameters. Keep controller request guards local and do not introduce a new controller framework during M0.

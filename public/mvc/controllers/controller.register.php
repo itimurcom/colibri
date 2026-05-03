@@ -12,9 +12,6 @@ if ($_USER->is_logged('ANY'))
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
-
-
-
 $register_focus_error = function($element, $message_const)
 	{
 	return minify_js("<script>
@@ -28,7 +25,6 @@ $register_focus_error = function($element, $message_const)
 	};
 
 $_CONTENT['content'] =
-// 	print_rr($_REQUEST).
 		TAB."<div class='site_row boxed'>".
 			TAB."<div class='widgets row iphonecolumn boxed'>".
 				TAB."<div class='fl25 boxed'>".
@@ -74,7 +70,6 @@ if ($do_register AND !$already)
 	}	
 		
 
-// opengraph
 $plug_og['subtitle'] 	= get_const('CMS_NAME');
 $plug_og['title'] 	= get_const('NODE_REGISTER');
 ?>

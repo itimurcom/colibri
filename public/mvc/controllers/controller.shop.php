@@ -1,10 +1,11 @@
 <?php 
 $_CONTENT['admin'] = get_admin_button_set();
-global $cat_cat, $cat_more;
+global $cat_more;
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
-$plug_og['title'] 	= get_const( $cat_more[$_REQUEST['view']]['title']);
+$shop_view = ready_val($_REQUEST['view']);
+$plug_og['title'] 	= isset($cat_more[$shop_view]) ? get_const($cat_more[$shop_view]['title']) : get_const('NODE_SHOP');
 $plug_og['subtitle'] 	= get_const('CMS_NAME');
 $_CONTENT['content'] 	= 
 	get_colibri_block(BLOCK_SHOP, true).

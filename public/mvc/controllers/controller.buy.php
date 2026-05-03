@@ -72,7 +72,7 @@ $_CONTENT['admin'] = get_admin_button_set();
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
-if ($_REQUEST['view'] == 'thankyou')
+if (ready_val($_REQUEST['view']) == 'thankyou')
 	{
 	$_CONTENT['content'] = buy_controller_thankyou_content();
 	$plug_og['subtitle'] 	= get_const('CMS_NAME');

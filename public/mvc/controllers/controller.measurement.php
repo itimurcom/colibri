@@ -81,7 +81,6 @@ $o_form->add_hidden('order', $order_data['order']);
 $o_form->add_hidden('email', $order_data['email']);
 $o_form->add_hidden('form_id', $order_data['form_id']);
 
-// контейнер после данных!!!
 $form_container = $o_form->container();
 
 $o_editor = new itEditor([
@@ -106,7 +105,6 @@ $title_color = isset($_MEASURMENT[$order_data['form_id']])
 $_CONTENT['content'] = 
 	TAB."<div class='block'>".
 	TAB."<h1 class='tit white{$title_color}'>{$order_str}</h1>".
-//	TAB."<div class='siterow boxed glass' style='font-size:1.4em;text-align:center; padding:1.2em;'>{$order_str}</div>".
 	$o_editor->container();
 	
 if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='measurement'))
@@ -121,7 +119,6 @@ if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='measurement'))
 $_CONTENT['content'] .= TAB."</div>";
 unset($o_form);
 
-// opengraph
 $plug_og['subtitle'] 	= get_const('CMS_NAME');
 $plug_og['title'] 	= get_const('NODE_MEASUREMENT');
 }
