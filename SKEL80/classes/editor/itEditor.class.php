@@ -417,19 +417,29 @@ class itEditor
 		if (isset($this->storage[$selector][$ed_key]['value'][$gal_id]))
 			{
 			unset($this->storage[$selector][$ed_key]['value'][$gal_id]);
-			// нужно добавить перемещение ссылки !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!			
+			unset($this->storage[$selector][$ed_key]['text'][$gal_id]);
+			unset($this->storage[$selector][$ed_key]['link'][$gal_id]);
 			$this->sort_gallery($selector, $ed_key);
 			}
 		}
 
 	protected function swapGalleryColumn($selector, $ed_key, $column, $from_id, $to_id)
 		{
-		if (isset($this->storage[$selector][$ed_key][$column]))
+		if (!isset($this->storage[$selector][$ed_key][$column]) OR !is_array($this->storage[$selector][$ed_key][$column]))
 			{
-			$tmp = $this->storage[$selector][$ed_key][$column][$from_id];
-			$this->storage[$selector][$ed_key][$column][$from_id] = $this->storage[$selector][$ed_key][$column][$to_id];
-			$this->storage[$selector][$ed_key][$column][$to_id] = $tmp;
+			return;
 			}
+
+		$from_exists = array_key_exists($from_id, $this->storage[$selector][$ed_key][$column]);
+		$to_exists = array_key_exists($to_id, $this->storage[$selector][$ed_key][$column]);
+		if (!$from_exists AND !$to_exists)
+			{
+			return;
+			}
+
+		$tmp = $from_exists ? $this->storage[$selector][$ed_key][$column][$from_id] : NULL;
+		$this->storage[$selector][$ed_key][$column][$from_id] = $to_exists ? $this->storage[$selector][$ed_key][$column][$to_id] : NULL;
+		$this->storage[$selector][$ed_key][$column][$to_id] = $tmp;
 		}
 
 	protected function swapGalleryItems($selector, $ed_key, $from_id, $to_id)
@@ -461,7 +471,7 @@ class itEditor
 	// опускает запись изображения в галлерее вниз на одну позицию
 	public function gal_down($selector, $ed_key, $gal_id)
 		{
-		if ($gal_id<=count($this->storage[$selector][$ed_key]['value']))
+		if (isset($this->storage[$selector][$ed_key]['value']) AND ($gal_id < count($this->storage[$selector][$ed_key]['value'])-1))
 			{
 			$this->swapGalleryItems($selector, $ed_key, $gal_id, $gal_id+1);
 			}
@@ -491,11 +501,11 @@ class itEditor
 	// сортирует индексы изображений в галлерее
 	public function sort_gallery($selector, $ed_key)
 		{
-		$res_arr_value = NULL;
-		$res_arr_text = NULL;
-		$res_arr_link = NULL;
+		$res_arr_value = [];
+		$res_arr_text = [];
+		$res_arr_link = [];
 		
-		if (isset($this->storage[$selector][$ed_key]['value'])  and (count($this->storage[$selector][$ed_key]['value'])))
+		if (isset($this->storage[$selector][$ed_key]['value']) AND is_array($this->storage[$selector][$ed_key]['value']) AND count($this->storage[$selector][$ed_key]['value']))
 			{
 			$i=0;
 			foreach ($this->storage[$selector][$ed_key]['value'] as $key=>$row)

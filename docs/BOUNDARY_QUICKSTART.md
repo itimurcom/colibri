@@ -39,3 +39,6 @@ After editor/form/DB cleanup passes, stabilization patches may fix discovered re
 
 ## M0 / P57 catalog/feed note
 `itFeed.class.php` and `engine_items.php` now keep catalog/feed callback resolution and item-card request guards local. Do not introduce a separate feed framework during M0; keep future catalog/feed cleanup inside the existing runtime files unless a real boundary is defined.
+
+## M0 / P58 editor media/gallery second pass note
+Gallery event cleanup must stay inside `SKEL80/events/editor/editor_events.func.php` and `SKEL80/classes/editor/itEditor.class.php` during M0. Keep the old public editor event names and gallery method names stable.

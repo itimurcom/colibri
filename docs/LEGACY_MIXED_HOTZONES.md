@@ -72,3 +72,6 @@ P56 fixes the editor-events repacked-editor recursion regression and adds narrow
 
 ## M0 / P57 catalog/feed second pass
 Catalog/feed remains an active runtime hotspot. P57 keeps the existing `itFeed` and item-card API, but reduces per-row callback lookup and adds guards around invalid request sources and request-driven item-card animation.
+
+## M0 / P58 editor media/gallery second pass
+Editor gallery upload and gallery move/delete metadata handling are still legacy-hotzone code. P58 consolidates repeated gallery event handling and adds guards around partial gallery `text/link/value` metadata without changing public editor API.
