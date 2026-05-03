@@ -1,65 +1,91 @@
 <?php 
-$_CONTENT['admin'] = get_admin_button_set();
-$data = itEditor::_redata();
-
-$_CONTENT['widgets'] = get_widgets_set();
-$_CONTENT['widgets-cell'] = get_widgets_set();
-
-//$_CONTENT['content'] = 	get_colibri_block(BLOCK_BUY, true);
-
-$_ITEM_ID = (isset($_REQUEST['selected_id'])) ?	 $_REQUEST['selected_id'] : $_REQUEST['rec_id'];
-
-if ($articul = ($item_row = itMySQL::_get_rec_from_db('items', $_ITEM_ID)) ? get_item_articul($item_row) : NULL)
+function buy_controller_item_id()
 	{
+	return isset($_REQUEST['selected_id']) ? $_REQUEST['selected_id'] : (isset($_REQUEST['rec_id']) ? $_REQUEST['rec_id'] : NULL);
+	}
+
+function buy_controller_item_preview($item_id, &$item_row)
+	{
+	$item_row = itMySQL::_get_rec_from_db('items', $item_id);
+	$articul = $item_row ? get_item_articul($item_row) : NULL;
+	if (!$articul)
+		{
+		return TAB."<h1 class='tit'>".str_replace('[VALUE]', get_const('NO_DATA'), get_const('BUY_PAGE_TITLE'))."</h1>";
+		}
+
 	$o_images = new itImages([
 		'table_name'	=> 'items',
-		'rec_id'	=> $_ITEM_ID,
+		'rec_id'	=> $item_id,
 		'column'	=> 'images',
 		'img_type'	=> 'GALLINE_SMALL',
 		'class'		=> 'order',
 		]);
-	
-	$_CONTENT['content'] = 
+	$result = 
 		TAB."<div class='tit'>".str_replace('[VALUE]', $articul, get_const('BUY_PAGE_TITLE'))."</div>".
 		TAB."<div class='siterow boxed padded'>".
 		$o_images->_view_gallery().
 		TAB."</div>";
-	
 	unset($o_images);
-	} else	{
-		$_CONTENT['content'] = 
-			TAB."<h1 class='tit'>".str_replace('[VALUE]', get_const('NO_DATA'), get_const('BUY_PAGE_TITLE'))."</h1>";	
-		}
+	return $result;
+	}
 
-if ($_REQUEST['view'] != 'thankyou')
+function buy_controller_form($item_id)
 	{
-$o_form = new itForm2([
-	'rec_id'	=> FORM2_BUY,
-	'reCaptcha'	=> get_const('USE_CAPTCHA', true),
-	'action'	=> "/".CMS_LANG.'/buy/',
-//	'debug'		=> 1,
-	]);
-	
-$o_form->hiddens_xml = NULL;
-$o_form->add_data([
-	'op'		=> 'buy',
-	'form_id'	=> $o_form->form_id(),
-	]);
-	
+	$o_form = new itForm2([
+		'rec_id'	=> FORM2_BUY,
+		'reCaptcha'	=> get_const('USE_CAPTCHA', true),
+		'action'	=> "/".CMS_LANG.'/buy/',
+		]);
+	$o_form->hiddens_xml = NULL;
+	$o_form->add_data([
+		'op'		=> 'buy',
+		'form_id'	=> $o_form->form_id(),
+		]);
+	$o_form->buttons_xml = NULL;
+	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id(), 'show'=>true], 'blue' );
+	$o_form->add_button(get_const('BUTTON_CLEAR'), 'a', ['ajax'=>"f2_reset('".$o_form->form_id()."');"], 'green' );
+	$o_form->add_hidden([
+		'name'	=> 'selected_id',
+		'value'	=> $item_id,
+		]);
+	return $o_form;
+	}
 
-$o_form->buttons_xml = NULL;
-$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id(), 'show'=>true], 'blue' );	
-$o_form->add_button(get_const('BUTTON_CLEAR'), 'a', ['ajax'=>"f2_reset('".$o_form->form_id()."');"], 'green' );	
+function buy_controller_form_content($o_form)
+	{
+	global $login;
+	return customer_ajaxlogin_event($login).$o_form->container().update_userdata_script();
+	}
 
+function buy_controller_thankyou_content()
+	{
+	$mail_str = isset($_SESSION['thankyoubuy']) ? $_SESSION['thankyoubuy'] : NULL;
+	unset($_SESSION['thankyoubuy']);
+	return
+		TAB."<div class='block'>".
+		get_colibri_block(BLOCK_THANKBUY, true).
+		$mail_str.
+		TAB."</div>";
+	}
+
+$_CONTENT['admin'] = get_admin_button_set();
+$data = itEditor::_redata();
+$_CONTENT['widgets'] = get_widgets_set();
+$_CONTENT['widgets-cell'] = get_widgets_set();
+
+if ($_REQUEST['view'] == 'thankyou')
+	{
+	$_CONTENT['content'] = buy_controller_thankyou_content();
+	$plug_og['subtitle'] 	= get_const('CMS_NAME');
+	$plug_og['title'] 	= get_const('THANKYOU');
+	return;
+	}
+
+$_ITEM_ID = buy_controller_item_id();
+$_CONTENT['content'] = buy_controller_item_preview($_ITEM_ID, $item_row);
+$o_form = buy_controller_form($_ITEM_ID);
 if ($_USER->is_logged()) $o_form->store();
 
-$o_form->add_hidden([
-	'name'	=> 'selected_id',
-	'value'	=> $_ITEM_ID,
-	]);
-
-
-$focus_str = NULL;
 if($item_row)
 	{
 	$_REQUEST['message'] = mstr_replace([
@@ -68,47 +94,18 @@ if($item_row)
 		], get_const('BUY_MESSAGE_TITLE'));
 	}
 
-// контейнер после данных!!!
-$form_container = 
-	customer_ajaxlogin_event($login).
-	$o_form->container().
-	update_userdata_script();
-	
 if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='buy'))
 	{
 	_check_v3reCaptcha();
-	$_SESSION['thankyoubuy'] = send_colibri_mails(FORM2_BUY);		
-	cms_redirect_page("/".CMS_LANG."/buy/thankyou/");		
-		
-//	$_CONTENT['content'] .= send_colibri_mails(FORM2_BUY);
-	} else	{
-		$_CONTENT['content'] .= 
-			$form_container.
-			$focus_str;
-		}
-		
-unset($o_form);
+	$_SESSION['thankyoubuy'] = send_colibri_mails(FORM2_BUY);
+	cms_redirect_page("/".CMS_LANG."/buy/thankyou/");
+	}
+else
+	{
+	$_CONTENT['content'] .= buy_controller_form_content($o_form);
+	}
 
-// opengraph
+unset($o_form);
 $plug_og['subtitle'] 	= get_const('CMS_NAME');
 $plug_og['title'] 	= get_const('NODE_BUY');
-} else	{
-	if (isset($_SESSION['thankyoubuy']))
-		{
-		$mail_str = $_SESSION['thankyoubuy'];
-		unset($_SESSION['thankyoubuy']);
-		} else 	{
-			$mail_str = NULL;
-			}	
-	$_CONTENT['content'] = 
-		TAB."<div class='block'>".
-		get_colibri_block(BLOCK_THANKBUY, true).
-//		TAB."<div class='tit'>".get_const('CONTACTS_THANKYOU')."</div>".
-		$mail_str.
-		TAB."</div>";
-
-	$plug_og['subtitle'] 	= get_const('CMS_NAME');
-	$plug_og['title'] 	= get_const('THANKYOU');
-	
-	}
 ?>

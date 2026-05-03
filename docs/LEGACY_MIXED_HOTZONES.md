@@ -87,3 +87,6 @@ The order/contact/measurement/register controller pass removed stale controller 
 
 ## M0 / P62 `engine_filters.php`
 Item/catalog filter rendering was consolidated locally. Color selector spans, item color event data, sort options, and price bounds now have local helper paths while preserving existing filter/session/JS behavior.
+
+## M0 / P63 buy/cabinet/friends controllers
+Remaining customer-facing controllers are being cleaned locally. P63 keeps routes, form ids, session keys, and shared-core behavior unchanged while reducing old inline assembly and stale commented controller fragments.

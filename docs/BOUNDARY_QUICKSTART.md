@@ -54,3 +54,6 @@ Order/contact/measurement/register controllers are project-side MVC flow files. 
 
 ## M0 / P62 item filter cleanup note
 `public/engine/core/units/items/engine_filters.php` is still project-side catalog runtime. Keep filter session keys and JS entrypoints stable; cleanup should stay local unless a later item/catalog boundary is explicitly defined.
+
+## M0 / P63 controller cleanup note
+Project-side controller cleanup may add local helpers inside the controller file when that reduces repeated rendering/flow code. Do not move these helpers into shared-core during M0.
