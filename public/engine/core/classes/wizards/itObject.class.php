@@ -211,6 +211,72 @@ class itObject
 			}
 		}
 
+	protected function objectFormInputOptions($row, $type=NULL)
+		{
+		$options = [
+			'name'		=> $row['name'],
+			'value'		=> $row['value'],
+			'label'		=> get_field_by_lang($row['label'], CMS_LANG, ''),
+			'compact'	=> true,
+			];
+		if (!is_null($type))
+			{
+			$options['type'] = $type;
+			}
+		return $options;
+		}
+
+	protected function objectFormSelectOptions($row)
+		{
+		$sel_arr = [];
+		foreach($row['titles'][CMS_LANG] as $sel_key=>$sel_row)
+			{
+			$sel_arr[$row['values'][$sel_key]] = [
+				'title'	=> get_const($sel_row),
+				'value'	=> $row['values'][$sel_key],
+				];
+			}
+		return [
+			'array' 		=> $sel_arr,
+			'titles'        => 'title',
+			'values'	=> 'value',
+			'name'		=> $row['name'],
+			'compact'	=> 1,
+			'value'		=> $row['value'],
+			'label'		=> get_field_by_lang($row['label']),
+			];
+		}
+
+	protected function appendObjectFormField($o_form, $row)
+		{
+		switch ($row['type'])
+			{
+			case 'text' :
+				$o_form->add_input($this->objectFormInputOptions($row));
+				break;
+			case 'email' :
+				$o_form->add_input($this->objectFormInputOptions($row, 'email'));
+				break;
+			case 'phone' :
+				$o_form->add_input($this->objectFormInputOptions($row, 'phone'));
+				break;
+			case 'select' :
+				$o_form->add_selector('select', $this->objectFormSelectOptions($row));
+				break;
+			default :
+				$o_form->add_input($row['name'], $row['value'], get_field_by_lang($row['label'], CMS_LANG, ''), false, 'compact');
+				break;
+			}
+		}
+
+	protected function objectFormRow($row)
+		{
+		$row['value']		= isset($this->data[$this->wiz_values][$row['name']]) ? $this->data[$this->wiz_values][$row['name']] : NULL;
+		$row['table_name']	= $this->table_name;
+		$row['rec_id']		= $this->rec_id;
+		return $row;
+		}
+
 	public function form(&$o_modal)
 		{
 		global $_USER;
@@ -224,74 +290,7 @@ class itObject
 			]);
 			foreach($this->wizard as $key=>$row)
 				{
-				$row['value']		= isset($this->data[$this->wiz_values][$row['name']]) ? $this->data[$this->wiz_values][$row['name']] : NULL;
-				$row['table_name']	= $this->table_name;
-				$row['rec_id']		= $this->rec_id;
-
-				$placeholder = !is_null($this->placeholder) ? " placeholder=\"{$this->placeholder}\"" : "";
-
-				switch ($row['type'])
-					{
-					case 'text' : {
-						$o_form->add_input([
-							'name'		=> $row['name'],
-							'value'		=> $row['value'],
-							'label'		=> get_field_by_lang($row['label'], CMS_LANG, ''),
-							'compact'	=> true,
-							]);
-						break;
-						}
-					case 'email' : {
-						$o_form->add_input([
-							'name'		=> $row['name'],
-							'value'		=> $row['value'],
-							'label'		=> get_field_by_lang($row['label'], CMS_LANG, ''),
-							'type'		=> 'email',
-							'compact'	=> true,
-							]);
-						break;
-						}
-					case 'phone' : {
-						$o_form->add_input([
-							'name'		=> $row['name'],
-							'value'		=> $row['value'],
-							'label'		=> get_field_by_lang($row['label'], CMS_LANG, ''),
-							'type'		=> 'phone',
-							'compact'	=> true,
-							]);
-						break;
-						}
-
-					case 'select' : {
-						$sel_arr= [];
-						foreach($row['titles'][CMS_LANG] as $sel_key=>$sel_row)
-							{
-							$sel_arr[$row['values'][$sel_key]] =
-								[
-								'title'	=> get_const($sel_row),
-								'value'	=> $row['values'][$sel_key],
-								];
-							}
-						$options = array (
-							'array' 	=> $sel_arr,
-							'titles'        => 'title',
-							'values'	=> 'value',
-							'name'		=> $row['name'],
-							'compact'	=> 1,
-							'value'		=> $row['value'],
-							'label'		=> get_field_by_lang($row['label']),
-							);
-						$o_form->add_selector('select', $options);
-						break;
-						}
-
-					default : {
-						$o_form->add_input($row['name'], $row['value'], get_field_by_lang($row['label'], CMS_LANG, ''), false, 'compact');
-						break;
-						}
-
-					}
-
+				$this->appendObjectFormField($o_form, $this->objectFormRow($row));
 				}
 
 			$o_form->add_data([

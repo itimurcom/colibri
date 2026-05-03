@@ -105,3 +105,6 @@ The remaining project-side controller entrypoints had a residual cleanup pass af
 
 ## M0 / P68 navigation/settings/session runtime cleanup
 `engine_settings.php`, `engine_menus.php`, `engine_wishlist.php`, and `engine_lastseen.php` were cleaned up as project-side runtime helpers. The pass focused on repeated settings form setup and safe guards around optional request/session state.
+
+## M0 / P69 wizard/object runtime consolidation
+Wizard/object runtime now has local helper paths for repeated wizard row rendering, wizard option loading, `_set_*` row updates, and object form field assembly. Public methods and storage format remain unchanged.

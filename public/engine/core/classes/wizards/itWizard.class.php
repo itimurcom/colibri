@@ -33,38 +33,48 @@ class itWizard
 			}
 		}
 
+	protected function rowContext($row, $key)
+		{
+		$row['table_name'] = $this->table_name;
+		$row['rec_id'] = $this->rec_id;
+		$row['key'] = $key;
+		return $row;
+		}
+
+	protected function compileRow($row)
+		{
+		return
+			TAB."<div class='row'>".
+			TAB."<div class='segment p4'>".
+			TAB."<div class='field p4'>".get_wizard_name_event($row).TAB."</div>".
+			TAB."<div class='field p5'>".get_wizard_type_event($row).TAB."</div>".
+			TAB."</div>".
+			TAB."<div class='segment p4'>".
+			TAB."<div class='field p1'>".get_wizard_label_event($row).TAB."</div>".
+			TAB."</div>".
+			TAB."<div class='segment p4'>".
+			TAB."<div class='field p1'>".get_wizard_titles_event($row).TAB."</div>".
+			TAB."</div>".
+			TAB."<div class='segment p4'>".
+			TAB."<div class='field p7'>".get_wizard_values_event($row).TAB."</div>".
+			TAB."<div class='field p2'>".(isset($row['user_id']) ? itUser::get_name($row['user_id']) : "").TAB."</div>".
+			TAB."<div class='field p1'>".get_wizard_copy_event($row).TAB."</div>".
+			TAB."<div class='field p1'>".get_wizard_x_event($row).TAB."</div>".
+			TAB."</div>".
+			TAB."</div>";
+		}
+
 	public function compile()
 		{
 		$rows_code = NULL;
 		if (is_array($this->data))
 			{
-			$rows = NULL;
+			$rows = [];
 			foreach ($this->data as $key => $row)
 				{
-				$row['table_name'] = $this->table_name;
-				$row['rec_id'] = $this->rec_id;
-				$row['key'] = $key;
-				$rows[] =
-					TAB."<div class='row'>".
-					TAB."<div class='segment p4'>".
-					TAB."<div class='field p4'>".get_wizard_name_event($row).TAB."</div>".
-					TAB."<div class='field p5'>".get_wizard_type_event($row).TAB."</div>".
-					TAB."</div>".
-					TAB."<div class='segment p4'>".
-					TAB."<div class='field p1'>".get_wizard_label_event($row).TAB."</div>".
-					TAB."</div>".
-					TAB."<div class='segment p4'>".
-					TAB."<div class='field p1'>".get_wizard_titles_event($row).TAB."</div>".
-					TAB."</div>".
-					TAB."<div class='segment p4'>".
-					TAB."<div class='field p7'>".get_wizard_values_event($row).TAB."</div>".
-					TAB."<div class='field p2'>".(isset($row['user_id']) ? itUser::get_name($row['user_id']) : "").TAB."</div>".
-					TAB."<div class='field p1'>".get_wizard_copy_event($row).TAB."</div>".
-					TAB."<div class='field p1'>".get_wizard_x_event($row).TAB."</div>".
-					TAB."</div>".
-					TAB."</div>";
+				$rows[] = $this->compileRow($this->rowContext($row, $key));
 				}
-			$rows_code = implode('',$rows);
+			$rows_code = implode('', $rows);
 			}
 
 		$this->code =
@@ -76,12 +86,55 @@ class itWizard
 			TAB."</div>".
 			TAB."</div>".
 			TAB."</div>";
-
 		}
 
 	public function code()
 		{
 		return ($this->code);
+		}
+
+	static function wizard_options($options=NULL)
+		{
+		return [
+			'table_name'	=> ready_val($options['table_name'], DEFAULT_WIZARD_TABLE),
+			'rec_id'	=> ready_val($options['rec_id']),
+			'field'		=> ready_val($options['field'], DEFAULT_WIZARD_FIELD),
+			'key'		=> ready_val($options['key'], 0),
+			];
+		}
+
+	static function wizard_from_options($options=NULL)
+		{
+		$options = itWizard::wizard_options($options);
+		return [
+			'options'	=> $options,
+			'wizard'	=> new itWizard([
+				'table_name'	=> $options['table_name'],
+				'rec_id'	=> $options['rec_id'],
+				'field'		=> $options['field'],
+				]),
+			];
+		}
+
+	static function set_row_value($options, $option_key, $row_key, $error, $localized=false)
+		{
+		if (is_array($options) AND isset($options[$option_key]))
+			{
+			$state = itWizard::wizard_from_options($options);
+			$options = $state['options'];
+			$o_wizard = $state['wizard'];
+			if ($localized)
+				{
+				$o_wizard->data[$options['key']][$row_key][CMS_LANG] = $options[$option_key];
+				}
+			else
+				{
+				$o_wizard->data[$options['key']][$row_key] = $options[$option_key];
+				}
+			$o_wizard->store();
+			unset($o_wizard);
+			}
+		else add_error_message($error);
 		}
 
 	static function _add($options=NULL)
@@ -153,22 +206,16 @@ class itWizard
 
 	public function store()
 		{
-		itMySQL::_update_value_db($this->table_name, $this->rec_id, array_values($this->data), $this->field);
+		itMySQL::_update_value_db($this->table_name, $this->rec_id, array_values(is_array($this->data) ? $this->data : []), $this->field);
 		}
 
 	static function _update($options)
 		{
 		if (is_array($options) AND isset($options['key']))
 			{
-			$options['table_name']	= ready_val($options['table_name'], DEFAULT_WIZARD_TABLE);
-			$options['rec_id'] 	= ready_val($options['rec_id']);
-			$options['field'] 	= ready_val($options['field'], DEFAULT_WIZARD_FIELD);
-
-			$o_wizard = new itWizard([
-				'table_name'	=> $options['table_name'],
-				'rec_id'	=> $options['rec_id'],
-				'field'		=> $options['field'],
-				]);
+			$state = itWizard::wizard_from_options($options);
+			$options = $state['options'] + $options;
+			$o_wizard = $state['wizard'];
 
 			$options['titles'] 	= ready_val($options['titles'], $o_wizard->data[$options['key']]['titles']);
 			$options['type'] 	= ready_val($options['type'], $o_wizard->data[$options['key']]['type']);
@@ -192,16 +239,9 @@ class itWizard
 		{
 		if (is_array($options) AND isset($options['key']))
 			{
-			$options['table_name']	= ready_val($options['table_name'], DEFAULT_WIZARD_TABLE);
-			$options['rec_id'] 	= ready_val($options['rec_id']);
-			$options['field'] 	= ready_val($options['field'], DEFAULT_WIZARD_FIELD);
-
-			$o_wizard = new itWizard([
-				'table_name'	=> $options['table_name'],
-				'rec_id'	=> $options['rec_id'],
-				'field'		=> $options['field'],
-				]);
-
+			$state = itWizard::wizard_from_options($options);
+			$options = $state['options'];
+			$o_wizard = $state['wizard'];
 			if (isset($o_wizard->data[$options['key']]))
 				{
 				unset($o_wizard->data[$options['key']]);
@@ -209,116 +249,31 @@ class itWizard
 			$o_wizard->store();
 			unset($o_wizard);
 			} else add_error_message('ERROR_OPTIONS_WIZARD');
-
 		}
 
 	static function _set_titles($options=NULL)
 		{
-		if (is_array($options) AND isset($options['titles']))
-			{
-			$options['table_name']	= ready_val($options['table_name'], DEFAULT_WIZARD_TABLE);
-			$options['rec_id'] 	= ready_val($options['rec_id']);
-			$options['field'] 	= ready_val($options['field'], DEFAULT_WIZARD_FIELD);
-			$options['key'] 	= ready_val($options['key'], 0);
-			$options['lang']	= ready_val($options['lang'], CMS_LANG);
-
-			$o_wizard = new itWizard([
-				'table_name'	=> $options['table_name'],
-				'rec_id'	=> $options['rec_id'],
-				'field'		=> $options['field'],
-				]);
-
-			$o_wizard->data[$options['key']]['titles'][CMS_LANG] = $options['titles'];
-			$o_wizard->store();
-			unset($o_wizard);
-			} else add_error_message('ERROR_SET_TITLE_WIZARD');
+		itWizard::set_row_value($options, 'titles', 'titles', 'ERROR_SET_TITLE_WIZARD', true);
 		}
 
 	static function _set_name($options=NULL)
 		{
-		if (is_array($options) AND isset($options['name']))
-			{
-			$options['table_name']	= ready_val($options['table_name'], DEFAULT_WIZARD_TABLE);
-			$options['rec_id'] 	= ready_val($options['rec_id']);
-			$options['field'] 	= ready_val($options['field'], DEFAULT_WIZARD_FIELD);
-			$options['key'] 	= ready_val($options['key'], 0);
-			$options['lang']	= ready_val($options['lang'], CMS_LANG);
-
-			$o_wizard = new itWizard([
-				'table_name'	=> $options['table_name'],
-				'rec_id'	=> $options['rec_id'],
-				'field'		=> $options['field'],
-				]);
-
-			$o_wizard->data[$options['key']]['name'] = $options['name'];
-			$o_wizard->store();
-			unset($o_wizard);
-			} else add_error_message('ERROR_SET_NAME_WIZARD');
+		itWizard::set_row_value($options, 'name', 'name', 'ERROR_SET_NAME_WIZARD');
 		}
 
 	static function _set_type($options=NULL)
 		{
-		if (is_array($options) AND isset($options['type']))
-			{
-			$options['table_name']	= ready_val($options['table_name'], DEFAULT_WIZARD_TABLE);
-			$options['rec_id'] 	= ready_val($options['rec_id']);
-			$options['field'] 	= ready_val($options['field'], DEFAULT_WIZARD_FIELD);
-			$options['key'] 	= ready_val($options['key'], 0);
-			$options['lang']	= ready_val($options['lang'], CMS_LANG);
-
-			$o_wizard = new itWizard([
-				'table_name'	=> $options['table_name'],
-				'rec_id'	=> $options['rec_id'],
-				'field'		=> $options['field'],
-				]);
-
-			$o_wizard->data[$options['key']]['type'] = $options['type'];
-			$o_wizard->store();
-			unset($o_wizard);
-			} else add_error_message('ERROR_SET_TYPE_WIZARD');
+		itWizard::set_row_value($options, 'type', 'type', 'ERROR_SET_TYPE_WIZARD');
 		}
 
 	static function _set_values($options=NULL)
 		{
-		if (is_array($options) AND isset($options['values']))
-			{
-			$options['table_name']	= ready_val($options['table_name'], DEFAULT_WIZARD_TABLE);
-			$options['rec_id'] 	= ready_val($options['rec_id']);
-			$options['field'] 	= ready_val($options['field'], DEFAULT_WIZARD_FIELD);
-			$options['key'] 	= ready_val($options['key'], 0);
-			$options['lang']	= ready_val($options['lang'], CMS_LANG);
-			$o_wizard = new itWizard([
-				'table_name'	=> $options['table_name'],
-				'rec_id'	=> $options['rec_id'],
-				'field'		=> $options['field'],
-				]);
-
-			$o_wizard->data[$options['key']]['values'] = $options['values'];
-			$o_wizard->store();
-			unset($o_wizard);
-			} else add_error_message('ERROR_SET_TITLE_WIZARD');
+		itWizard::set_row_value($options, 'values', 'values', 'ERROR_SET_TITLE_WIZARD');
 		}
 
 	static function _set_label($options=NULL)
 		{
-		if (is_array($options) AND isset($options['label']))
-			{
-			$options['table_name']	= ready_val($options['table_name'], DEFAULT_WIZARD_TABLE);
-			$options['rec_id'] 	= ready_val($options['rec_id']);
-			$options['field'] 	= ready_val($options['field'], DEFAULT_WIZARD_FIELD);
-			$options['key'] 	= ready_val($options['key'], 0);
-			$options['lang']	= ready_val($options['lang'], CMS_LANG);
-
-			$o_wizard = new itWizard([
-				'table_name'	=> $options['table_name'],
-				'rec_id'	=> $options['rec_id'],
-				'field'		=> $options['field'],
-				]);
-
-			$o_wizard->data[$options['key']]['label'][CMS_LANG] = $options['label'];
-			$o_wizard->store();
-			unset($o_wizard);
-			} else add_error_message('ERROR_SET_LABEL_WIZARD');
+		itWizard::set_row_value($options, 'label', 'label', 'ERROR_SET_LABEL_WIZARD', true);
 		}
 
 	static function events($url='/', $path=UPLOADS_ROOT)

@@ -72,3 +72,6 @@ Project-side controllers should not read optional `$_REQUEST` keys directly when
 
 ## M0 / P68 navigation/settings/session note
 Project-side navigation/settings/session helpers may be cleaned up locally in `public/engine/core/engine_*.php`, but do not move this runtime into a new framework layer during M0.
+
+## M0 / P69 wizard/object runtime note
+`public/engine/core/classes/wizards/itWizard.class.php` and `itObject.class.php` remain project-side runtime classes. Keep cleanup local to these files unless a later migration defines a real wizard/object boundary.
