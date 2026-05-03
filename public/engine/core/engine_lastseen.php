@@ -17,11 +17,11 @@ function push_lastseen_item($item_id=NULL)
 	{
 	if ($item_id == NULL)
 		{
-		$item_id = $_REQUEST['rec_id'];
+		$item_id = ready_val($_REQUEST['rec_id']);
 		}
 
 if ($last_arr = get_lastseen_arr())
-	foreach ($last_arr as $key=>$row)
+		foreach ($last_arr as $key=>$row)
 		{
 		if ($row==$item_id)
 			{
@@ -29,7 +29,9 @@ if ($last_arr = get_lastseen_arr())
 			}
 		}
 
-	$new_arr[] = $item_id;
+	$new_arr = [];
+	if (!is_null($item_id))
+		$new_arr[] = $item_id;
 
 	if (is_array($last_arr) AND count($last_arr))
 		foreach ($last_arr as $key=>$row)
@@ -48,13 +50,16 @@ function get_lastseen_block($item_id=NULL, $table_name=DEFAULT_ITEM_TABLE, $db_p
 
 	if (is_array($last_arr = get_lastseen_arr()))
 		{
+		$items = [];
 		foreach ($last_arr as $key=>$id)
 			{
 			$items[] = $id;
 			}
+		if (!count($items)) return NULL;
 		$items_str = "('".implode("','",$items)."')";
 		$items_arr = itMySQL::_request("SELECT * FROM {$db_prefix}{$table_name} WHERE `id` IN {$items_str}");
 
+		$items_res = [];
 		if (!is_null($items_arr))
 		foreach ($items_arr as $key=>$row)
 			{

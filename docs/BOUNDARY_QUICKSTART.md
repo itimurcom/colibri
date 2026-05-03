@@ -69,3 +69,6 @@ Project-side MVC controllers may have local helper functions when that reduces r
 
 ## M0 / P67 controller residual request stabilization note
 Project-side controllers should not read optional `$_REQUEST` keys directly when the route can be opened without those parameters. Keep controller request guards local and do not introduce a new controller framework during M0.
+
+## M0 / P68 navigation/settings/session note
+Project-side navigation/settings/session helpers may be cleaned up locally in `public/engine/core/engine_*.php`, but do not move this runtime into a new framework layer during M0.

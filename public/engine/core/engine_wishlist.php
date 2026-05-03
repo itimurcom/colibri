@@ -41,7 +41,7 @@ function store_wishlist($id_of_user=NULL, $wish_arr=NULL)
 
 function wishlist($forced=false)
 	{
-	if (!$forced AND !in_array($_REQUEST['controller'], str_getcsv(get_const('ALOW_WISHLIST')))) return;
+	if (!$forced AND !in_array(ready_val($_REQUEST['controller']), str_getcsv(get_const('ALOW_WISHLIST')))) return;
 
 	return !is_null($result = wishlist_body($counter))
 		?	TAB."<div class='widget bordered rounded'>".
@@ -64,7 +64,7 @@ function wishlist_body(&$counter)
 		? $prepared_arr['wishlist']
 		: ( (isset($_SESSION['wishlist']) AND is_array($_SESSION['wishlist']))
 			? $_SESSION['wishlist']
-			: NULL
+			: []
 		);
 
 	if (is_array($wish_arr))
@@ -112,6 +112,7 @@ function wish($data)
 
 		store_wishlist($_USER->data['id'],  $prepared_arr['wishlist']);
 		} else {
+			if (!isset($_SESSION['wishlist']) OR !is_array($_SESSION['wishlist'])) $_SESSION['wishlist'] = [];
 			if (($key = array_search($data['rec_id'], $_SESSION['wishlist'])) !== false) {
 				unset($_SESSION['wishlist'][$key]);
 				} else {
@@ -129,7 +130,7 @@ function is_wish($item_id=NULL)
 		{
 		return(is_array($prepared_arr['wishlist']) AND in_array($item_id, $prepared_arr['wishlist']));
 		} else {
-			return (array_search($item_id, $_SESSION['wishlist'])!==false);
+			return (isset($_SESSION['wishlist']) AND is_array($_SESSION['wishlist']) AND (array_search($item_id, $_SESSION['wishlist'])!==false));
 			}
 
 	}
@@ -141,6 +142,7 @@ function wishlist_x($data)
 		{
 		} else {
 			if (!isset($_SESSION['wishlist'])) return;
+			if (!isset($_SESSION['wishlist']) OR !is_array($_SESSION['wishlist'])) $_SESSION['wishlist'] = [];
 			if (($key = array_search($data['rec_id'], $_SESSION['wishlist'])) !== false) {
 				unset($_SESSION['wishlist'][$key]);
 				}

@@ -102,3 +102,6 @@ Remaining project-side controllers were cleaned in place. Historical test/debug 
 
 ## M0 / P67 controller residual request stabilization
 The remaining project-side controller entrypoints had a residual cleanup pass after P64-P66. The main runtime fix was `controller.order.php`: the submit branch now checks `$_REQUEST['op']` directly after removing the unused `_redata()` value.
+
+## M0 / P68 navigation/settings/session runtime cleanup
+`engine_settings.php`, `engine_menus.php`, `engine_wishlist.php`, and `engine_lastseen.php` were cleaned up as project-side runtime helpers. The pass focused on repeated settings form setup and safe guards around optional request/session state.

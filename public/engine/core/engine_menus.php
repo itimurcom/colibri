@@ -1,4 +1,34 @@
 <?php
+function colibri_menu_request_value($key)
+	{
+	return ready_val($_REQUEST[$key]);
+	}
+
+function colibri_menu_row_value($row, $key)
+	{
+	return isset($row[$key]) ? $row[$key] : NULL;
+	}
+
+function colibri_menu_link($row)
+	{
+	return "/".CMS_LANG."/".
+		(colibri_menu_row_value($row, 'controller') ? "{$row['controller']}/" : "").
+		((!is_null(colibri_menu_row_value($row, 'view')) AND (colibri_menu_row_value($row, 'controller')!=colibri_menu_row_value($row, 'view'))) ? "{$row['view']}/" : "");
+	}
+
+function colibri_menu_is_selected($row)
+	{
+	return (
+		(colibri_menu_request_value('view')==colibri_menu_row_value($row, 'view'))
+		OR
+		((colibri_menu_request_value('controller')==colibri_menu_row_value($row, 'controller')) AND is_null(colibri_menu_row_value($row, 'view')))
+		);
+	}
+
+function colibri_menu_selected_class($row)
+	{
+	return colibri_menu_is_selected($row) ? ' selected' : NULL;
+	}
 function get_menus_block()
 	{
 	return
@@ -58,16 +88,14 @@ function get_category_node($row)
 	{
 	if (!ready_val($row['show'])) return;
 
-	return get_category_node_code($row, ($_REQUEST['view']==$row['view']));
+	return get_category_node_code($row, colibri_menu_request_value('view')==colibri_menu_row_value($row, 'view'));
 	}
 
 function get_category_node_code($row, $selected=false)
 	{
 	$selected = $selected ? ' selected' : NULL;
 
-	$link = "/".CMS_LANG."/".
-		($row['controller'] ? "{$row['controller']}/" : "").
-		((!is_null($row['view']) AND ($row['controller']!=$row['view']))  ? "{$row['view']}/" : "");
+	$link = colibri_menu_link($row);
 
 	return
 		TAB."<div class='rounded glass boxed coll_node {$selected}'>".
@@ -99,16 +127,9 @@ function get_subcategory_node($row)
 	{
 	if (!ready_val($row['show'])) return;
 
-	$link = "/".CMS_LANG."/".
-		($row['controller'] ? "{$row['controller']}/" : "").
-		((!is_null($row['view']) AND ($row['controller']!=$row['view']))  ? "{$row['view']}/" : "");
+	$link = colibri_menu_link($row);
 
-	$selected = (
-			( $_REQUEST['view']==$row['view'] )
-				OR
-			( ($_REQUEST['controller']==$row['controller']) AND is_null($row['view']) )
-		)
-		? ' selected' : NULL;
+	$selected = colibri_menu_selected_class($row);
 
 	return
 		TAB."<div class='coll_node animatedParent small glass boxed rounded{$selected}'>".
@@ -159,11 +180,9 @@ function get_left_navigation()
 
 function get_navigation_row($row)
 	{
-	$link = "/".CMS_LANG."/".
-		($row['controller'] ? "{$row['controller']}/" : "").
-		((!is_null($row['view']) AND ($row['controller']!=$row['view']))  ? "{$row['view']}/" : "");
+	$link = colibri_menu_link($row);
 
-	$selected = ($row['controller']==$_REQUEST['controller']) ? " selected" : NULL;
+	$selected = (colibri_menu_row_value($row, 'controller')==colibri_menu_request_value('controller')) ? " selected" : NULL;
 	$class = isset($row['class']) ? " {$row['class']}" : NULL;
 
 	return 	TAB."<a class='nav_button boxed rounded{$selected}{$class}' href='{$link}'>".get_const($row['title'])."</a>";
@@ -221,11 +240,7 @@ function get_footer_link($row)
 		($row['controller'] ? "{$row['controller']}/" : "").
 		((!is_null($row['view']) AND ($row['controller']!=$row['view']))  ? "{$row['view']}/" : "");
 
-	$selected = ( ( $_REQUEST['view']==$row['view'] )
-			OR
-		( ($_REQUEST['controller']==$row['controller']) AND is_null($row['view']) )
-		)
-		? ' selected' : NULL;
+	$selected = colibri_menu_selected_class($row);
 
 	return TAB."<div class='link{$selected}'><a href='{$link}'>".get_const($row['title'])."</a></div>";
 	}
