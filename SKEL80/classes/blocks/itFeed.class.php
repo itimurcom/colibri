@@ -207,7 +207,7 @@ class itFeed
 	private function with_row_context($row)
 		{
 		$row['table_name'] = $this->table_name;
-		$row['rec_id'] = $row['id'];
+		$row['rec_id'] = isset($row['id']) ? $row['id'] : NULL;
 		return $row;
 		}
 
@@ -217,6 +217,8 @@ class itFeed
 		global $show_as;
 		$i=1;
 		$last = NULL;
+		$func = $this->callback_func();
+		if (!$func) return $i;
 		$this->reset_run_state();
 
 		while ($i<=$this->MAXINBLOCK)
@@ -224,7 +226,7 @@ class itFeed
 			$sum = 0;
 			if ($last!=NULL)
 				{
-				$this->rows[$i][] = call_user_func($this->callback_func(), $last);
+				$this->rows[$i][] = call_user_func($func, $last);
 				$sum += $show_as[$last['show_as']]['size'];
 				$last = NULL;
 				}
@@ -238,7 +240,7 @@ class itFeed
 				$row = $this->with_row_context($row);
 				if ($sum<101)
 					{
-					$this->rows[$i][] = call_user_func($this->callback_func(), $row);
+					$this->rows[$i][] = call_user_func($func, $row);
 					}
 				else
 					{
@@ -255,9 +257,11 @@ class itFeed
 	public function onefield_run()
 		{
 		$i=1;
+		$func = $this->callback_func();
+		if (!$func) return $i;
 		$this->reset_run_state();
 
-		if (is_null($this->field_rec) && ($record = mysqli_fetch_assoc($this->request)))
+		if (is_null($this->field_rec) && is_object($this->request) && ($record = mysqli_fetch_assoc($this->request)))
 			{
 			$this->field_rec = is_array($record[$this->field]) ? $record[$this->field] : json_decode($record[$this->field], JSON_ALLOWED);
 			}
@@ -269,7 +273,7 @@ class itFeed
 				$this->position++;
 				$field_row['key'] = $this->position;
 				$field_row = (is_array($this->params)) ? array_merge($field_row, $this->params) : $field_row;
-				$this->rows[$i] = call_user_func($this->callback_func(), $field_row);
+				$this->rows[$i] = call_user_func($func, $field_row);
 				}
 			elseif ($this->restart_loop_if_needed())
 				{
@@ -285,6 +289,8 @@ class itFeed
 	public function run()
 		{
 		$i=1;
+		$func = $this->callback_func();
+		if (!$func) return $i;
 		$this->reset_run_state();
 
 		while ($i<=$this->MAXINBLOCK)
@@ -297,7 +303,7 @@ class itFeed
 					{
 					$row = $this->with_row_context($row);
 					}
-				$this->rows[$i] = call_user_func($this->callback_func(), $row);
+				$this->rows[$i] = call_user_func($func, $row);
 				}
 			elseif ($this->restart_loop_if_needed())
 				{
@@ -315,7 +321,7 @@ class itFeed
 		if (!function_exists($func = "get_{$this->name}_feed_row"))
 			{
 			add_error_message("Function does not exists <b>{$func}()</b>");
-			return;
+			return NULL;
 			}
 		return $func;
 		}
@@ -463,7 +469,7 @@ class itFeed
 			return;
 			}
 
-		$this->get_feed_arr($this->start);
+		$this->get_feed_arr();
 		if (!is_array($this->rows))
 			{
 			$this->code = $this->wrap_feed_code('');
@@ -499,9 +505,12 @@ class itFeed
 	// returns one row from request or function data source
 	public function step()
 		{
-		return is_null($this->func)
-			? mysqli_fetch_assoc($this->request)
-			: (isset($this->request[$this->position]) ? $this->request[$this->position] : NULL);
+		if (is_null($this->func))
+			{
+			return is_object($this->request) ? mysqli_fetch_assoc($this->request) : NULL;
+			}
+
+		return isset($this->request[$this->position]) ? $this->request[$this->position] : NULL;
 		}
 
 	// returns total count; calculates lazily when disabled at startup

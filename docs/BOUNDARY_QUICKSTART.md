@@ -33,3 +33,9 @@ Broad comment cleanup may remove generated CRC metadata and decorative separator
 
 ## M0 / P55 itMySQL strict-mode second pass note
 `SKEL80/classes/system/itMySQL.class.php` now uses one local DB row normalization path for the main read methods. Keep DB compatibility cleanup inside this class unless a later migration explicitly defines a real DB boundary.
+
+## M0 / P56 runtime hotzone stabilization note
+After editor/form/DB cleanup passes, stabilization patches may fix discovered regressions and add narrow guards inside the same runtime files. Do not use this stage to introduce new framework layers or move storage behavior.
+
+## M0 / P57 catalog/feed note
+`itFeed.class.php` and `engine_items.php` now keep catalog/feed callback resolution and item-card request guards local. Do not introduce a separate feed framework during M0; keep future catalog/feed cleanup inside the existing runtime files unless a real boundary is defined.

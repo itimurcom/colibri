@@ -406,7 +406,9 @@ function get_item_avatar_image($item_rec=NULL, $class='SERIE_AVATAR')
 
 function get_items_feed_row_animation($row)
 	{
-	return (($row['id'] == $_REQUEST['rec_id']) OR ($row['id'] == ready_val($_REQUEST['anchor'])))
+	$active_id = ready_val($_REQUEST['rec_id']);
+	$anchor_id = ready_val($_REQUEST['anchor']);
+	return (($row['id'] == $active_id) OR ($row['id'] == $anchor_id))
 		? [' animatedParent animateOnce', ' animated tada']
 		: [NULL, NULL];
 	}
@@ -448,7 +450,9 @@ function get_items_feed_row($row, $full=false)
 
 function is_for_sale($row=NULL)
 	{
-	return in_array($row['category_id'], str_getcsv(get_const('CATEGORY_FOR_SALE')));
+	return is_array($row) && isset($row['category_id'])
+		? in_array($row['category_id'], str_getcsv(get_const('CATEGORY_FOR_SALE')))
+		: false;
 	}
 
 function get_item_flags($row=NULL)

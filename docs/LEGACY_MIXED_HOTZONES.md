@@ -66,3 +66,9 @@ P52 stabilizes repeated editor event runtime paths after the P45/P46 editor work
 
 ## M0 / P55 `itMySQL.class.php`
 The second strict-mode pass centralizes DB read-row normalization and normalizes legacy static wrapper constructor casing. No new DB layer, PDO migration, query builder, or public API change was introduced.
+
+## M0 / P56 runtime hotzone audit and stabilization
+P56 fixes the editor-events repacked-editor recursion regression and adds narrow guards in f2 list settings and DB value preparation. This is a stabilization pass after P49–P55, not a new architecture step.
+
+## M0 / P57 catalog/feed second pass
+Catalog/feed remains an active runtime hotspot. P57 keeps the existing `itFeed` and item-card API, but reduces per-row callback lookup and adds guards around invalid request sources and request-driven item-card animation.
