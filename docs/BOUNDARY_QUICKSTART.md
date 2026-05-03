@@ -45,3 +45,6 @@ Gallery event cleanup must stay inside `SKEL80/events/editor/editor_events.func.
 
 ## M0 / P59 customer/auth runtime note
 Customer/auth cleanup stays project-side under `public/engine/core/units/users/`. Keep public event function names stable and avoid creating a separate auth framework during M0.
+
+## M0 / P60 user admin/social cleanup note
+`public/engine/core/units/users/*` remains project-side runtime. Keep admin/customer/social helper consolidation local to these files and do not introduce a new auth/admin framework layer during M0.

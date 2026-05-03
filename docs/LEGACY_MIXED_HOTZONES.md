@@ -78,3 +78,6 @@ Editor gallery upload and gallery move/delete metadata handling are still legacy
 
 ## M0 / P59 customer/auth runtime cleanup
 `engine_customer_events.php` and `engine_customers.php` were consolidated locally around repeated customer form/modal/auth helper logic. Existing public functions and route/session behavior remain the boundary.
+
+## M0 / P60 user admin/social runtime cleanup
+The user admin/social area now has local helpers for admin link buttons, login modal assembly, measurement buttons and social icon settings. Existing public function names and routes are preserved.
