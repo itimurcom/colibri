@@ -96,3 +96,6 @@ A targeted stabilization pass fixed a controller-helper global-scope issue in `c
 
 ## M0 / P65 form page controllers
 The form page controllers now use safer local request guards for optional `view`, `rec_id`, `order`, `email`, `form_id`, `op`, `phone`, and `logemail` values. This is a stabilization pass after recent project-side controller cleanup bundles.
+
+## M0 / P66 controller entrypoint stabilization
+Remaining project-side controllers were cleaned in place. Historical test/debug comment blocks were removed from `controller.test.php`; item/settings/mailing controller entrypoints now use local helpers and safer request reads without changing routes.

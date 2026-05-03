@@ -63,3 +63,6 @@ After broad project-side controller cleanup, verify helper functions that use gl
 
 ## M0 / P65 form page controller guard note
 Contact, order, measurement, register and pin controllers should avoid direct optional `$_REQUEST[...]` reads on normal page loads. Keep request guards local to the controller and do not move them into shared-core during M0.
+
+## M0 / P66 controller entrypoint note
+Project-side MVC controllers may have local helper functions when that reduces repeated request guards or page assembly. Do not turn this into a new controller framework during M0.
