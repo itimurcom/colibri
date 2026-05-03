@@ -30,3 +30,9 @@
   - introduced shared helpers for field/button collection insert/sort/move logic inside `itForm2`
   - reformatted alias wrapper methods for cleaner visual structure
   - fixed `_reCaptcha()` session key lookup and corrected button collection move/insert behavior
+
+- M0 / P71 router/language request baseline stabilization bundle
+  - stabilized legacy router path parsing for URLs with and without trailing slash
+  - added guarded request reads in itSite for controller/view/lang/table/record defaults
+  - hardened itLang against stale session language values and incomplete language rows
+  - fixed language switch link generation for URLs without an existing language prefix

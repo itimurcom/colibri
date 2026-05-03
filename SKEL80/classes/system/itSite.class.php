@@ -6,15 +6,20 @@ class itSite
 	public $controller, $view, $table_name, $rec_id, $lang;
 	private $ed_rec, $header;
 
+	private function request_value($key, $default=NULL)
+		{
+		return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+		}
+
 	public function __construct()
 		{
 		global $plug_js, $plug_css, $plug_og, $plug_media, $header;
 
-		$this->controller	= $_REQUEST['controller'];
-		$this->view		= $_REQUEST['view'];
-		$this->table_name	= $_REQUEST['table_name'];
-		$this->rec_id		= $_REQUEST['rec_id'];
-		$this->lang		= $_REQUEST['lang'];
+		$this->controller	= $this->request_value('controller', DEFAULT_ROUTER_CONTROLLER);
+		$this->view		= $this->request_value('view', DEFAULT_ROUTER_VIEW);
+		$this->table_name	= $this->request_value('table_name');
+		$this->rec_id		= $this->request_value('rec_id');
+		$this->lang		= $this->request_value('lang', defined('CMS_LANG') ? CMS_LANG : get_const('DEFAULT_LANG'));
 		}
 
 	public function compile()

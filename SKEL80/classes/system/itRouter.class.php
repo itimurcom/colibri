@@ -4,14 +4,37 @@ class itRouter
 	public $data, $path, $lang, $controller, $view, $rec_id, $table_name;
 	private $o_lang;
 
+	private function request_value($key, $default=NULL)
+		{
+		return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+		}
+
+	private function set_request_value($key, $value)
+		{
+		$_REQUEST[$key] = $value;
+		return $value;
+		}
+
+	private function path_segments($path)
+		{
+		$path = trim((string)$path, '/');
+		return ($path === '') ? [] : explode('/', $path);
+		}
+
+	private function set_rec_id($value)
+		{
+		$this->rec_id = $value;
+		$this->set_request_value('rec_id', $value);
+		}
+
 	public function __construct($url=NULL)
 		{
 		$this->lang		= NULL;
 		$this->controller	= DEFAULT_ROUTER_CONTROLLER;
 		$this->view		= DEFAULT_ROUTER_VIEW;
-		$this->rec_id		= (isset($_REQUEST['rec_id'])) ? $_REQUEST['rec_id'] : ($_REQUEST['rec_id'] = NULL);
-		$this->table_name	= (isset($_REQUEST['table_name'])) ? $_REQUEST['table_name'] : ($_REQUEST['table_name'] = NULL);
-		$this->parse();
+		$this->rec_id		= $this->set_request_value('rec_id', $this->request_value('rec_id'));
+		$this->table_name	= $this->set_request_value('table_name', $this->request_value('table_name'));
+		$this->parse($url);
 
 		if ($url==NULL)
 			{
@@ -22,60 +45,59 @@ class itRouter
 				$_SESSION['error'][]['msg'] = "Error setting language in class <b>itRouter</b>.";
 				}
 			}
-		$_REQUEST['controller'] 	= $this->controller;
-		$_REQUEST['view'] 		= $this->view;
+		$this->set_request_value('lang', $this->lang);
+		$this->set_request_value('controller', $this->controller);
+		$this->set_request_value('view', $this->view);
 		}
 
 	public function parse($url=NULL)
 		{
 		if ($url==NULL)
 			{
-			$url = $_SERVER['REQUEST_URI'];
+			$url = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '/';
 			}
 
-		$this->path = parse_url($url)['path'];
-		$this->data = explode("/", $this->path);
-
-		unset ($this->data[0]);
-		unset ($this->data[count($this->data)]);
-
-		$num = count($this->data);
+		$parsed_url = parse_url($url);
+		$this->path = (is_array($parsed_url) AND isset($parsed_url['path'])) ? $parsed_url['path'] : '/';
+		$segments = $this->path_segments($this->path);
+		$this->data = $segments;
+		$num = count($segments);
 
 		if ($num)
 			{
-			if (itLang::is_lang($this->data[1]))
+			if (itLang::is_lang($segments[0]))
 				{
-				$this->lang = $this->data[1];
+				$this->lang = $segments[0];
 				if ($num>1)
 					{
-					$this->controller = $this->data[2];
+					$this->controller = $segments[1];
 					}
 
 				if ($num>2)
 					{
-					$this->view = $this->data[3];
-					} else $this->view = $this->controller;
+					$this->view = $segments[2];
+					} elseif ($num>1) $this->view = $this->controller;
 
 				if ($num>3)
 					{
-					$_REQUEST['rec_id'] = $this->rec_id = $this->data[4];
+					$this->set_rec_id($segments[3]);
 					}
 
 				} else 	{
 					$this->lang = itLang::get_lang();
-					$this->controller = $this->data[1];
+					$this->controller = $segments[0];
 					if ($num>1)
 						{
-						$this->view = $this->data[2];
+						$this->view = $segments[1];
 						} else $this->view = $this->controller;
 					if ($num>2)
 						{
-						$_REQUEST['rec_id'] = $this->rec_id = $this->data[3];
+						$this->set_rec_id($segments[2]);
 						}
 					}
 			if (intval($this->view) or isMAC($this->view))
 				{
-				$_REQUEST['rec_id'] = $this->rec_id 	= $this->view;
+				$this->set_rec_id($this->view);
 				$this->view = $this->controller;
 				}
 			}
