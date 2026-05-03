@@ -61,10 +61,9 @@ $_CONTENT['content'] =
 		TAB."</div>".
 	(($_USER->is_logged() AND !is_null($o_editor->data)) ?
 			TAB."<div class='admin_panel_div'>".
-//			(function_exists('get_content_remove_event') ? get_content_remove_event($o_block->editor->data) : "").
-			(function_exists('get_content_title_event') ? get_content_title_event($o_editor->data) : "").			
+			(function_exists('get_content_title_event') ? get_content_title_event($o_editor->data) : "").
 			TAB."</div>"
-			: NULL); 					
+			: NULL);
 
 
 if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='contacts'))
@@ -73,16 +72,12 @@ if ($o_form->accepted AND (ready_val($_REQUEST['op'])=='contacts'))
 	$_SESSION['thankyoucountacts'] = send_colibri_mails(FORM2_CONTACTS);		
 	cms_redirect_page("/".CMS_LANG."/contacts/thankyou/");		
 
-	$_CONTENT['content'] .=
-		TAB."<div class='siterow boxed'>".
-			send_colibri_mails(FORM2_CONTACTS).
-		TAB."</div>";
 	} else	{
 		$_CONTENT['content'] .= $form_container.$focus_str;
 		}
 
 $_CONTENT['content'] .= TAB."</div>";
-unset($o_form, $o_block);
+unset($o_form, $o_editor);
 
 // opengraph
 $plug_og['subtitle'] 	= get_const('CMS_NAME');
@@ -98,7 +93,6 @@ $plug_og['title'] 	= get_const('NODE_CONTACTS');
 	$_CONTENT['content'] = 
 		TAB."<div class='block'>".
 		get_colibri_block(BLOCK_THANKCONTACTS, true).
-//		TAB."<div class='tit'>".get_const('CONTACTS_THANKYOU')."</div>".
 		$mail_str.
 		TAB."</div>";
 

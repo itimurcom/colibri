@@ -81,3 +81,6 @@ Editor gallery upload and gallery move/delete metadata handling are still legacy
 
 ## M0 / P60 user admin/social runtime cleanup
 The user admin/social area now has local helpers for admin link buttons, login modal assembly, measurement buttons and social icon settings. Existing public function names and routes are preserved.
+
+## M0 / P61 order/contact controller cleanup
+The order/contact/measurement/register controller pass removed stale controller fragments and reduced duplicated register focus-error JavaScript while preserving routes, form ids and submit operation names.

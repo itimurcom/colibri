@@ -2,7 +2,6 @@
 global $_MEASURMENT;
 $_CONTENT['admin'] = get_admin_button_set();
 $data = itEditor::_redata();
-//	print_r($_REQUEST);
 if ($_REQUEST['op'] == 'encode')
 	{
 	$keycode = urlencode(itEditor::event_data([
@@ -35,12 +34,8 @@ if (isset($_REQUEST['key']) AND empty($order_data))
 	}
 	
 
-//echo print_rr($_REQUEST);
-
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
-
-//$_CONTENT['content'] = 	get_colibri_block(BLOCK_ORDER, true);
 
 
 if ($_REQUEST['view'] != 'thankyou')
@@ -86,8 +81,6 @@ $o_form->add_hidden('order', $order_data['order']);
 $o_form->add_hidden('email', $order_data['email']);
 $o_form->add_hidden('form_id', $order_data['form_id']);
 
-	
-$images_str = NULL;
 // контейнер после данных!!!
 $form_container = $o_form->container();
 
@@ -114,16 +107,7 @@ $_CONTENT['content'] =
 	TAB."<div class='block'>".
 	TAB."<h1 class='tit white{$title_color}'>{$order_str}</h1>".
 //	TAB."<div class='siterow boxed glass' style='font-size:1.4em;text-align:center; padding:1.2em;'>{$order_str}</div>".
-	$images_str.
-	$o_editor->container().
-/*	(($_USER->is_logged() AND !is_null($o_editor->data)) ?
-			TAB."<div class='admin_panel_div'>".
-//			(function_exists('get_content_remove_event') ? get_content_remove_event($o_block->editor->data) : "").
-			(function_exists('get_content_title_event') ? get_content_title_event($o_editor->data) : "").			
-			TAB."</div>"
-			: NULL);
-*/
-	"";
+	$o_editor->container();
 	
 if ($o_form->accepted AND ($_REQUEST['op']=='measurement'))
 	{
@@ -152,7 +136,6 @@ $plug_og['title'] 	= get_const('NODE_MEASUREMENT');
 	$_CONTENT['content'] = 
 		TAB."<div class='block'>".
 		get_colibri_block(BLOCK_THANKMEASUREMENT, true).
-//		TAB."<div class='tit'>".get_const('CONTACTS_THANKYOU')."</div>".
 		$mail_str.
 		TAB."</div>";
 		

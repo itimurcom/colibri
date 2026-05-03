@@ -15,6 +15,19 @@ $_CONTENT['widgets-cell'] = get_widgets_set();
 
 
 
+
+$register_focus_error = function($element, $message_const)
+	{
+	return minify_js("<script>
+		$(function (){
+			var element = '{$element}';
+			$(\"<div id ='error-\" + element + \"' class='modal_row error_msg f2_row focus'>".get_const($message_const)."</div>\").insertBefore('#container-' + element);
+			$('#container-' + element).addClass('focus');
+			$('#error-' + element).ScrollTo({duration:800, offsetTop:64, callback:function(){}});
+			});
+		</script>");
+	};
+
 $_CONTENT['content'] =
 // 	print_rr($_REQUEST).
 		TAB."<div class='site_row boxed'>".
@@ -36,15 +49,7 @@ if ($do_login)
 		create_pin($customer);		
 		cms_redirect_page('/'.CMS_LANG.'/register/pin/');
 		} else 	{
-			$_CONTENT['content'] .=  minify_js("<script>
-			$(function (){
-				var element = 'cus_enter-logemail'; 
-				$(\"<div id ='error-\" + element + \"' class='modal_row error_msg f2_row focus'>".get_const('NOT_REGISTERED')."</div>\").insertBefore('#container-' + element);
-				$('#container-' + element).addClass('focus');
-				$('#error-' + element).ScrollTo({duration:800, offsetTop:64, callback:function(){}});
-				});
-			</script>");
-
+			$_CONTENT['content'] .= $register_focus_error('cus_enter-logemail', 'NOT_REGISTERED');
 			}
 	}
 
@@ -52,27 +57,13 @@ if ($do_login)
 $already = false;
 if (!empty($_REQUEST['email']) AND ($customer = customer_by_email($_REQUEST['email'])))
 	{
-	$_CONTENT['content'] .= minify_js("<script>
-		$(function (){
-			var element = 'cus_register-email';
-			$(\"<div id ='error-\" + element + \"' class='modal_row error_msg f2_row focus'>".get_const('ALREADY_HAVE')."</div>\").insertBefore('#container-' + element);
-			$('#container-' + element).addClass('focus');
-			$('#error-' + element).ScrollTo({duration:800, offsetTop:64, callback:function(){}});;
-			});
-		</script>");
+	$_CONTENT['content'] .= $register_focus_error('cus_register-email', 'ALREADY_HAVE');
 	$already = true;
 	}
 
 if (!empty($_REQUEST['phone']) AND ($customer = customer_by_phone($_REQUEST['phone'])))
 	{
-	$_CONTENT['content'] .= minify_js("<script>
-		$(function (){
-			var element = 'cus_register-phone';
-			$(\"<div id ='error-\" + element + \"' class='modal_row error_msg f2_row focus'>".get_const('ALREADY_HAVE')."</div>\").insertBefore('#container-' + element);
-			$('#container-' + element).addClass('focus');
-			$('#error-' + element).ScrollTo({duration:800, offsetTop:64, callback:function(){}});;
-			});
-		</script>");
+	$_CONTENT['content'] .= $register_focus_error('cus_register-phone', 'ALREADY_HAVE');
 	$already = true;
 	}
 

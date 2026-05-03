@@ -6,8 +6,6 @@ $data = itEditor::_redata();
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
 
-//$_CONTENT['content'] = 	get_colibri_block(BLOCK_ORDER, true);
-
 if ($_REQUEST['view'] != 'thankyou')
 	{
 $o_form = new itForm2([
@@ -16,8 +14,6 @@ $o_form = new itForm2([
 	'action'	=> "/".CMS_LANG.'/order/',
 	]);
 
-
-$focus_str = NULL;
 
 $o_form->hiddens_xml = NULL;
 $o_form->add_data([
@@ -41,18 +37,6 @@ if(intval($_REQUEST['rec_id']) AND $row=itMySQL::_get_rec_from_db('items', $_REQ
 	$_SESSION['focus']['color'] = 'blue';
 	$_SESSION['focus']['data'] = $_REQUEST['articul'];
 	$focus_str = "<script>$('#{$_SESSION['focus']['element']}').closest('.modal_row.f2_row').addClass('focusblue');</script>";
-/*	
-	$o_images = new itImages([
-	'table_name'	=> 'items',
-	'rec_id'	=> $_REQUEST['rec_id'],
-	'column'	=> 'images',
-	'img_type'	=> 'GALLINE_SMALL',
-	'class'		=> 'order',
-	]);
-	
-	$images_str = $o_images->_view_gallery();
-	unset($o_images);
-*/
 	}
 	
 // контейнер после данных!!!
@@ -78,10 +62,9 @@ $_CONTENT['content'] =
 		TAB."</div>".
 	(($_USER->is_logged() AND !is_null($o_editor->data)) ?
 			TAB."<div class='admin_panel_div'>".
-//			(function_exists('get_content_remove_event') ? get_content_remove_event($o_block->editor->data) : "").
-			(function_exists('get_content_title_event') ? get_content_title_event($o_editor->data) : "").			
+			(function_exists('get_content_title_event') ? get_content_title_event($o_editor->data) : "").
 			TAB."</div>"
-			: NULL); 					
+			: NULL);
 
 
 if ($o_form->accepted AND (ready_val($data['op'])=='order'))
@@ -90,10 +73,6 @@ if ($o_form->accepted AND (ready_val($data['op'])=='order'))
 	$_SESSION['thankyouorder'] = send_colibri_mails(FORM2_ORDER);
 	cms_redirect_page("/".CMS_LANG."/order/thankyou/");
 	
-	$_CONTENT['content'] .= 
-		TAB."<div class='siterow boxed'>".
-// 			send_colibri_mails(FORM2_ORDER).
-		TAB."</div>";
 	} else	{
 		$_CONTENT['content'] .= $form_container.$focus_str;
 		}
@@ -115,7 +94,6 @@ $plug_og['title'] 	= get_const('NODE_ORDER');
 	$_CONTENT['content'] = 
 		TAB."<div class='block'>".
 		get_colibri_block(BLOCK_THANKORDER, true).
-//		TAB."<div class='tit'>".get_const('CONTACTS_THANKYOU')."</div>".
 		$mail_str.
 		TAB."</div>";
 

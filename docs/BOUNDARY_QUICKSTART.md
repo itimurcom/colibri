@@ -48,3 +48,6 @@ Customer/auth cleanup stays project-side under `public/engine/core/units/users/`
 
 ## M0 / P60 user admin/social cleanup note
 `public/engine/core/units/users/*` remains project-side runtime. Keep admin/customer/social helper consolidation local to these files and do not introduce a new auth/admin framework layer during M0.
+
+## M0 / P61 order/contact controller note
+Order/contact/measurement/register controllers are project-side MVC flow files. Keep cleanup local to controller runtime unless a later migration defines a real shared form-page boundary.
