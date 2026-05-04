@@ -1,7 +1,7 @@
 <?php
 class itEdGallery
 	{
-	public $data, $code;
+	public $data, $code, $table_name, $rec_id, $ed_key, $field, $column, $selector, $lang, $root, $alt, $name, $f_caption;
 	public function __construct($row=NULL)
 		{
 		$this->data = $row;

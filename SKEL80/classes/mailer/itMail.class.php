@@ -10,7 +10,7 @@
 //..............................................................................
 class itMail
 	{
-	public $from, $to, $message, $code, $status;
+	public $from, $to, $subject, $message, $code, $status;
 	public $table_name, $rec_id, $ed_rec;
 	public $fields, $files;
 

@@ -73,7 +73,8 @@ class itMenu
 	public
 		$data, $code,
 		$colors,
-		$fixed, $mobile;
+		$fixed, $mobile,
+		$element_id, $subdata;
 
 	public function __construct($options=NULL)
 		{

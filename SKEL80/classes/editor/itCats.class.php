@@ -8,7 +8,7 @@ $cats_counter = rand_id();
 // itCats : класс который позволяет оперировать с сохраняемми категориями
 class itCats
 	{
-	public $ed_rec, $parent_id, $group_id, $table_name;
+	public $ed_rec, $parent_id, $group_id, $table_name, $code;
 	// конструктор класса - создает объект структуры начиная с родительского id
 	// '$parent_id' : номер категории с которой начнется отсчтет дерева категорий
 

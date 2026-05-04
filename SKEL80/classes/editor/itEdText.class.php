@@ -2,7 +2,7 @@
 // itEdText : класс обработки текстового блока редактора
 class itEdText
 	{
-	public $table_name, $rec_id, $field, $lang, $selector, $name, $data, $code, $alt;
+	public $table_name, $rec_id, $ed_key, $field, $column, $root, $lang, $selector, $name, $data, $code, $alt;
 	// конструктор класса - создает привязку текстового блока
 	public function __construct($row=NULL)
 		{

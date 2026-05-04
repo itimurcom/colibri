@@ -5,7 +5,7 @@ $selector_counter = (function_exists('rand_id')) ? rand_id() : time();
 // itSelector : класс построение поля выбора для формы
 class itSelector
 	{
-	public $code, $sel_rec, $type, $name, $element_id, $options, $value, $ajax ;
+	public $code, $sel_rec, $type, $name, $element_id, $options, $value, $ajax, $class, $compact, $editor, $label;
 
 	// конструктор класса - создает поле выбора и управление для него:
 	public function __construct($type=DEFAULT_SELECTOR_TYPE, $options=NULL, $value='', $element_id=NULL, $label=NULL)

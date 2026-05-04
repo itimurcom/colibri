@@ -5,7 +5,7 @@ $input_counter = (function_exists('rand_id')) ? rand_id() : time();
 // itInput : класс построение поля ввода для формы
 class itInput
 	{
-	public $element_id, $code, $type, $name, $value, $ajax, $class, $placeholder, $label, $compact, $form_id;
+	public $element_id, $code, $type, $name, $value, $ajax, $class, $placeholder, $label, $compact, $form_id, $editor, $readonly;
 
 	// конструктор класса - создает поле ввода текста
 	public function __construct($options=NULL)

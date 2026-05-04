@@ -88,3 +88,10 @@
   - guarded public catalog item/feed/filter helpers against incomplete item rows, missing category relations, empty session filters, and invalid price-bound query results
   - preserved routes, bootstrap/config/env behavior, DB schema, storage format, legacy function names, and valid-row output structure
   - added `docs/CATALOG_DB_ROW_NULL_GUARD_STAGE.md`
+
+- M0 / P79 PHP 8 dynamic property declaration stabilization bundle
+  - declared existing runtime properties across legacy form controls, editor controls, UI blocks, mail helpers, sitemap/cache/markup helpers, and `itWizard`
+  - added a legacy `PHPMailer::$ContentType` alias property used by existing mail methods to avoid PHP 8.x dynamic-property output during mail rendering/sending
+  - reduced the risk of PHP 8.x deprecation text leaking into HTML/AJAX/JSON responses without changing behavior or persistence format
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy APIs
+  - added `docs/PHP8_DYNAMIC_PROPERTY_DECLARATION_STAGE.md`

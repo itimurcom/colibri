@@ -8,7 +8,7 @@ $plug_css[] = 'class.itModerator.css';
 // itModerator : класс admin панели модерируемых материалов выбранной таблицы
 class itModerator
 	{
-	public $table_name, $data, $code, $element_id, $statuses, $allowed, $order;
+	public $table_name, $data, $code, $element_id, $statuses, $allowed, $order, $set;
 
 	// конструктор класса - создает объект, который получает данные из базы
 	public function __construct($table_name=DEFAULT_MODERATOR_TABLE, $options=NULL)

@@ -70,6 +70,12 @@ class PHPMailer {
   public $_CONTENTType       = 'text/plain';
 
   /**
+   * Runtime content type alias used by legacy methods.
+   * @var string
+   */
+  public $ContentType        = 'text/plain';
+
+  /**
    * Sets the Encoding of the message. Options for this are
    *  "8bit", "7bit", "binary", "base64", and "quoted-printable".
    * @var string

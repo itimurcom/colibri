@@ -5,6 +5,7 @@ global $_LDJSON, $RDFA, $_SCHEMA;
 // itMarkOrg :  класс автоматизации разметки организации для поисковых систем
 class itMarkOrg
 	{
+	public $logo, $url, $name, $legal, $founders, $address, $contacts, $sameAs;
 	// конструктор класса (ему можно передать конкретные данные)
 
 	public function __construct($options = NULL)

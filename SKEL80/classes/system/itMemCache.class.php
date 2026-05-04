@@ -6,6 +6,7 @@ if (!isset($_SESSION[MEMCAHCED_KEY]))
 // itMemCache : класс кеширования переменных в memcahced
 class itMemCache
 	{
+	public $handle;
 	// конструктор создает представление пкласс кеширования переменных в memcahce
 	public function __construct($table_name=DEFAULT_VIEW_TABLE)
 		{

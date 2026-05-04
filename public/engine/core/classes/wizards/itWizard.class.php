@@ -15,7 +15,7 @@ definition([
 
 class itWizard
 	{
-	public $table_name, $rec_id, $data, $field, $code;
+	public $table_name, $rec_id, $data, $field, $code, $name, $ed_rec;
 	public function __construct($options=NULL)
 		{
 		global $wizard_counter;

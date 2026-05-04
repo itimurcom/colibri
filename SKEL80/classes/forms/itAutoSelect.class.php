@@ -5,7 +5,7 @@ $autoselect_counter = (function_exists('rand_id')) ? rand_id() : 0;
 // itAutoSelect : класс автоматического выбора данных по поиску
 class itAutoSelect
 	{
-	public $code, $field_id, $type, $class, $action, $op, $placeholder, $compact, $text;
+	public $code, $field_id, $type, $class, $action, $op, $placeholder, $compact, $text, $options, $name, $value, $label, $editor, $ajax;
 	// конструктор класса - создает элемент автоматического выбора данных
 	public function __construct($options=NULL, $label=NULL)
 		{

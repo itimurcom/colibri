@@ -6,7 +6,7 @@ $datepicker_counter = rand_id();
 // itDate : класс выбора даты
 class itDate
 	{
-	public $code;
+	public $code, $ajax, $class, $editor, $hour, $minute;
 	private $value, $type, $options, $name, $element_id, $title, $value_mysql, $time, $image, $label, $compact, $clear;
 	
 	// конструктор класса - создает элемент управления выбора даты

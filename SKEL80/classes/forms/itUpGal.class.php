@@ -8,10 +8,10 @@ class itUpGal
 	public $element_id, $code, $name, $value, $ajax, 
 		$label, $compact, $form_id,
 		
-		$upgal_class, $upgal_field,
+		$upgal_class, $upgal_field, $upgal_img,
 		
 		$gallery_field, $files_field, $data_field,
-		$btn_code, $gallery_code;
+		$btn_code, $gallery_code, $label_compact, $field_compact;
 
 	// конструктор класса - создает поле ввода текста
 	public function __construct($options=NULL)

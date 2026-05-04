@@ -11,7 +11,8 @@ class itSlider
 	{
 	public $table_name, $db_prefix,
 		$time,
-		$code;
+		$code,
+		$ed_rec;
 	private $db;
 
 	// конструктор класса - соединяется с базой данных при создании класса

@@ -18,7 +18,7 @@ definition([
 // itOpenClose : класс автоматизации акордеонов любого контента
 class itOpenClose
 	{
-	public $name, $state, $open_text, $open_class, $close_text, $close_class, $length, $replace, $code, $set, $class, $alert;
+	public $name, $state, $open_text, $open_class, $close_text, $close_class, $length, $replace, $code, $set, $class, $alert, $content, $effect, $duration;
 	// конструктор класса - создает элемент автоматического выбора данных
 	// options  
 	//
