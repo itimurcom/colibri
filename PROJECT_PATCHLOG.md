@@ -66,3 +66,11 @@
   - guarded upload-backed helper paths so missing `$_FILES[DEFAULT_FILES_NAME]` no longer emits warnings before JSON/redirect responses
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, and public entrypoint names
   - added `docs/ED_FIELD_AJAX_REQUEST_GUARD_STAGE.md`
+
+- M0 / P76 image gallery upload event guard stabilization bundle
+  - stabilized form-gallery and `itImages` upload event handlers with guarded request/file reads
+  - fixed the old `redy_val(...)` typo in `get_form_gallery(...)` and added safe fallbacks for optional gallery row metadata
+  - declared existing `itImages` runtime properties to reduce PHP 8.x dynamic-property deprecation output in AJAX responses
+  - hardened `itImages` storage initialization and image reorder operations against missing/non-array storage and out-of-range indexes
+  - removed only unused local variables from upload handlers; no behavior, storage format, routes, or DB schema changed
+  - added `docs/IMAGE_GALLERY_UPLOAD_EVENT_GUARD_STAGE.md`

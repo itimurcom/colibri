@@ -4,7 +4,11 @@ $itimages_counter = (function_exists('rand_id')) ? rand_id() : time();
 
 class itImages
 	{
-	public $data, $code;
+	public $data, $code,
+		$table_name, $rec_id, $column, $field, $type, $name, $element_id,
+		$title, $img_class, $img_type, $edclass, $class,
+		$mode, $pause, $f_caption, $f_title, $root, $storage,
+		$minSlides, $maxSlides;
 	public function __construct($data=NULL)
 		{
 		global $itimages_counter;
@@ -29,6 +33,7 @@ class itImages
 		$this->f_title		= isset($data['f_title']) 	? $data['f_title'] 	: NULL;					// функция титула изображения
 
 		$this->data 		= isset($data['data'])		? $data['data']		: itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
+		$this->data		= is_array($this->data) ? $this->data : [];
 
 		$this->root 		= isset($data['root']) 		? $data['root'] 	: NULL;
 
@@ -37,8 +42,16 @@ class itImages
 
 		if (!is_null($this->root))
 			{
+			if (!isset($this->data[$this->column]) OR !is_array($this->data[$this->column]))
+				$this->data[$this->column] = [];
+			if (!isset($this->data[$this->column][$this->root]) OR !is_array($this->data[$this->column][$this->root]))
+				$this->data[$this->column][$this->root] = [];
+			if (!isset($this->data[$this->column][$this->root][$this->field]) OR !is_array($this->data[$this->column][$this->root][$this->field]))
+				$this->data[$this->column][$this->root][$this->field] = [];
 			$this->storage = &$this->data[$this->column][$this->root][$this->field];
 			} else  {
+				if (!isset($this->data[$this->column]) OR !is_array($this->data[$this->column]))
+					$this->data[$this->column] = [];
 				$this->storage = &$this->data[$this->column];
 				}
 		$this->rec_id		= isset($data['data'])
@@ -331,7 +344,8 @@ class itImages
 
 	public function gal_x($gal_id)
 		{
-		if (isset($this->storage[$gal_id]))
+		$gal_id = intval($gal_id);
+		if (is_array($this->storage) AND isset($this->storage[$gal_id]))
 			{
 			unset($this->storage[$gal_id]);
 			$this->sort_gallery();
@@ -340,7 +354,8 @@ class itImages
 
 	public function gal_up($gal_id)
 		{
-		if ($gal_id>0)
+		$gal_id = intval($gal_id);
+		if (is_array($this->storage) AND ($gal_id>0) AND isset($this->storage[$gal_id]) AND isset($this->storage[($gal_id-1)]))
 			{
 			$this->storage['tmp'] 	= $this->storage[$gal_id];
 			$this->storage[$gal_id]	= $this->storage[($gal_id-1)];
@@ -352,7 +367,9 @@ class itImages
 
 	public function gal_move($gal_id, $new_id)
 		{
-		if ($gal_id!=$new_id)
+		$gal_id = intval($gal_id);
+		$new_id = intval($new_id);
+		if (is_array($this->storage) AND ($gal_id!=$new_id) AND isset($this->storage[$gal_id]) AND isset($this->storage[$new_id]))
 			{
 			$this->storage['tmp'] 	= $this->storage[$gal_id];
 			$this->storage['tmp2'] 	= $this->storage[$new_id];
@@ -366,7 +383,8 @@ class itImages
 
 	public function gal_down($gal_id)
 		{
-		if ($gal_id<=count($this->storage))
+		$gal_id = intval($gal_id);
+		if (is_array($this->storage) AND isset($this->storage[$gal_id]) AND isset($this->storage[($gal_id+1)]))
 			{
 			$this->storage['tmp'] 	= $this->storage[$gal_id];
 			$this->storage[$gal_id]	= $this->storage[($gal_id+1)];
@@ -379,7 +397,7 @@ class itImages
 	public function sort_gallery()
 		{
 
-		if (isset($this->storage)  and (count($this->storage)))
+		if (isset($this->storage) AND is_array($this->storage) AND count($this->storage))
 			{
 			$this->storage = array_values($this->storage);
 			}
