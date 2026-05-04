@@ -95,3 +95,11 @@
   - reduced the risk of PHP 8.x deprecation text leaking into HTML/AJAX/JSON responses without changing behavior or persistence format
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy APIs
   - added `docs/PHP8_DYNAMIC_PROPERTY_DECLARATION_STAGE.md`
+
+- M0 / P80 session catalog personalization guard stabilization bundle
+  - stabilized wishlist session/database synchronization against malformed session payloads, missing user runtime state, empty DB rows, and incomplete item rows
+  - normalized wishlist and last-seen item lists to valid positive item IDs before rendering, storing, or building catalog feed rows
+  - guarded last-seen session/request reads and DB result iteration to prevent warnings from broken session state
+  - restricted `itFocus` session assignment to existing fields to avoid PHP 8.x dynamic-property output from arbitrary session keys
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public function names, and legacy UI behavior
+  - added `docs/SESSION_CATALOG_PERSONALIZATION_GUARD_STAGE.md`

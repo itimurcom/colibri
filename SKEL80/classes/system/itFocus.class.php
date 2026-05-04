@@ -22,9 +22,11 @@ class itFocus
 			{
 			if (is_array($_SESSION['focus']))
 				{
+				$allowed = ['element', 'color', 'data'];
 				foreach ($_SESSION['focus'] as $key=>$row)
 					{
-					$this->$key = $row;
+					if (in_array($key, $allowed))
+						$this->$key = (string)$row;
 					}
 				}
 			$this->code = TAB."<div id='focus' rel='{$this->element}' rel-color='{$this->color}' rel-data='{$this->data}'></div>";
