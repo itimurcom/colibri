@@ -74,3 +74,11 @@
   - hardened `itImages` storage initialization and image reorder operations against missing/non-array storage and out-of-range indexes
   - removed only unused local variables from upload handlers; no behavior, storage format, routes, or DB schema changed
   - added `docs/IMAGE_GALLERY_UPLOAD_EVENT_GUARD_STAGE.md`
+
+- M0 / P77 editor content save pipeline stabilization bundle
+  - centralized guarded request/data/upload reads in `SKEL80/events/editor/editor_events.func.php` for legacy WYSIWYG/content editor save operations
+  - stabilized editor text/title/media/avatar/gallery/status/category/date/related-content operation paths against missing or malformed request payloads
+  - hardened `itEditor::_redata()` to reuse the shared encrypted payload decoder and return an empty array for bad payloads
+  - declared existing `itEditor` runtime properties and guarded editor storage initialization, field movement, zoom switching, related-content writes, cache/status checks, and `_consolidate()`
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy editor UI flow
+  - added `docs/EDITOR_CONTENT_SAVE_PIPELINE_STABILIZATION_STAGE.md`

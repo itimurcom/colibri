@@ -14,7 +14,8 @@ class itEditor
 	{
 	public $table_name, $rec_id, $name, $data, $code, $txt, $title, $description, $options; 
 	public $no_cache, $no_title, $no_date, $no_lang, $no_moderate, $no_avatar, $no_related;
-	public $field, $column;
+	public $field, $column, $viewed, $title_class, $rel_field, $async, $edclass, $root;
+	public $record, $storage, $selector;
 	
 	// конструктор класса - создает привязку редактора к записи в базе данных
 	public function __construct($table_name=DEFAULT_CONTENT_TABLE, $rec_id=NULL, $no_date=NULL, $no_lang=NULL, $no_moderate=false, $no_avatar=NULL, $field=DEFAULT_CONTENT_FIELD)
@@ -37,12 +38,28 @@ class itEditor
 		$this->no_related	= $is_options && isset($data['no_related']) 	? $data['no_related'] 	: DEFAULT_NORELATED;
 		$this->async		= $is_options && isset($data['async']) 	? $data['async'] 	: DEFAULT_EDASYNC;
 		$this->data		= $is_options && isset($data['data']) 	? $data['data'] 	: itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
+		if (!is_array($this->data))
+			{
+			$this->data = [];
+			}
+		if (!isset($this->data[$this->column]) OR !is_array($this->data[$this->column]))
+			{
+			$this->data[$this->column] = [];
+			}
 		$this->no_cache 	= $is_options && isset($data['no_cache']) 	? $data['no_cache'] 	: DEFAULT_NOCACHE;
 		$this->edclass 		= $is_options && isset($data['edclass']) 	? $data['edclass'] 	: DEFAULT_EDCLASS;
 		$this->root 		= $is_options && isset($data['root']) 	? $data['root'] 	: NULL;
 
 		if (!is_null($this->root))
 			{
+			if (!isset($this->data[$this->column][$this->root]) OR !is_array($this->data[$this->column][$this->root]))
+				{
+				$this->data[$this->column][$this->root] = [];
+				}
+			if (!isset($this->data[$this->column][$this->root][$this->field]) OR !is_array($this->data[$this->column][$this->root][$this->field]))
+				{
+				$this->data[$this->column][$this->root][$this->field] = [];
+				}
 			$this->record = &$this->data[$this->column][$this->root];
 			$this->storage = &$this->data[$this->column][$this->root][$this->field];
 			$this->record['status'] 	= isset($this->record['status']) 	? $this->record['status'] 	: DEFAULT_EDSTORAGE_STATUS;
@@ -180,7 +197,8 @@ class itEditor
 			{
 			$result = $data['avatar'];
 			} else	{
-				$selector = is_null($selector) ? (($data['lang']=='ALL') ? 'ALL' : CMS_LANG) : $selector;
+				$lang = (isset($data['lang']) AND $data['lang']=='ALL') ? 'ALL' : CMS_LANG;
+				$selector = is_null($selector) ? $lang : $selector;
 				$ava_arr = [];
 				// попробуем найти изображения в теле материала
 			        if (isset($data[$field][$selector]) and is_array($data[$field][$selector]))
@@ -360,12 +378,17 @@ class itEditor
 	// поднимает поле вверх на одну позицию, если это возможно
 	public function up_field($selector, $ed_key)
 		{
-		if ($ed_key>0)
+		if (!isset($this->storage[$selector]) OR !is_array($this->storage[$selector]))
 			{
-			$this->storage[$selector]['tmp']	= $this->storage[$selector][$ed_key];
+			return $ed_key;
+			}
+
+		if (($ed_key>0) AND isset($this->storage[$selector][$ed_key]) AND isset($this->storage[$selector][$ed_key-1]))
+			{
+			$tmp = $this->storage[$selector][$ed_key];
 			$this->storage[$selector][$ed_key]	= $this->storage[$selector][$ed_key-1];
-			$this->storage[$selector][$ed_key-1] = $this->storage[$selector]['tmp'];
-			unset ($this->storage[$selector]['tmp']);
+			$this->storage[$selector][$ed_key-1] = $tmp;
+			unset ($tmp);
 			if ($this->sort($selector))
 				{
 				$this->store();
@@ -379,12 +402,17 @@ class itEditor
 	// поднимает поле вниз на одну позицию, если это возможно
 	public function down_field($selector, $ed_key)
 		{
-		if ($ed_key<count($this->storage[$selector]))
+		if (!isset($this->storage[$selector]) OR !is_array($this->storage[$selector]))
 			{
-			$this->storage[$selector]['tmp'] 	= $this->storage[$selector][$ed_key];
+			return $ed_key;
+			}
+
+		if (($ed_key < count($this->storage[$selector])-1) AND isset($this->storage[$selector][$ed_key]) AND isset($this->storage[$selector][$ed_key+1]))
+			{
+			$tmp = $this->storage[$selector][$ed_key];
 			$this->storage[$selector][$ed_key]	= $this->storage[$selector][$ed_key+1];
-			$this->storage[$selector][$ed_key+1] = $this->storage[$selector]['tmp'];
-			unset ($this->storage[$selector]['tmp']);
+			$this->storage[$selector][$ed_key+1] = $tmp;
+			unset ($tmp);
 			if ($this->sort($selector))
 				{
 				$this->store();
@@ -539,12 +567,23 @@ class itEditor
 	// переключает размер блока
 	public function switch_zoom($selector, $ed_key)
 		{
+		if (!isset($this->storage[$selector][$ed_key]) OR !is_array($this->storage[$selector][$ed_key]))
+			{
+			return;
+			}
+
+		if (!isset($this->storage[$selector][$ed_key]['type']))
+			{
+			$this->storage[$selector][$ed_key]['type'] = 'text';
+			}
+
 		switch ($this->storage[$selector][$ed_key]['type'])
 			{
 			case 'gallery' : {
 				$zoom =  @$this->storage[$selector][$ed_key]['zoom'];
 				// если одно изображение - то ведем себя как ed_image
-				if (count($this->storage[$selector][$ed_key]['value'])==1)
+				$gallery_value = (isset($this->storage[$selector][$ed_key]['value']) AND is_array($this->storage[$selector][$ed_key]['value'])) ? $this->storage[$selector][$ed_key]['value'] : [];
+				if (count($gallery_value)==1)
 					{
 					$zoom = ($zoom=='SMALL') ? 'FULL' : 'SMALL';
 					} else	{
@@ -805,7 +844,8 @@ class itEditor
 
 	protected function containerContent()
 		{
-		return ($this->data['state']=='view') ? $this->_view() : $this->_edit();
+		$state = isset($this->data['state']) ? $this->data['state'] : DEFAULT_EDSTATE;
+		return ($state=='view') ? $this->_view() : $this->_edit();
 		}
 
 	// разыменовывает поля редактора и возвращает html код для вставки поля
@@ -846,11 +886,15 @@ class itEditor
 	// распаковывает данные для событий
 	static function _redata($replace = false)
 		{
-		$data = isset($_REQUEST['data'])
-			? @unserialize(simple_decrypt($_REQUEST['data']))
-			: NULL;
+		$data = [];
+		if (isset($_REQUEST['data']))
+			{
+			$data = function_exists('skel80_decode_encrypted_array')
+				? skel80_decode_encrypted_array($_REQUEST['data'], [])
+				: @unserialize(simple_decrypt($_REQUEST['data']));
+			}
 
-		if (is_array($data))
+		if (is_array($data) AND count($data))
 			{
 			if ($replace)
 				{
@@ -874,7 +918,7 @@ class itEditor
 			$_REQUEST['op'] = $op;
 			}
 
-		return $data;
+		return is_array($data) ? $data : [];
 		}
 
 	// пакует данные для событий
@@ -890,7 +934,7 @@ class itEditor
 			itMySQL::_update_value_db($this->table_name, $this->rec_id, NULL, 'html_xml');
 						
 			return $this->_edit();
-			} else	if ($this->storage['status']=='PUBLISHED')
+			} else	if (isset($this->storage['status']) AND ($this->storage['status']=='PUBLISHED'))
 				{
 				if (!isset($this->storage['html_xml'][CMS_LANG]) OR $this->no_cache)
 					{
@@ -910,9 +954,15 @@ class itEditor
 			$rec_id = $this->rec_id;
 			}
 
+		if (intval($rec_id)<1 OR !is_array($this->data))
+			{
+			return false;
+			}
+
 		$this->clearHtmlCache();
 		$this->normalizeDataBeforeStore();
 		itMySQL::_update_db_rec($this->table_name, $rec_id, $this->data);
+		return true;
 		}
 
 	// возвращает код редактора
@@ -930,8 +980,13 @@ class itEditor
 	// добавляет id связанной новости в поле редактора
 	static function _related($options)
 		{
+		if (!is_array($options) OR empty($options['table_name']) OR empty($options['rec_id']) OR empty($options['field']))
+			{
+			return false;
+			}
+
 		$row = itMySQL::_get_rec_from_db($options['table_name'], $options['rec_id']);
-		if (isset($row[$options['field']]))
+		if (is_array($row) AND isset($row[$options['field']]))
 			{
 			if (is_string($row[$options['field']]))
 				{
@@ -944,8 +999,13 @@ class itEditor
 	// удаляет id связанной новости в поле редактора
 	static function _related_x($options)
 		{
+		if (!is_array($options) OR empty($options['table_name']) OR empty($options['rec_id']) OR empty($options['field']))
+			{
+			return false;
+			}
+
 		$row = itMySQL::_get_rec_from_db($options['table_name'], $options['rec_id']);
-		if (isset($row[$options['field']]))
+		if (is_array($row) AND isset($row[$options['field']]))
 			{
 			if (($key = array_search($options['content_id'], $row[$options['field']])) !== false)
 				{
@@ -971,18 +1031,19 @@ class itEditor
 				$this->containerContent().
 				get_ed_async_event($this->data).
 				TAB."</div>"
-			: (($this->record['status']=='PUBLISHED') ? $this->_view() : NULL);
+			: ((isset($this->record['status']) AND ($this->record['status']=='PUBLISHED')) ? $this->_view() : NULL);
 		}
 
 	// функция выборки данных из сохраненных полей редактора
 	static function _repack_data($data)
 		{
+		$data = is_array($data) ? $data : [];
 		return [
-			'table_name'	=> $data['table_name'],
-			'rec_id'	=> $data['rec_id'],
-			'field'		=> $data['field'],
-			'column'	=> $data['column'],
-			'root'		=> $data['root'],
+			'table_name'	=> isset($data['table_name']) ? $data['table_name'] : DEFAULT_CONTENT_TABLE,
+			'rec_id'	=> isset($data['rec_id']) ? $data['rec_id'] : NULL,
+			'field'		=> isset($data['field']) ? $data['field'] : DEFAULT_CONTENT_FIELD,
+			'column'	=> isset($data['column']) ? $data['column'] : (isset($data['field']) ? $data['field'] : DEFAULT_CONTENT_FIELD),
+			'root'		=> isset($data['root']) ? $data['root'] : NULL,
 			];		
 		}
 
@@ -1028,7 +1089,7 @@ class itEditor
 					}
 				}
 			}
-		return array_values($result);
+		return is_array($result) ? array_values($result) : [];
 		}
 	}
 ?>
