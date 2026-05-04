@@ -58,3 +58,11 @@
   - guarded `itSet2` selected-value reads when the stored value is empty or non-array
   - preserved form storage format, routes, bootstrap/config/env behavior, and existing form editor UI flow
   - added `docs/FORM_EDITOR_AJAX_GUARD_STABILIZATION_STAGE.md`
+
+- M0 / P75 ed_field AJAX request guard stabilization bundle
+  - centralized guarded request/upload reads inside `public/ed_field.php` without changing its legacy operation dispatch model
+  - replaced direct request reads in customer AJAX, filter/sort, item, slider, settings, and profile update operation paths
+  - reused `skel80_decode_encrypted_array()` for encrypted payload decoding in `openclose` and `tab` operations
+  - guarded upload-backed helper paths so missing `$_FILES[DEFAULT_FILES_NAME]` no longer emits warnings before JSON/redirect responses
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, and public entrypoint names
+  - added `docs/ED_FIELD_AJAX_REQUEST_GUARD_STAGE.md`

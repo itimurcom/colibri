@@ -5,7 +5,7 @@ $path = UPLOADS_ROOT;
 
 $orig_REQUEST = $_REQUEST;
 $data = itEditor::_redata();
-$operation = isset($_REQUEST['op']) ? $_REQUEST['op'] : NULL;
+$operation = ed_field_request_value('op');
 $url = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '/';
 
 function ed_field_json($payload=[])
@@ -30,6 +30,45 @@ function ed_field_update_value_and_redirect($table_name, $rec_id, $value, $field
 	return ed_field_redirect_result($url);
 	}
 
+function ed_field_request_value($key, $default=NULL)
+	{
+	return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+	}
+
+function ed_field_ready_request_value($key, $default=NULL)
+	{
+	return ready_val(ed_field_request_value($key, $default));
+	}
+
+function ed_field_request_int($key, $default=0)
+	{
+	return intval(ed_field_request_value($key, $default));
+	}
+
+function ed_field_request_flag_on($key)
+	{
+	return ed_field_request_value($key) == 'on';
+	}
+
+function ed_field_request_data($key='data')
+	{
+	return skel80_decode_encrypted_array(ed_field_request_value($key), []);
+	}
+
+function ed_field_data_value($data, $key, $default=NULL)
+	{
+	return (is_array($data) AND isset($data[$key])) ? $data[$key] : $default;
+	}
+
+function ed_field_has_uploads()
+	{
+	return isset($_FILES[DEFAULT_FILES_NAME])
+		AND isset($_FILES[DEFAULT_FILES_NAME]['name'])
+		AND is_array($_FILES[DEFAULT_FILES_NAME]['name'])
+		AND isset($_FILES[DEFAULT_FILES_NAME]['tmp_name'])
+		AND is_array($_FILES[DEFAULT_FILES_NAME]['tmp_name']);
+	}
+
 function ed_field_calculator_rates()
 	{
 	return [
@@ -43,8 +82,18 @@ function ed_field_calculator_rates()
 function ed_field_uploaded_files()
 	{
 	$files = [];
+	if (!ed_field_has_uploads())
+		{
+		return $files;
+		}
+
 	foreach ($_FILES[DEFAULT_FILES_NAME]['name'] as $key => $name)
 		{
+		if ($name === '' OR !isset($_FILES[DEFAULT_FILES_NAME]['tmp_name'][$key]))
+			{
+			continue;
+			}
+
 		$clear_name = clear_file_name($name);
 		$clear_name = check_uploaded_file($clear_name, $_FILES[DEFAULT_FILES_NAME]['tmp_name'][$key]);
 		if (move_uploaded_file($_FILES[DEFAULT_FILES_NAME]['tmp_name'][$key], UPLOADS_ROOT.$clear_name))
@@ -58,7 +107,8 @@ function ed_field_uploaded_files()
 function ed_field_slider_url($url)
 	{
 	$split = explode('?', $url);
-	return "{$split[0]}?slide={$_REQUEST['rec_id']}";
+	$rec_id = ed_field_request_int('rec_id');
+	return "{$split[0]}?slide={$rec_id}";
 	}
 
 function ed_field_handle_item_calc($data=[])
@@ -85,20 +135,20 @@ function ed_field_handle_item_calc($data=[])
 		switch ($row['name'])
 			{
 			case 'quantity':
-				$quantity = isset($_REQUEST[$row['name']]) ? $_REQUEST[$row['name']] : 1;
+				$quantity = ed_field_request_value($row['name'], 1);
 				break;
 			case 'rate':
-				if (isset($_REQUEST[$row['name']]) && isset($rates[$_REQUEST[$row['name']]]))
+				if (($request_rate = ed_field_request_value($row['name'])) !== NULL && isset($rates[$request_rate]))
 					{
-					$rate_val = isset($_SETTINGS[$_REQUEST[$row['name']]]['value']) ? $_SETTINGS[$_REQUEST[$row['name']]]['value'] : 1;
-					$rate_sym = $rates[$_REQUEST[$row['name']]];
+					$rate_val = isset($_SETTINGS[$request_rate]['value']) ? $_SETTINGS[$request_rate]['value'] : 1;
+					$rate_sym = $rates[$request_rate];
 					}
 				break;
 			default:
-				if (isset($_REQUEST[$row['name']]))
+				if (($request_value = ed_field_request_value($row['name'])) !== NULL)
 					{
-					$multi = isset($_REQUEST[$row['name']."-multi"]) ? $_REQUEST[$row['name']."-multi"] : 1;
-					$result += doubleval($_REQUEST[$row['name']])*$multi;
+					$multi = ed_field_request_value($row['name']."-multi", 1);
+					$result += doubleval($request_value)*$multi;
 					}
 				break;
 			}
@@ -177,10 +227,10 @@ if ($operation)
 			$form = customer_ajaxpin_event($pinned);
 			return ed_field_json_result(['show' => true, 'type' => 'ajax', 'value' => "$('#ajaxpin').replaceWith($(obj['form']));", 'form' => $form]);
 		case 'ajaxenter':
-			$email = ready_val($_REQUEST['logemail']);
+			$email = ed_field_ready_request_value('logemail');
 			$form = customer_ajaxlogin_event($login);
 			$code = "$('#ajaxlogin').replaceWith($(obj['form']));";
-			if (!isset($_REQUEST['reload']) AND $login AND is_array($customer = customer_by_email($email)))
+			if (ed_field_request_value('reload') === NULL AND $login AND is_array($customer = customer_by_email($email)))
 				{
 				create_pin($customer);
 				$form = customer_ajaxpin_event($pin);
@@ -198,25 +248,31 @@ if ($operation)
 				}
 			return ed_field_json_result(['show' => true, 'type' => 'ajax', 'value' => $code, 'form' => $form]);
 		case 'itemsort':
-			$_SESSION['filter']['sort'] = $_REQUEST['sort'];
-			$_SESSION['filter']['min'] = ready_val($_REQUEST['min']) ? $_REQUEST['min'] : NULL;
-			$_SESSION['filter']['max'] = ready_val($_REQUEST['max']) ? $_REQUEST['max'] : NULL;
+			$_SESSION['filter']['sort'] = ed_field_request_value('sort');
+			$_SESSION['filter']['min'] = ed_field_ready_request_value('min') ? ed_field_request_value('min') : NULL;
+			$_SESSION['filter']['max'] = ed_field_ready_request_value('max') ? ed_field_request_value('max') : NULL;
 			return ed_field_json_result();
 		case 'clearlastseen':
 			if (isset($_SESSION[SESSION_PREFIX.LASTSEEN_ARR])) unset($_SESSION[SESSION_PREFIX.LASTSEEN_ARR]);
 			return ed_field_json_result(['value' => NULL]);
 		case 'filter':
-			set_color_filter($_REQUEST['value']);
+			set_color_filter(ed_field_request_value('value'));
 			return ed_field_json_result(['url' => '/'.CMS_LANG.'/items/']);
 		case 'openclose':
-			$data = unserialize(simple_decrypt($_REQUEST['data']));
-			itSettings::set($data['set'], $_REQUEST['value'], $data['user_id']);
+			$data = ed_field_request_data();
+			if (!ed_field_data_value($data, 'set'))
+				{
+				return ed_field_json_result(['value' => NULL]);
+				}
+
+			itSettings::set(ed_field_data_value($data, 'set'), ed_field_request_value('value'), ed_field_data_value($data, 'user_id'));
 			return ed_field_json_result(['value' => NULL]);
 		case 'item_calc':
 			return ed_field_handle_item_calc($data);
 		case '_lang':
-			toggleLanguageAllowed($_REQUEST['rel']);
-			return ed_field_json_result(['value' => $_REQUEST['rel']]);
+			$rel = ed_field_request_value('rel');
+			toggleLanguageAllowed($rel);
+			return ed_field_json_result(['value' => $rel]);
 		}
 	}
 
@@ -228,54 +284,59 @@ if ($_USER->is_logged('ANY') && $operation)
 			update_customer();
 			return ed_field_redirect_result($url);
 		case 'password':
-			if ($_REQUEST['new_password']=='')
+			if (ed_field_request_value('new_password', '')=='')
 				{
 				$_SESSION['focus']['element'] = "{$data['form_id']}-new_password";
 				$_SESSION['focus']['color'] = 'red';
 				add_error_message(get_const('ERROR_PASSWORD_EMPTY'));
 				}
-			else if ($_REQUEST['new_password2']=='')
+			else if (ed_field_request_value('new_password2', '')=='')
 				{
 				$_SESSION['focus']['element'] = "{$data['form_id']}-new_password2";
 				$_SESSION['focus']['color'] = 'red';
 				add_error_message(get_const('ERROR_PASSWORD2_EMPTY'));
 				}
-			else if ($_REQUEST['new_password']!=$_REQUEST['new_password2'])
+			else if (ed_field_request_value('new_password')!=ed_field_request_value('new_password2'))
 				{
 				add_error_message(get_const('ERROR_PASSWORD_EQUAL'));
 				}
 			else
 				{
-				itMySQL::_update_value_db($_REQUEST['table_name'], $_REQUEST['rec_id'], sqlPassword($_REQUEST['new_password']), 'password');
+				itMySQL::_update_value_db(ed_field_request_value('table_name'), ed_field_request_int('rec_id'), sqlPassword(ed_field_request_value('new_password')), 'password');
 				add_service_message(get_const('MESSAGE_PASSWORD_DONE'));
 				}
 			return ed_field_redirect_result($url);
 		case 'add_user':
-			if (itUser::get_user_id_from_login($_REQUEST['value'], $_REQUEST['table_name'])==NULL)
+			if (itUser::get_user_id_from_login(ed_field_request_value('value'), ed_field_request_value('table_name'))==NULL)
 				{
-				$rec_id = itUser::register_user($_REQUEST['value'], '', 'new_user_script');
-				add_service_message(str_replace('[VALUE]', $_REQUEST['value'], get_const('USER_ADD_DONE')));
-				$url = "/{$_REQUEST['lang']}/user/{$rec_id}/";
+				$rec_id = itUser::register_user(ed_field_request_value('value'), '', 'new_user_script');
+				add_service_message(str_replace('[VALUE]', ed_field_request_value('value'), get_const('USER_ADD_DONE')));
+				$url = "/".ed_field_request_value('lang', CMS_LANG)."/user/{$rec_id}/";
 				}
 			else
 				{
-				add_error_message(str_replace('[VALUE]', $_REQUEST['value'], get_const('USER_LOGIN_BUSY')));
+				add_error_message(str_replace('[VALUE]', ed_field_request_value('value'), get_const('USER_LOGIN_BUSY')));
 				}
 			return ed_field_redirect_result($url);
 		case 'user_name':
 		case 'user_phone':
 		case 'user_email':
 			$field = str_replace('user_', '', $operation);
-			return ed_field_update_value_and_redirect($_REQUEST['table_name'], $_REQUEST['rec_id'], html2txt($_REQUEST['value']), $field, $url);
+			return ed_field_update_value_and_redirect(ed_field_request_value('table_name'), ed_field_request_int('rec_id'), html2txt(ed_field_request_value('value')), $field, $url);
 		case 'user_sex':
-			return ed_field_update_value_and_redirect($_REQUEST['table_name'], $_REQUEST['rec_id'], $_REQUEST['sex'], 'sex', $url);
+			return ed_field_update_value_and_redirect(ed_field_request_value('table_name'), ed_field_request_int('rec_id'), ed_field_request_value('sex'), 'sex', $url);
 		case 'user_description':
-			return ed_field_update_value_and_redirect($_REQUEST['table_name'], $_REQUEST['rec_id'], strip_tags(br2nl($_REQUEST['description'], true), ALLOWED_TAGS), 'description', $url);
+			return ed_field_update_value_and_redirect(ed_field_request_value('table_name'), ed_field_request_int('rec_id'), strip_tags(br2nl(ed_field_request_value('description', ''), true), ALLOWED_TAGS), 'description', $url);
 		case 'user_bdate':
-			return ed_field_update_value_and_redirect($_REQUEST['table_name'], $_REQUEST['rec_id'], $_REQUEST['b_date'], 'b_date', $url);
+			return ed_field_update_value_and_redirect(ed_field_request_value('table_name'), ed_field_request_int('rec_id'), ed_field_request_value('b_date'), 'b_date', $url);
 		case 'tab':
-			$data = unserialize(simple_decrypt($_REQUEST['data']));
-			itSettings::set($data['set'], $data['value'], $data['user_id']);
+			$data = ed_field_request_data();
+			if (!ed_field_data_value($data, 'set'))
+				{
+				return ed_field_json_result(['value' => NULL]);
+				}
+
+			itSettings::set(ed_field_data_value($data, 'set'), ed_field_data_value($data, 'value'), ed_field_data_value($data, 'user_id'));
 			return ed_field_json_result(['value' => NULL]);
 		}
 	}
@@ -305,34 +366,34 @@ if ($_USER->is_logged() && $operation)
 			return ed_field_redirect_result($url);
 		case 'add_item':
 			$values_arr = [
-				'title_xml' => [$_REQUEST['lang'] => $_REQUEST['value']],
-				'category_id' => $_REQUEST['category_id'],
-				'is_replicant' => ready_val($_REQUEST['is_replicant']) == 'on',
-				'is_shop' => ready_val($_REQUEST['is_shop']) == 'on',
-				'serie' => $_REQUEST['serie'],
-				'version' => $_REQUEST['version'],
+				'title_xml' => [ed_field_request_value('lang', CMS_LANG) => ed_field_request_value('value')],
+				'category_id' => ed_field_request_value('category_id'),
+				'is_replicant' => ed_field_request_flag_on('is_replicant'),
+				'is_shop' => ed_field_request_flag_on('is_shop'),
+				'serie' => ed_field_request_value('serie'),
+				'version' => ed_field_request_value('version'),
 				'datetime' => mysql_now(),
 				'url_xml' => NULL,
 			];
-			$rec_id = itMySQL::_insert_rec($_REQUEST['table_name'], $values_arr);
+			$rec_id = itMySQL::_insert_rec(ed_field_request_value('table_name'), $values_arr);
 			return ed_field_redirect_result('/'.CMS_LANG.'/items/'.$rec_id.'/');
 		case 'item_articul':
 			itMySQL::_update_db_rec($data['table_name'], $data['rec_id'], [
-				'category_id' => $_REQUEST['category_id'],
-				'serie' => $_REQUEST['serie'],
-				'version' => $_REQUEST['version'],
+				'category_id' => ed_field_request_value('category_id'),
+				'serie' => ed_field_request_value('serie'),
+				'version' => ed_field_request_value('version'),
 			]);
 			return ed_field_redirect_result('/'.CMS_LANG.'/items/'.$data['rec_id'].'/');
 		case 'item_price':
-			return ed_field_update_value_and_redirect($data['table_name'], $data['rec_id'], str_replace(',', '.', $_REQUEST['value']), 'price', $url);
+			return ed_field_update_value_and_redirect($data['table_name'], $data['rec_id'], str_replace(',', '.', ed_field_request_value('value', '')), 'price', $url);
 		case 'item_color':
 			set_item_color($data['id'], $data['value']);
 			return ed_field_json_result(['value' => $url]);
 		case 'lang':
-			return ed_field_update_value_and_redirect($_REQUEST['table_name'], $_REQUEST['rec_id'], $_REQUEST['lang_short'], 'lang', $url);
+			return ed_field_update_value_and_redirect(ed_field_request_value('table_name'), ed_field_request_int('rec_id'), ed_field_request_value('lang_short'), 'lang', $url);
 		case 'settings':
 			foreach (ed_field_settings_keys() as $VAR)
-				if (isset($_REQUEST[$VAR])) itSettings::set($VAR, str_replace(',', '.', $_REQUEST[$VAR]));
+				if (ed_field_request_value($VAR) !== NULL) itSettings::set($VAR, str_replace(',', '.', ed_field_request_value($VAR, '')));
 			return ed_field_redirect_result($url);
 		}
 	}
@@ -368,40 +429,41 @@ if ($_USER->is_logged($_RIGHTS['EDIT']) && $operation)
 			return ed_field_json_result(['value' => $url]);
 		case 'slider_x':
 			$db = new itMySQL();
-			$db->remove_rec_from_db($_REQUEST['table_name'], $_REQUEST['rec_id']);
+			$db->remove_rec_from_db(ed_field_request_value('table_name'), ed_field_request_int('rec_id'));
 			unset($db);
 			return ed_field_redirect_result($url);
 		case 'slider_title':
-			itSlider::set_title($_REQUEST['table_name'], $_REQUEST['rec_id'], $_REQUEST['value'], $_REQUEST['lang']);
+			itSlider::set_title(ed_field_request_value('table_name'), ed_field_request_int('rec_id'), ed_field_request_value('value'), ed_field_request_value('lang', CMS_LANG));
 			return ed_field_redirect_result(ed_field_slider_url($url));
 		case 'slider_href':
-			itSlider::set_href($_REQUEST['table_name'], $_REQUEST['rec_id'], $_REQUEST['value'], $_REQUEST['lang']);
+			itSlider::set_href(ed_field_request_value('table_name'), ed_field_request_int('rec_id'), ed_field_request_value('value'), ed_field_request_value('lang', CMS_LANG));
 			return ed_field_redirect_result(ed_field_slider_url($url));
 		case 'add_content':
 			$db = new itMySQL();
-			$rec_id = $db->insert_rec($_REQUEST['table_name']);
-			$db->update_value_db($_REQUEST['table_name'], $rec_id, [$_REQUEST['lang'] => $_REQUEST['value']], 'title_xml');
-			$db->update_value_db($_REQUEST['table_name'], $rec_id, $_REQUEST['category_id'], 'category_id');
+			$rec_id = $db->insert_rec(ed_field_request_value('table_name'));
+			$db->update_value_db(ed_field_request_value('table_name'), $rec_id, [ed_field_request_value('lang', CMS_LANG) => ed_field_request_value('value')], 'title_xml');
+			$db->update_value_db(ed_field_request_value('table_name'), $rec_id, ed_field_request_value('category_id'), 'category_id');
 			unset($db);
 			$url = '/'.CMS_LANG.'/material/'.$rec_id.'/'; die;
 			cms_redirect_page($url);
 			break;
 		case 'datetime':
 			$db = new itMySQL();
-			$db->update_value_db($_REQUEST['table_name'], $_REQUEST['rec_id'], $_REQUEST['datetime'], 'datetime');
+			$db->update_value_db(ed_field_request_value('table_name'), ed_field_request_int('rec_id'), ed_field_request_value('datetime'), 'datetime');
 			unset($db);
 			return ed_field_redirect_result($url);
 		case 'killall':
 			$db = new itMySQL();
-			$db->request("DELETE from {$db->db_prefix}{$_REQUEST['table_name']} where `status` = '{$_REQUEST['status']}'");
-			$db->reset_autoinc($_REQUEST['table_name']);
+			$db->request("DELETE from {$db->db_prefix}".ed_field_request_value('table_name')." where `status` = '".ed_field_request_value('status')."'");
+			$db->reset_autoinc(ed_field_request_value('table_name'));
 			unset($db);
 			return ed_field_redirect_result($url);
 		case 'background':
 			$dest = "themes/".CMS_THEME."/images/bg_{$data['controller']}.jpg";
-			if (!move_uploaded_file($_FILES[DEFAULT_FILES_NAME]['tmp_name'][0], $dest))
+			if (!ed_field_has_uploads() OR !isset($_FILES[DEFAULT_FILES_NAME]['tmp_name'][0]) OR !move_uploaded_file($_FILES[DEFAULT_FILES_NAME]['tmp_name'][0], $dest))
 				{
-				add_error_message("error loading background {$_FILES[DEFAULT_FILES_NAME]['name']} ...");
+				$upload_name = (ed_field_has_uploads() AND isset($_FILES[DEFAULT_FILES_NAME]['name'][0])) ? $_FILES[DEFAULT_FILES_NAME]['name'][0] : '';
+				add_error_message("error loading background {$upload_name} ...");
 				}
 			else
 				{
