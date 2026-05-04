@@ -82,3 +82,9 @@
   - declared existing `itEditor` runtime properties and guarded editor storage initialization, field movement, zoom switching, related-content writes, cache/status checks, and `_consolidate()`
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy editor UI flow
   - added `docs/EDITOR_CONTENT_SAVE_PIPELINE_STABILIZATION_STAGE.md`
+
+- M0 / P78 catalog DB row / null guard stabilization bundle
+  - stabilized `itItem`, `itCategory`, `itObject`, and `itBlock` against missing options, empty DB rows, and incomplete runtime payloads
+  - guarded public catalog item/feed/filter helpers against incomplete item rows, missing category relations, empty session filters, and invalid price-bound query results
+  - preserved routes, bootstrap/config/env behavior, DB schema, storage format, legacy function names, and valid-row output structure
+  - added `docs/CATALOG_DB_ROW_NULL_GUARD_STAGE.md`

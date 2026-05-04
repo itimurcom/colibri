@@ -1,6 +1,27 @@
 <?php
+function items_row_value($row, $key, $default=NULL)
+	{
+	return (is_array($row) AND array_key_exists($key, $row)) ? $row[$key] : $default;
+	}
+
+function items_user_logged()
+	{
+	global $_USER;
+	return (is_object($_USER) AND method_exists($_USER, 'is_logged')) ? $_USER->is_logged() : false;
+	}
+
+function items_filter_value($key, $default=NULL)
+	{
+	return (isset($_SESSION['filter']) AND is_array($_SESSION['filter']) AND array_key_exists($key, $_SESSION['filter'])) ? $_SESSION['filter'][$key] : $default;
+	}
+
 function get_item_images_container($row, $column='images', $type='slider', $f_title='item_gallery_title', $f_caption='item_gallery_caption')
 	{
+	if (!is_array($row) OR empty($row['id']))
+		{
+		return NULL;
+		}
+
 	$o_images = new itImages([
 		'table_name'	=> 'items',
 		'rec_id'	=> $row['id'],
@@ -30,30 +51,33 @@ function get_item_compiled_block($block_name, $options=[])
 		'no_related'	=> true,
 		'no_lang'	=> true,
 		'edclass'	=> 'dashed_blue',
-	], $options));
+	], is_array($options) ? $options : []));
 	$o_block->compile();
 	return $o_block;
 	}
 
 function get_item_runtime_url($row, $lang=NULL)
 	{
+	$row = is_array($row) ? $row : [];
 	$lang = is_null($lang) ? CMS_LANG : $lang;
+	$url_xml = items_row_value($row, 'url_xml', []);
+	$id = items_row_value($row, 'id');
 	return '/'.$lang.'/items/'.
-		(isset($row['url_xml'][$lang])
-			? $row['url_xml'][$lang]
-			: "{$row['id']}/");
+		(isset($url_xml[$lang])
+			? $url_xml[$lang]
+			: "{$id}/");
 	}
 
 function get_item_markup_image($row)
 	{
+	$images = items_row_value($row, 'images', []);
 	return CMS_CURRENT_BASE_URL.'/img/itemshot_'.
-		(isset($row['images'][0]) ? $row['images'][0] : basename(DEFAULT_OG_IMAGE));
+		(isset($images[0]) ? $images[0] : basename(DEFAULT_OG_IMAGE));
 	}
 
 function get_item_panel_admin_code($row)
 	{
-	global $_USER;
-	return $_USER->is_logged()
+	return items_user_logged()
 		? TAB."<div class='ed_devider admin'>".
 			get_item_x_event($row).
 			get_item_articul_event($row).
@@ -83,13 +107,18 @@ function get_item_panel_action_code($row)
 
 function get_item_panel_block_code($row, $block)
 	{
-	return (!($row['is_shop'] OR is_for_sale($row) AND !is_null($block->editor))) ? $block->editor->code() : NULL;
+	if (!is_array($row) OR !is_object($block) OR !is_object($block->editor))
+		{
+		return NULL;
+		}
+
+	return (!(items_row_value($row, 'is_shop') OR is_for_sale($row)) AND !is_null($block->editor)) ? $block->editor->code() : NULL;
 	}
 
 function get_item_panel_color_gallery($row, $item_id)
 	{
-	global $_USER;
-	if (!(is_array($row['color_xml']) OR $_USER->is_logged()))
+	if (!is_array($row)) return NULL;
+	if (!(is_array(items_row_value($row, 'color_xml')) OR items_user_logged()))
 		{
 		return NULL;
 		}
@@ -104,17 +133,21 @@ function get_item_panel_color_gallery($row, $item_id)
 function set_item_page_metadata($row, $category_row, $item_articul, $item_title, $description)
 	{
 	global $plug_og, $_MARKUP;
+	$row = is_array($row) ? $row : [];
+	$category_row = is_array($category_row) ? $category_row : [];
+	$images = items_row_value($row, 'images', []);
+	$category_title = get_const(items_row_value($category_row, 'title'));
 
 	$plug_og['title'] = $item_articul;
-	$plug_og['subtitle'] = get_const($category_row['title']).(!empty($item_title) ? " | {$item_title}" : NULL);
-	$plug_og['image'] = isset($row['images'][0]) ? $row['images'][0] : DEFAULT_OG_IMAGE;
+	$plug_og['subtitle'] = $category_title.(!empty($item_title) ? " | {$item_title}" : NULL);
+	$plug_og['image'] = isset($images[0]) ? $images[0] : DEFAULT_OG_IMAGE;
 	$plug_og['description'] = $description;
 
 	$_MARKUP = [
 		'name'		=> $plug_og['subtitle'],
 		'description'	=> $plug_og['description'],
 		'image'		=> [0 => get_item_markup_image($row)],
-		'price'		=> $row['price'],
+		'price'		=> items_row_value($row, 'price', 0),
 		'currency'	=> 'USD',
 		'sku'		=> $item_articul,
 		'url'		=> CMS_CURRENT_BASE_URL.get_item_runtime_url($row),
@@ -123,18 +156,19 @@ function set_item_page_metadata($row, $category_row, $item_articul, $item_title,
 
 function get_items_feed_regexp_filter($session_key, $column)
 	{
-	if (!isset($_SESSION['filter'][$session_key]) || !count($_SESSION['filter'][$session_key]))
+	$filter = items_filter_value($session_key, []);
+	if (!is_array($filter) OR !count($filter))
 		{
 		return NULL;
 		}
 
-	$regexp = '"'.implode('\"|\"', array_keys($_SESSION['filter'][$session_key])).'"';
+	$regexp = '"'.implode('\\"|\\"', array_keys($filter)).'"';
 	return !empty($regexp) ? " AND `{$column}` REGEXP '{$regexp}'" : NULL;
 	}
 
 function get_items_feed_order()
 	{
-	switch (ready_val($_SESSION['filter']['sort']))
+	switch (ready_val(items_filter_value('sort')))
 		{
 		case 'price_up' :
 			return "`price` ASC";
@@ -171,7 +205,7 @@ function get_item_panel($item_id=NULL)
 		'edclass'	=> 'dashed',
 		]);
 
-	if ($o_edit->data['status']!='PUBLISHED') cms_redirect_page("/");
+	if (!is_array($o_edit->data) OR empty($o_edit->data) OR items_row_value($o_edit->data, 'status')!='PUBLISHED') cms_redirect_page("/");
 
 	$o_ext = new itEditor([
 		'table_name'	=> 'items',
@@ -181,17 +215,20 @@ function get_item_panel($item_id=NULL)
 		]);
 
 	$row = $o_edit->data;
-	$category_row = $cat_cat[$cat_relations[$row['category_id']]];
+	$category_id = items_row_value($row, 'category_id');
+	$category_key = isset($cat_relations[$category_id]) ? $cat_relations[$category_id] : NULL;
+	$category_row = (!is_null($category_key) AND isset($cat_cat[$category_key]) AND is_array($cat_cat[$category_key])) ? $cat_cat[$category_key] : [];
 	$item_articul = get_item_articul($row);
-	$item_title = get_field_by_lang($row['title_xml'], CMS_LANG, '');
+	$item_title = get_field_by_lang(items_row_value($row, 'title_xml'), CMS_LANG, '');
 	$ext_code = $o_ext->container();
 	$o_b_all = get_item_compiled_block(BLOCK_ITEMALL);
 	$o_b_discl = get_item_compiled_block(BLOCK_ITEMDISCL, ['class' => 'bg_red']);
+	$category_title = get_const(items_row_value($category_row, 'title'));
 
 	$result =
 		get_item_serie_feed($row).
 		TAB."<h1 class='tit' id='item-tit-{$item_id}'>".
-			"<small>".get_const($category_row['title'])."</small><br>".
+			"<small>".$category_title."</small><br>".
 			"<span class='green'>{$item_articul}</span>".
 			($item_title ? "&nbsp;&laquo;{$item_title}&raquo;" : NULL).
 		TAB."</h1>".
@@ -229,18 +266,23 @@ function get_item_panel($item_id=NULL)
 
 function get_item_gallery_context($data, $key)
 	{
+	if (!is_array($data) OR empty($data['table_name']) OR empty($data['rec_id']))
+		{
+		return NULL;
+		}
 	if (!($row = itMySQL::_get_rec_from_db($data['table_name'], $data['rec_id'])))
 		{
 		return NULL;
 		}
+	$row = is_array($row) ? $row : [];
 
 	return [
 		'row'		=> $row,
 		'index'		=> $key+1,
 		'articul'	=> get_item_articul($row),
-		'row_category'	=> get_category_by_id($row['category_id']),
-		'data_category'	=> get_category_by_id($data['category_id']),
-		'title'		=> stripQuotas(get_field_by_lang($row['title_xml'], CMS_LANG, '')),
+		'row_category'	=> get_category_by_id(items_row_value($row, 'category_id')),
+		'data_category'	=> get_category_by_id(items_row_value($data, 'category_id')),
+		'title'		=> stripQuotas(get_field_by_lang(items_row_value($row, 'title_xml'), CMS_LANG, '')),
 		];
 	}
 
@@ -279,33 +321,36 @@ function item_gallery_caption($data, $key)
 function get_item_letter($item_rec=NULL)
 	{
 	global $cat_cat, $cat_relations;
-	if (is_null($item_rec)) return;
+	if (!is_array($item_rec)) return NULL;
 	$letter = NULL;
 
-	if ($item_rec['is_shop'])
+	if (items_row_value($item_rec, 'is_shop'))
 		{
 		$letter = 'S_';
 		}
 
-	if ($item_rec['is_replicant'])
+	if (items_row_value($item_rec, 'is_replicant'))
 		{
 		return $letter.'R';
 		}
 
-	return $letter.$cat_cat[$cat_relations[$item_rec['category_id']]]['letter'];
+	$category_id = items_row_value($item_rec, 'category_id');
+	$category_key = isset($cat_relations[$category_id]) ? $cat_relations[$category_id] : NULL;
+	return $letter.((!is_null($category_key) AND isset($cat_cat[$category_key]['letter'])) ? $cat_cat[$category_key]['letter'] : '');
 	}
 
 function get_category_by_id($category_id)
 	{
 	global $cat_cat, $cat_relations;
 	return isset($cat_relations[$category_id])
-		? get_const($cat_cat[$cat_relations[$category_id]]['title'])
+		? get_const(items_row_value($cat_cat[$cat_relations[$category_id]], 'title'))
 		: NULL;
 	}
 
 function get_item_articul($item_rec=NULL)
 	{
-	return get_item_letter($item_rec)."_".stripslashes($item_rec['serie'])."_".stripslashes($item_rec['version']);
+	if (!is_array($item_rec)) return NULL;
+	return get_item_letter($item_rec)."_".stripslashes((string)items_row_value($item_rec, 'serie'))."_".stripslashes((string)items_row_value($item_rec, 'version'));
 	}
 
 function get_items_feed_view_sql($view)
@@ -320,20 +365,22 @@ function get_items_feed_view_sql($view)
 
 function get_items_feed_price_sql()
 	{
+	$min = items_filter_value('min');
+	$max = items_filter_value('max');
 	return
-		(ready_val($_SESSION['filter']['min']) ? " AND `price`>={$_SESSION['filter']['min']}" : NULL).
-		(ready_val($_SESSION['filter']['max']) ? " AND `price`<={$_SESSION['filter']['max']}" : NULL);
+		(ready_val($min) ? " AND `price`>={$min}" : NULL).
+		(ready_val($max) ? " AND `price`<={$max}" : NULL);
 	}
 
 function get_items_feed_sql($view)
 	{
-	global $cat_cat, $_USER;
+	global $cat_cat;
 
 	$sql = "SELECT * FROM `colibri_items` WHERE `status`='PUBLISHED' ".
 		(isset($cat_cat[$view]) ? "AND `category_id`='{$cat_cat[$view]['id']}' " : NULL).
-		(!$_USER->is_logged() ? "AND `images` NOT IN ('', '[]') " : NULL);
+		(!items_user_logged() ? "AND `images` NOT IN ('', '[]') " : NULL);
 
-	if ($view != 'shop' AND !in_array(@$cat_cat[$view]['id'], str_getcsv(get_const('CATEGORY_FOR_SALE'))))
+	if ($view != 'shop' AND !in_array(isset($cat_cat[$view]['id']) ? $cat_cat[$view]['id'] : NULL, str_getcsv(get_const('CATEGORY_FOR_SALE'))))
 		{
 		$sql .= " AND `is_shop`<>'1'";
 		}
@@ -355,7 +402,7 @@ function get_items_compiled_feed($sql, $order_str, $fewer=false)
 
 function get_items_fewer_feed_code($sql, $order_str)
 	{
-	if (!ready_val($_REQUEST['anchor'])) return ['counter' => NULL, 'code' => NULL];
+	if (!ready_val(isset($_REQUEST['anchor']) ? $_REQUEST['anchor'] : NULL)) return ['counter' => NULL, 'code' => NULL];
 
 	$o_fewer = get_items_compiled_feed($sql, $order_str, true);
 	$counter = $o_fewer->count_all();
@@ -379,13 +426,13 @@ function get_items_feed()
 	{
 	global $plug_og;
 
-	$sql = get_items_feed_sql(ready_val($_REQUEST['view']));
+	$sql = get_items_feed_sql(ready_val(isset($_REQUEST['view']) ? $_REQUEST['view'] : NULL));
 	$order_str = get_items_feed_order();
 	$o_feed = get_items_compiled_feed($sql, $order_str);
 	$fewer = get_items_fewer_feed_code($sql, $order_str);
 
 	$result =
-		get_items_feed_title_code($plug_og['title'], $o_feed->count_all() + $fewer['counter']).
+		get_items_feed_title_code(items_row_value($plug_og, 'title'), $o_feed->count_all() + $fewer['counter']).
 		TAB."<div class='ed_devider'></div>".
 		feed_selector().
 		TAB."<div class='siterow boxed'>".
@@ -398,47 +445,48 @@ function get_items_feed()
 
 function get_item_avatar_image($item_rec=NULL, $class='SERIE_AVATAR')
 	{
-	$image = (is_array($item_rec['images']) and count($item_rec['images']))
-		? $item_rec['images'][0]
+	$images = items_row_value($item_rec, 'images', []);
+	$image = (is_array($images) and count($images))
+		? $images[0]
 		: NULL;
 	return get_thumbnail($image, $class);
 	}
 
 function get_items_feed_row_animation($row)
 	{
-	$active_id = ready_val($_REQUEST['rec_id']);
-	$anchor_id = ready_val($_REQUEST['anchor']);
-	return (($row['id'] == $active_id) OR ($row['id'] == $anchor_id))
+	$row_id = items_row_value($row, 'id');
+	$active_id = ready_val(isset($_REQUEST['rec_id']) ? $_REQUEST['rec_id'] : NULL);
+	$anchor_id = ready_val(isset($_REQUEST['anchor']) ? $_REQUEST['anchor'] : NULL);
+	return (($row_id == $active_id) OR ($row_id == $anchor_id))
 		? [' animatedParent animateOnce', ' animated tada']
 		: [NULL, NULL];
 	}
 
 function get_items_feed_row_price_code($row)
 	{
-	return ($row['is_shop'] OR is_for_sale($row))
+	return (items_row_value($row, 'is_shop') OR is_for_sale($row))
 		? TAB."<div class='price sale rounded boxed'>".get_const('FOR_SALE')."</div>"
-		: TAB."<div class='price rounded shadow-white boxed'>{$row['price']}<small>&nbsp;$</small></div>";
+		: TAB."<div class='price rounded shadow-white boxed'>".items_row_value($row, 'price', 0)."<small>&nbsp;$</small></div>";
 	}
 
 function get_items_feed_row($row, $full=false)
 	{
-	if (is_null($row))
+	if (!is_array($row))
 		{
 		return TAB."<div class='item_div boxed'>&nbsp;</div>";
 		}
 
-	global $_USER;
-
 	$img_src = get_item_avatar_image($row);
-	$title = get_item_articul($row)."<br/>".get_field_by_lang($row['title_xml'], CMS_LANG, '');
+	$title = get_item_articul($row)."<br/>".get_field_by_lang(items_row_value($row, 'title_xml'), CMS_LANG, '');
 	$link = get_item_runtime_url($row);
 	list($animated_parent, $animated) = get_items_feed_row_animation($row);
 	$full_str = $full ? ' full' : NULL;
+	$row_id = items_row_value($row, 'id');
 
 	return
-		TAB."<div class='item_div boxed{$animated_parent}{$full_str}' id='item-{$row['id']}'>".
+		TAB."<div class='item_div boxed{$animated_parent}{$full_str}' id='item-{$row_id}'>".
         	wish_btn($row).
-		($_USER->is_logged() ? TAB."<div class='id'># {$row['id']}</div>" : NULL).
+		(items_user_logged() ? TAB."<div class='id'># {$row_id}</div>" : NULL).
 		(!$full ? get_item_flags($row) : NULL).
 		get_items_feed_row_price_code($row).
 		TAB."<a href='{$link}' target='_blank'>".
@@ -457,23 +505,28 @@ function is_for_sale($row=NULL)
 
 function get_item_flags($row=NULL)
 	{
+	$row = is_array($row) ? $row : [];
 	return
-		($row['is_new'] ? TAB."<div class='new_flash shadow-white'><img src='/themes/".CMS_THEME."/images/sub_new_gray.png'></div>" : NULL).
-		($row['is_econom'] ? TAB."<div class='econom_flash shadow-white'><img src='/themes/".CMS_THEME."/images/sub_econom_gray.png'></div>" : NULL);
+		(items_row_value($row, 'is_new') ? TAB."<div class='new_flash shadow-white'><img src='/themes/".CMS_THEME."/images/sub_new_gray.png'></div>" : NULL).
+		(items_row_value($row, 'is_econom') ? TAB."<div class='econom_flash shadow-white'><img src='/themes/".CMS_THEME."/images/sub_econom_gray.png'></div>" : NULL);
 	}
 
 function get_item_serie_feed_sql($row)
 	{
-	return "SELECT * FROM `colibri_items` WHERE `serie` = '{$row['serie']}' ".
- 		"AND `category_id` = '{$row['category_id']}' ".
- 		"AND `is_replicant` = '{$row['is_replicant']}' ".
+	if (!is_array($row)) return NULL;
+	return "SELECT * FROM `colibri_items` WHERE `serie` = '".items_row_value($row, 'serie')."' ".
+ 		"AND `category_id` = '".items_row_value($row, 'category_id')."' ".
+ 		"AND `is_replicant` = '".items_row_value($row, 'is_replicant')."' ".
  		"AND `status` = 'PUBLISHED'";
 	}
 
 function get_item_serie_feed($row=NULL)
 	{
+	$sql = get_item_serie_feed_sql($row);
+	if (is_null($sql)) return NULL;
+
 	$o_feed = new itFeed([
-		'sql'	=> get_item_serie_feed_sql($row),
+		'sql'	=> $sql,
 		'name'	=> 'items',
 		'start'		=> true,
 		'async'		=> false,
@@ -489,7 +542,7 @@ function get_item_serie_feed($row=NULL)
 	return !is_null($result)
 		?
 			TAB."<div class='tit'>".
-			get_const('ITEM_SERIE_TITLE')." : <span class='green'>".get_item_letter($row)."_{$row['serie']}</span>".
+			get_const('ITEM_SERIE_TITLE')." : <span class='green'>".get_item_letter($row)."_".items_row_value($row, 'serie')."</span>".
 			"</div>".
 			$result
 		: NULL;

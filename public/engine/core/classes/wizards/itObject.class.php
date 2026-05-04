@@ -20,6 +20,7 @@ class itObject
 	{
 	public $table_name, $rec_id, $data, $wizard, $val_field, $wiz_field, $wiz_values, $cat_field, $code;
 	public $action, $method, $reCaptcha;
+	public $name, $category_name, $placeholder, $op;
 	public function __construct($options=NULL)
 		{
 		global $object_counter;
@@ -27,20 +28,21 @@ class itObject
 		$object_counter ++;
 
 		$this->name 		= "object-{$object_counter}";
-		$this->table_name	= ready_val($options['table_name'], get_const('DEFAULT_OBJECT_TABLE'));
-		$this->category_name	= ready_val($options['category_name'], get_const('DEFAULT_CATEGORY_TABLE'));
-		$this->rec_id		= ready_val($options['rec_id']);
+		$this->table_name	= ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, get_const('DEFAULT_OBJECT_TABLE'));
+		$this->category_name	= ready_val(isset($options['category_name']) ? $options['category_name'] : NULL, get_const('DEFAULT_CATEGORY_TABLE'));
+		$this->rec_id		= ready_val(isset($options['rec_id']) ? $options['rec_id'] : NULL);
 		$this->data 		= itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
+		$this->data		= is_array($this->data) ? $this->data : [];
 
-		$this->wiz_field	= ready_val($options['wiz_field'], DEFAULT_WIZARD_FIELD);
-		$this->cat_field	= ready_val($options['cat_field'], DEFAULT_CAT_FIELD);
-		$this->wiz_values	= ready_val($options['wiz_values'], DEFAULT_WIZARD_VALUES);
+		$this->wiz_field	= ready_val(isset($options['wiz_field']) ? $options['wiz_field'] : NULL, DEFAULT_WIZARD_FIELD);
+		$this->cat_field	= ready_val(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
+		$this->wiz_values	= ready_val(isset($options['wiz_values']) ? $options['wiz_values'] : NULL, DEFAULT_WIZARD_VALUES);
 
-		$this->action		= ready_val($options['action'], DEFAULT_OBJECT_ACTION);
-		$this->method		= ready_val($options['method'], DEFAULT_OBJECT_METHOD);
-		$this->placeholder	= ready_val($options['placeholder'], get_const('DEFAULT_PLACEHOLDER'));
-		$this->reCaptcha	= ready_val($options['reCaptcha'], DEFAULT_OBJECT_CAPTCHA);
-		$this->op		= ready_val($options['op'], DEFAULT_OBJECT_OP);
+		$this->action		= ready_val(isset($options['action']) ? $options['action'] : NULL, DEFAULT_OBJECT_ACTION);
+		$this->method		= ready_val(isset($options['method']) ? $options['method'] : NULL, DEFAULT_OBJECT_METHOD);
+		$this->placeholder	= ready_val(isset($options['placeholder']) ? $options['placeholder'] : NULL, get_const('DEFAULT_PLACEHOLDER'));
+		$this->reCaptcha	= ready_val(isset($options['reCaptcha']) ? $options['reCaptcha'] : NULL, DEFAULT_OBJECT_CAPTCHA);
+		$this->op		= ready_val(isset($options['op']) ? $options['op'] : NULL, DEFAULT_OBJECT_OP);
 
 		$this->get_wizard();
 		}
@@ -112,7 +114,12 @@ class itObject
 
 	public function store()
 		{
+		if (!is_array($this->data) OR empty($this->rec_id))
+			{
+			return false;
+			}
 		itMySQL::_update_db_rec($this->table_name, $this->rec_id, $this->data);
+		return true;
 		}
 
 	public function compile()
@@ -140,14 +147,17 @@ class itObject
 	static function _add($options=NULL)
 		{
 		global $_USER;
-		$cat_field = ready_val($options['cat_field'], DEFAULT_CAT_FIELD);
-		if (is_array($options) AND isset($options[$cat_field]))
+		$options = is_array($options) ? $options : [];
+		$cat_field = ready_val(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
+		if (isset($options[$cat_field]))
 			{
-			$options['table_name']	= ready_val($options['table_name'], DEFAULT_WIZARD_TABLE);
+			$options['table_name']	= ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_WIZARD_TABLE);
+
+			$user_id = (is_object($_USER) AND method_exists($_USER, 'id')) ? $_USER->id() : NULL;
 
 			$values_arr = [
-				'user_id'	=> ready_val($options['user_id'], $_USER->id()),
-				'avatar'	=> ready_val($options['avatar']),
+				'user_id'	=> ready_val(isset($options['user_id']) ? $options['user_id'] : NULL, $user_id),
+				'avatar'	=> ready_val(isset($options['avatar']) ? $options['avatar'] : NULL),
 				$cat_field	=> $options[$cat_field],
 				'status'	=> 'PUBLISHED',
 			];
@@ -167,11 +177,22 @@ class itObject
 
 	static function _update_value($options=NULL)
 		{
+		$options = is_array($options) ? $options : [];
 		if (isset($options['rec_id']) AND isset($options['name']))
 			{
-			$options['table_name'] = ready_val($options['table_name'], DEFAULT_OBJECT_TABLE);
+			$options['table_name'] = ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
 			$o_object = new itObject($options);
-			$o_object->data[$o_object->wiz_values][$options['name']] = ready_val($options['value']);
+			if (!is_array($o_object->data) OR empty($o_object->data))
+				{
+				add_error_message('ERROR_OPTIONS_OBJECT');
+				unset($o_object);
+				return;
+				}
+			if (!isset($o_object->data[$o_object->wiz_values]) OR !is_array($o_object->data[$o_object->wiz_values]))
+				{
+				$o_object->data[$o_object->wiz_values] = [];
+				}
+			$o_object->data[$o_object->wiz_values][$options['name']] = ready_val(isset($options['value']) ? $options['value'] : NULL);
 			$o_object->store();
 			unset($o_object);
 			} else add_error_message('ERROR_OPTIONS_OBJECT');
@@ -179,20 +200,31 @@ class itObject
 
 	static function _set_category($options=NULL)
 		{
-		$cat_field = ready_val($options['cat_field'], DEFAULT_CAT_FIELD);
+		$options = is_array($options) ? $options : [];
+		$cat_field = ready_val(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
 		if (isset($options['rec_id']) AND isset($options['value']))
 			{
-			$options['table_name'] = ready_val($options['table_name'], DEFAULT_OBJECT_TABLE);
+			$options['table_name'] = ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
 			itMySQL::_update_value_db($options['table_name'], $options['rec_id'], $options['value'], $cat_field);
 			} else add_error_message('ERROR_OPTIONS_OBJECT');
 		}
 
 	static function _set_title($options=NULL)
 		{
+		$options = is_array($options) ? $options : [];
 		if (isset($options['rec_id']) AND isset($options['value']))
 			{
-			$options['table_name'] = ready_val($options['table_name'], DEFAULT_OBJECT_TABLE);
+			$options['table_name'] = ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
 			$row = itMySQL::_get_rec_from_db($options['table_name'], $options['rec_id']);
+			if (!is_array($row))
+				{
+				add_error_message('ERROR_OPTIONS_OBJECT');
+				return;
+				}
+			if (!isset($row['title_xml']) OR !is_array($row['title_xml']))
+				{
+				$row['title_xml'] = [];
+				}
 			$row['title_xml'][CMS_LANG] = $options['value'];
 			itMySQL::_update_value_db($options['table_name'], $options['rec_id'], $row['title_xml'], 'title_xml');
 			} else add_error_message('ERROR_OPTIONS_OBJECT');
@@ -213,7 +245,7 @@ class itObject
 				}
 			$this->code .=
 				TAB."<div class='list'>".
-				get_object_category_event($this->data).
+				get_object_category_event(is_array($this->data) ? $this->data : []).
 				implode('', $rows).
 				TAB."</div>";
 			}
@@ -222,9 +254,9 @@ class itObject
 	protected function objectFormInputOptions($row, $type=NULL)
 		{
 		$options = [
-			'name'		=> $row['name'],
-			'value'		=> $row['value'],
-			'label'		=> get_field_by_lang($row['label'], CMS_LANG, ''),
+			'name'		=> isset($row['name']) ? $row['name'] : '',
+			'value'		=> isset($row['value']) ? $row['value'] : NULL,
+			'label'		=> get_field_by_lang(isset($row['label']) ? $row['label'] : NULL, CMS_LANG, ''),
 			'compact'	=> true,
 			];
 		if (!is_null($type))
@@ -250,16 +282,17 @@ class itObject
 			'array' 		=> $sel_arr,
 			'titles'        => 'title',
 			'values'	=> 'value',
-			'name'		=> $row['name'],
+			'name'		=> isset($row['name']) ? $row['name'] : '',
 			'compact'	=> 1,
-			'value'		=> $row['value'],
-			'label'		=> get_field_by_lang($row['label']),
+			'value'		=> isset($row['value']) ? $row['value'] : NULL,
+			'label'		=> get_field_by_lang(isset($row['label']) ? $row['label'] : NULL),
 			];
 		}
 
 	protected function appendObjectFormField($o_form, $row)
 		{
-		switch ($row['type'])
+		$type = isset($row['type']) ? $row['type'] : DEFAULT_WIZARD_TYPE;
+		switch ($type)
 			{
 			case 'text' :
 				$o_form->add_input($this->objectFormInputOptions($row));
@@ -274,14 +307,15 @@ class itObject
 				$o_form->add_selector('select', $this->objectFormSelectOptions($row));
 				break;
 			default :
-				$o_form->add_input($row['name'], $row['value'], get_field_by_lang($row['label'], CMS_LANG, ''), false, 'compact');
+				$o_form->add_input(isset($row['name']) ? $row['name'] : '', isset($row['value']) ? $row['value'] : NULL, get_field_by_lang(isset($row['label']) ? $row['label'] : NULL, CMS_LANG, ''), false, 'compact');
 				break;
 			}
 		}
 
 	protected function objectFormRow($row)
 		{
-		$row['value']		= isset($this->data[$this->wiz_values][$row['name']]) ? $this->data[$this->wiz_values][$row['name']] : NULL;
+		$name = isset($row['name']) ? $row['name'] : NULL;
+		$row['value']		= (!is_null($name) AND isset($this->data[$this->wiz_values][$name])) ? $this->data[$this->wiz_values][$name] : NULL;
 		$row['table_name']	= $this->table_name;
 		$row['rec_id']		= $this->rec_id;
 		return $row;
@@ -306,8 +340,8 @@ class itObject
 			$o_form->add_data([
 				'table_name'	=> $this->table_name,
 				'rec_id'	=> $this->rec_id,
-				$this->cat_field=> ready_val($this->data[$this->cat_field]),
-				'user_id'	=> $_USER->id(),
+				$this->cat_field=> ready_val(isset($this->data[$this->cat_field]) ? $this->data[$this->cat_field] : NULL),
+				'user_id'	=> (is_object($_USER) AND method_exists($_USER, 'id')) ? $_USER->id() : NULL,
 				]);
 			$o_form->add_hidden('op', $this->op);
 			$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );
@@ -329,8 +363,8 @@ class itObject
 				{
 				$rows[] =
 					TAB."<div class='row'>".
-					TAB."<div class='field p5'>".get_field_by_lang($wiz_row['label'], CMS_LANG, '')."</div>".
-					TAB."<div class='field p5'>{$wiz_row['text']}</div>".
+					TAB."<div class='field p5'>".get_field_by_lang(isset($wiz_row['label']) ? $wiz_row['label'] : NULL, CMS_LANG, '')."</div>".
+					TAB."<div class='field p5'>".(isset($wiz_row['text']) ? $wiz_row['text'] : '')."</div>".
 					TAB."</div>";
 				}
 			return	TAB."<div class='list'>".
@@ -342,11 +376,11 @@ class itObject
 	static function _form_update($options=NULL)
 		{
 		$options = is_array($options) ? $options : [];
-		$options['category_table'] 	= ready_val($options['category_table'], DEFAULT_CATEGORY_TABLE);
-		$options['table_name']		= ready_val($options['table_name'], DEFAULT_OBJECT_TABLE);
-		$options['wiz_field']		= ready_val($options['wiz_field'], DEFAULT_WIZARD_FIELD);
+		$options['category_table'] 	= ready_val(isset($options['category_table']) ? $options['category_table'] : NULL, DEFAULT_CATEGORY_TABLE);
+		$options['table_name']		= ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
+		$options['wiz_field']		= ready_val(isset($options['wiz_field']) ? $options['wiz_field'] : NULL, DEFAULT_WIZARD_FIELD);
 
-		$cat_field = ready_val($options['cat_field'], DEFAULT_CAT_FIELD);
+		$cat_field = ready_val(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
 
 		if (!isset($options[$cat_field]))
 			{
@@ -375,7 +409,7 @@ class itObject
 	static function _count($category_id=NULL, $table_name=DEFAULT_OBJECT_TABLE, $db_prefix=DB_PREFIX)
 		{
 		$request = itMySQL::_request("SELECT COUNT(*) as count FROM {$db_prefix}{$table_name} WHERE `category_id`='{$category_id}'");
-		return is_array($request) ? $request[0]['count'] : 0;
+		return (is_array($request) AND isset($request[0]['count'])) ? $request[0]['count'] : 0;
 		}
 
 	static function events($url='/', $path=UPLOADS_ROOT)

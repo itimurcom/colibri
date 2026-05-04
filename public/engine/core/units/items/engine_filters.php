@@ -1,6 +1,31 @@
 <?php
+function item_filter_row_value($row, $key, $default=NULL)
+	{
+	return (is_array($row) AND array_key_exists($key, $row)) ? $row[$key] : $default;
+	}
+
+function item_filter_value($key, $default=NULL)
+	{
+	return (isset($_SESSION['filter']) AND is_array($_SESSION['filter']) AND array_key_exists($key, $_SESSION['filter'])) ? $_SESSION['filter'][$key] : $default;
+	}
+
+function item_filter_user_logged()
+	{
+	global $_USER;
+	return (is_object($_USER) AND method_exists($_USER, 'is_logged')) ? $_USER->is_logged() : false;
+	}
+
 function set_color_filter($color=NULL)
 	{
+	if (!isset($_SESSION['filter']) OR !is_array($_SESSION['filter']))
+		{
+		$_SESSION['filter'] = [];
+		}
+	if (!isset($_SESSION['filter']['colors']) OR !is_array($_SESSION['filter']['colors']))
+		{
+		$_SESSION['filter']['colors'] = [];
+		}
+
 	if ($color=='NULL')
 		{
 		unset($_SESSION['filter']['colors']);
@@ -40,17 +65,20 @@ function filter_color_selector()
 function get_color_selector_row($row)
 	{
 	global $color_seq;
+	$row = is_array($row) ? $row : [];
 	$color_seq++;
-	if ($row['show']!=1) return NULL;
+	if (item_filter_row_value($row, 'show')!=1) return NULL;
 
-	$selected = isset($_SESSION['filter']['colors'][$row['value']]) ? ' selected' : '';
-	return TAB."<span class='col_sel{$selected} rounded' data-id='{$color_seq}' title='".get_const($row['title'])."' style='background:{$row['color']};' onclick=\"select_filter('{$row['value']}', '');\"></span>";
+	$value = item_filter_row_value($row, 'value');
+	$selected_colors = item_filter_value('colors', []);
+	$selected = (is_array($selected_colors) AND isset($selected_colors[$value])) ? ' selected' : '';
+	return TAB."<span class='col_sel{$selected} rounded' data-id='{$color_seq}' title='".get_const(item_filter_row_value($row, 'title'))."' style='background:".item_filter_row_value($row, 'color').";' onclick=\"select_filter('{$value}', '');\"></span>";
 	}
 
 function filter_item_color_event_data($item_rec, $value, $legacy=false)
 	{
 	$data = [
-		'id'	=> $item_rec['id'],
+		'id'	=> item_filter_row_value($item_rec, 'id'),
 		'value'	=> $value,
 		];
 	return $legacy ? simple_encrypt(serialize($data)) : itEditor::event_data($data);
@@ -58,14 +86,16 @@ function filter_item_color_event_data($item_rec, $value, $legacy=false)
 
 function filter_item_color_selected_class($item_rec, $value)
 	{
-	return (is_array($item_rec['filter_xml']) AND in_array($value, $item_rec['filter_xml'])) ? ' selected' : '';
+	$filter_xml = item_filter_row_value($item_rec, 'filter_xml', []);
+	return (is_array($filter_xml) AND in_array($value, $filter_xml)) ? ' selected' : '';
 	}
 
 function filter_item_admin_color_span($item_rec, $row, $class='col_sel rounded', $legacy=false)
 	{
-	$selected = filter_item_color_selected_class($item_rec, $row['value']);
-	$data = filter_item_color_event_data($item_rec, $row['value'], $legacy);
-	return TAB."<span class='{$class}{$selected}' rel='{$data}' style='background:{$row['color']};' title='".get_const($row['title'])."' onclick=\"select_item_color(this);\"></span>";
+	$row = is_array($row) ? $row : [];
+	$selected = filter_item_color_selected_class($item_rec, item_filter_row_value($row, 'value'));
+	$data = filter_item_color_event_data($item_rec, item_filter_row_value($row, 'value'), $legacy);
+	return TAB."<span class='{$class}{$selected}' rel='{$data}' style='background:".item_filter_row_value($row, 'color').";' title='".get_const(item_filter_row_value($row, 'title'))."' onclick=\"select_item_color(this);\"></span>";
 	}
 
 function filter_item_admin_clear_span($item_rec, $class='col_sel no_shadow rounded', $legacy=false)
@@ -78,17 +108,19 @@ function filter_item_public_color_span($row, $class='col_sel rounded small')
 	{
 	global $item_colors;
 	if (!isset($item_colors[$row])) return NULL;
+	$color_row = is_array($item_colors[$row]) ? $item_colors[$row] : [];
 
-	$onclick = !isset($_SESSION['filter']['colors'][$row])
+	$selected_colors = item_filter_value('colors', []);
+	$onclick = (!is_array($selected_colors) OR !isset($selected_colors[$row]))
 		? "onclick=\"select_filter('{$row}', '/".CMS_LANG."/items/'"
 		: "onclick=\"window.location.href='/".CMS_LANG."/items/'\"";
-	return "<span class='{$class}' title='".get_const($item_colors[$row]['title'])."' style='background:{$item_colors[$row]['color']};' {$onclick});\"></span>";
+	return "<span class='{$class}' title='".get_const(item_filter_row_value($color_row, 'title'))."' style='background:".item_filter_row_value($color_row, 'color').";' {$onclick});\"></span>";
 	}
 
 function filter_item_color_set($item_rec, $class='col_selector boxed', $legacy=false)
 	{
 	global $item_colors;
-	if (!is_array($item_colors)) return NULL;
+	if (!is_array($item_colors) OR !is_array($item_rec)) return NULL;
 
 	$result = TAB."<div class='{$class}'>".
 		TAB."<div class='color_set'>";
@@ -105,12 +137,13 @@ function filter_item_color_set($item_rec, $class='col_selector boxed', $legacy=f
 
 function filter_item_public_color_set($item_rec, $class='col_selector item', $with_title=true, $span_class='col_sel rounded small')
 	{
-	if (!is_array($item_rec['filter_xml'])) return NULL;
+	$filter_xml = item_filter_row_value($item_rec, 'filter_xml', []);
+	if (!is_array($filter_xml)) return NULL;
 
 	$result = TAB."<div class='{$class}'>".
 		($with_title ? TAB."<div class='subselect'>".get_const('COLOR_SELECTOR')." :</div>" : NULL).
 		TAB."<div class='color_set'>";
-	foreach ($item_rec['filter_xml'] as $row)
+	foreach ($filter_xml as $row)
 		{
 		$result .= filter_item_public_color_span($row, $span_class);
 		}
@@ -122,9 +155,7 @@ function filter_item_public_color_set($item_rec, $class='col_selector item', $wi
 
 function filter_item_color_selector($item_rec)
 	{
-	global $_USER;
-
-	$result = $_USER->is_logged()
+	$result = item_filter_user_logged()
 		? filter_item_color_set($item_rec)
 		: filter_item_public_color_set($item_rec);
 
@@ -137,9 +168,7 @@ function filter_item_color_selector($item_rec)
 
 function item_color_selector($item_rec)
 	{
-	global $_USER;
-
-	$result = $_USER->is_logged()
+	$result = item_filter_user_logged()
 		? filter_item_color_set($item_rec, "col_selector' id='col_selector", true)
 		: filter_item_public_color_set($item_rec, "col_selector' id='col_selector", false, 'col_sel');
 
@@ -149,7 +178,11 @@ function item_color_selector($item_rec)
 function set_item_color($item_id=NULL, $value=NULL)
 	{
 	$item_rec = itMySQL::_get_rec_from_db('items', $item_id);
-	$item_rec['filter_xml'] = !is_array($item_rec['filter_xml']) ? [] : $item_rec['filter_xml'];
+	if (!is_array($item_rec))
+		{
+		return false;
+		}
+	$item_rec['filter_xml'] = !is_array(item_filter_row_value($item_rec, 'filter_xml')) ? [] : $item_rec['filter_xml'];
 
 	if(is_array($item_rec['filter_xml']) and (($key = array_search($value, $item_rec['filter_xml'])) !== false))
 		{
@@ -162,6 +195,7 @@ function set_item_color($item_id=NULL, $value=NULL)
 			}
 
 	itMySQL::_update_value_db('items', $item_id, $item_rec['filter_xml'], 'filter_xml');
+	return true;
 	}
 
 function get_items_sort_options()
@@ -190,7 +224,7 @@ function get_items_sort_selector()
 		'values'	=> 'value',
 		'name'		=> 'sort',
 		'compact'	=> true,
-		'value'		=> ready_val($_SESSION['filter']['sort']),
+		'value'		=> ready_val(item_filter_value('sort')),
 		'no_label'	=> true,
 		'ajax'		=> 'sort_price(this);',
 		'element_id'	=> 'sortsel',
@@ -204,17 +238,20 @@ function get_items_price_bounds($table_name='items', $db_prefix=DB_PREFIX, $step
 	{
 	$sql = "SELECT MAX(`price`) as max, MIN(`price`) AS min FROM `{$db_prefix}{$table_name}` WHERE`status`='PUBLISHED'";
 	$request=itMySQL::_request($sql);
+	$row = (is_array($request) AND isset($request[0]) AND is_array($request[0])) ? $request[0] : [];
+	$min = item_filter_row_value($row, 'min', 0);
+	$max = item_filter_row_value($row, 'max', 0);
 	return [
-		'min'	=> $request[0]['min'] - ($request[0]['min'] % $step),
-		'max'	=> $step*ceil($request[0]['max']/$step),
+		'min'	=> $min - ($min % $step),
+		'max'	=> $step*ceil($max/$step),
 		];
 	}
 
 function get_items_price_selector($table_name='items', $db_prefix=DB_PREFIX)
 	{
 	$bounds = get_items_price_bounds($table_name, $db_prefix);
-	$min = ready_val($_SESSION['filter']['min']) ? $_SESSION['filter']['min'] : $bounds['min'];
-	$max = ready_val($_SESSION['filter']['max']) ? $_SESSION['filter']['max'] : $bounds['max'];
+	$min = ready_val(item_filter_value('min')) ? item_filter_value('min') : $bounds['min'];
+	$max = ready_val(item_filter_value('max')) ? item_filter_value('max') : $bounds['max'];
 
 	return minify_js("<script>
     $(function() {

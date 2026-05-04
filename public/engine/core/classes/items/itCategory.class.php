@@ -8,29 +8,42 @@ definition([
 // itCategory : класс управления категориями товаров / или контента
 class itCategory
 	{
-	public $table_name, $rec_id, $name, $data, $field;
+	public $table_name, $rec_id, $name, $data, $field, $prefix;
+
+	protected static function row_value($row, $key, $default=NULL)
+		{
+		return (is_array($row) AND array_key_exists($key, $row)) ? $row[$key] : $default;
+		}
+
 	// конструктор класса
 	public function __construct($options=NULL)
 		{
 		global 	$category_counter;
+		$options = is_array($options) ? $options : [];
 		$category_counter++;
 		
 		$this->name 		= "category-{$category_counter}";
-		$this->table_name	= ready_val($options['table_name'], get_const('DEFAULT_CATEGORY_TABLE'));
-		$this->rec_id		= ready_val($options['rec_id']);
-		$this->prefix		= ready_val($options['prefix'], DB_PREFIX);
+		$this->table_name	= ready_val(self::row_value($options, 'table_name'), get_const('DEFAULT_CATEGORY_TABLE'));
+		$this->rec_id		= ready_val(self::row_value($options, 'rec_id'));
+		$this->prefix		= ready_val(self::row_value($options, 'prefix'), DB_PREFIX);
 		
 		$this->data 		= itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
+		$this->data		= is_array($this->data) ? $this->data : [];
 		}
 	// сохраняет поле 
 	public function store() 
 		{
+		if (!is_array($this->data) OR empty($this->data) OR empty($this->rec_id))
+			{
+			return false;
+			}
 		$values = $this->data;
 		unset($values['id']);
 		itMySQL::_update_db_rec($this->table_name, $this->rec_id, $values);
+		return true;
 		}
 	// сравнивает две записи категории по названию
-	static function cmp($a, $b) {return strcmp(get_field_by_lang($a['title_xml']),get_field_by_lang($b['title_xml']));}
+	static function cmp($a, $b) {return strcmp(get_field_by_lang(self::row_value($a, 'title_xml')),get_field_by_lang(self::row_value($b, 'title_xml')));}
 	// возвращает дерево категорий с кнопками для управления
 	static function prepare($status=NULL, $table_name=DEFAULT_CATEGORY_TABLE, $db_prefix=DB_PREFIX)
 		{
@@ -44,7 +57,8 @@ class itCategory
 			{
 			foreach ($request as $key=>$row)
 				{
-				$cats_arr[$row['parent_id']][] = $row;
+				if (!is_array($row)) continue;
+				$cats_arr[self::row_value($row, 'parent_id', 0)][] = $row;
 				}
 			}
 			
@@ -52,13 +66,13 @@ class itCategory
 			{
 			foreach($cats_arr as $key=>$row)
 				{
-				usort($cats_arr[$key], 'itCategory::cmp');				
+				if (is_array($cats_arr[$key])) usort($cats_arr[$key], 'itCategory::cmp');				
 				}
 
-			if (function_exists('get_category_row'))
+			if (function_exists('get_category_row') AND isset($cats_arr[0]) AND is_array($cats_arr[0]))
 				{
 				itCategory::_prepare_row($cats_arr[0], $cats_arr, $deep=0);
-				} else	{
+				} else if (!function_exists('get_category_row'))	{
 					add_error_message('function <b>get_category_row()</b> not found');
 					}
 			}
@@ -67,16 +81,20 @@ class itCategory
 	static function _prepare_row($node, $cats_arr, $deep)
 		{
 		global $prepared_arr;
+		if (!is_array($node)) return;
 		foreach ($node as $key=>$row)
 			{
+			if (!is_array($row)) continue;
 			$title = get_category_row($row, $deep);
-			$prepared_arr['categories'][$row['id']] = [
+			$row_id = self::row_value($row, 'id');
+			if (is_null($row_id)) continue;
+			$prepared_arr['categories'][$row_id] = [
 					'title' => $title,
-					'value'	=> $row['id'],
+					'value'	=> $row_id,
 					];
-			if (isset($cats_arr[$row['id']]))
+			if (isset($cats_arr[$row_id]))
 				{
-				itCategory::_prepare_row($cats_arr[$row['id']], $cats_arr, $deep+1);
+				itCategory::_prepare_row($cats_arr[$row_id], $cats_arr, $deep+1);
 				}			
 			}
 		}
@@ -92,7 +110,8 @@ class itCategory
 			{
 			foreach ($request as $key=>$row)
 				{
-				$cats_arr[$row['parent_id']][] = $row;
+				if (!is_array($row)) continue;
+				$cats_arr[self::row_value($row, 'parent_id', 0)][] = $row;
 				}
 			}
 
@@ -100,14 +119,14 @@ class itCategory
 			{
 			foreach($cats_arr as $key=>$row)
 				{
-				usort($cats_arr[$key], 'itCategory::cmp');				
+				if (is_array($cats_arr[$key])) usort($cats_arr[$key], 'itCategory::cmp');				
 				}
 
 			$result = NULL;
-			if (function_exists('get_category_tree_row'))
+			if (function_exists('get_category_tree_row') AND isset($cats_arr[0]) AND is_array($cats_arr[0]))
 				{
 				$result = itCategory::_tree_row($cats_arr[0], $cats_arr, $deep=0);
-				} else	{
+				} else if (!function_exists('get_category_tree_row'))	{
 					add_error_message('function <b>get_category_tree_row()</b> not found');
 					}
 			return $result;
@@ -117,12 +136,15 @@ class itCategory
 	static function _tree_row($node, $cats_arr, $deep)
 		{
 		$result = NULL;
+		if (!is_array($node)) return $result;
 		foreach ($node as $key=>$row)
 			{
+			if (!is_array($row)) continue;
+			$row_id = self::row_value($row, 'id');
 			$result .= get_category_tree_row($row, $deep);
-			if (isset($cats_arr[$row['id']]))
+			if (!is_null($row_id) AND isset($cats_arr[$row_id]))
 				{
-				$result .= itCategory::_tree_row($cats_arr[$row['id']], $cats_arr, $deep+1);
+				$result .= itCategory::_tree_row($cats_arr[$row_id], $cats_arr, $deep+1);
 				}			
 			}
 		return $result;
@@ -155,7 +177,7 @@ class itCategory
 			return;
 			}
 		// обновим родительский каталог
-		$query = "UPDATE `{$db_prefix}{$table_name}` SET `parent_id`='{$row['parent_id']}' WHERE `parent_id`='{$row['id']}'";
+		$query = "UPDATE `{$db_prefix}{$table_name}` SET `parent_id`='".self::row_value($row, 'parent_id', 0)."' WHERE `parent_id`='".self::row_value($row, 'id')."'";
 		itMySQL::_request($query);
 		
 		//установим нового родителя для категории
@@ -169,3 +191,4 @@ class itCategory
 		
 		
 	}
+?>
