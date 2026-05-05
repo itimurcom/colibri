@@ -1,15 +1,21 @@
 <?php
 // возвращает кнопку удаления контента заданного типа
+function get_moderate_killall_event_row_value($row, $key, $default=NULL)
+	{
+	return (is_array($row) && array_key_exists($key, $row)) ? $row[$key] : $default;
+	}
+
 function get_moderate_killall_event($arr)
 	{
 	global $statuses;
 
-	$row = current($arr);
+	$row = is_array($arr) ? current($arr) : NULL;
 	if (!is_array($row)) return;
 
-	$table_name = $row['table_name'];
-	$status = $row['status'];
-	$title = get_const('STATUS_'.$row['status']);
+	$table_name = get_moderate_killall_event_row_value($row, 'table_name');
+	$status = get_moderate_killall_event_row_value($row, 'status');
+	if (empty($table_name) || empty($status)) return;
+	$title = get_const('STATUS_'.$status);
 	
 	$o_modal = new itModal();
 	$o_modal->set_size('small');

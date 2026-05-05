@@ -1,4 +1,28 @@
 <?php
+function admin_event_array_value($arr, $key, $default=NULL)
+	{
+	return (is_array($arr) && array_key_exists($key, $arr)) ? $arr[$key] : $default;
+	}
+
+function admin_event_request_value($key, $default='')
+	{
+	return isset($_REQUEST) && is_array($_REQUEST) && array_key_exists($key, $_REQUEST) ? $_REQUEST[$key] : $default;
+	}
+
+function admin_event_user_is_logged($groups='ANY')
+	{
+	global $_USER;
+	return (is_object($_USER) && method_exists($_USER, 'is_logged')) ? $_USER->is_logged($groups) : false;
+	}
+
+function admin_event_language_name()
+	{
+	global $lang_cat;
+	return (is_array($lang_cat) && defined('CMS_LANG') && isset($lang_cat[CMS_LANG]) && is_array($lang_cat[CMS_LANG]) && isset($lang_cat[CMS_LANG]['name_orig']))
+		? $lang_cat[CMS_LANG]['name_orig']
+		: (defined('CMS_LANG') ? CMS_LANG : '');
+	}
+
 function admin_event_link_button($title, $href, $color)
 	{
 	$o_btn = new itButton([
@@ -40,8 +64,7 @@ function admin_event_measurement_button($o_form, $form_id, $title_const, $target
 
 function get_login_event($options=NULL)
 	{
-	global $_USER;
-	if($_USER->is_logged('ANY')) return;
+	if(admin_event_user_is_logged('ANY')) return;
 
 	$o_modal = admin_event_login_modal();
 	$o_form = new itForm2([
@@ -51,17 +74,17 @@ function get_login_event($options=NULL)
 	$o_form->action('/login/');
 	$o_form->add_input([
 		'name'		=> 'user_login',
-		'value'		=> isset($_REQUEST['user_login']) ? $_REQUEST['user_login'] : '',
+		'value'		=> admin_event_request_value('user_login', ''),
 		'placeholder'	=> get_const('USER_LOGIN'),
 		]);
 	$o_form->add_password([
 		'name'		=> 'user_password',
-		'value'		=> (isset($_REQUEST['user_password']) ? $_REQUEST['user_password'] : NULL),
+		'value'		=> admin_event_request_value('user_password', NULL),
 		'placeholder'	=> get_const('USER_PASSWORD'),
 		]);
 	admin_event_add_ok_cancel($o_form, $o_modal);
 
-	if (ready_val($options['reg']))
+	if (ready_val(admin_event_array_value($options, 'reg')))
 		{
 		$b_reg = new itButton(get_const('NODE_REGISTER'), 'text', ['href' => "/".CMS_LANG."/register/"], 'blue');
 		$o_form->add_field("<span class='gray'>".get_const('LOGIN_REGISTER_DESC').$b_reg->code().BR."</span>");
@@ -87,7 +110,7 @@ function get_background_event()
 	$o_btn = new itButton(get_const('BUTTON_BACKGROUND'), 'file', [
 		'class'		=> 'admin bg_brown',
 		'name'		=> get_const('DEFAULT_FILES_NAME'),
-		'controller'	=> $_REQUEST['controller'],
+		'controller'	=> admin_event_request_value('controller', ''),
 		'op'		=> 'background',
 		]);
 	$result = $o_btn->code();
@@ -112,7 +135,6 @@ function get_measurement_event()
 
 function get_measurement_panel()
 	{
-	global $lang_cat;
 	$o_form = new itForm2([
 		'class'		=> 'yellow',
 		'action'	=> "/".CMS_LANG.'/measurement/',
@@ -139,7 +161,7 @@ function get_measurement_panel()
 	admin_event_measurement_button($o_form, $form_id, 'MEAS_5', FORM2_MEASUREMENT5, 'fiolet');
 
 	$result =
-		TAB."<div class='tit'>Создать ссылку на мерки <small class='blue'>{$lang_cat[CMS_LANG]['name_orig']}</small></div>".
+		TAB."<div class='tit'>Создать ссылку на мерки <small class='blue'>".admin_event_language_name()."</small></div>".
 		$o_form->_view();
 	unset($o_form);
 	return $result;

@@ -1,17 +1,51 @@
 <?php
-function colibri_item_event_toggle_button($row, $op, $button_const, $flag_key)
+function colibri_item_event_row_value($row, $key, $default=NULL)
+	{
+	return (is_array($row) && array_key_exists($key, $row)) ? $row[$key] : $default;
+	}
+
+function colibri_item_event_positive_id($value)
+	{
+	$value = (int)$value;
+	return $value > 0 ? $value : NULL;
+	}
+
+function colibri_item_event_language_name()
+	{
+	global $lang_cat;
+	return (is_array($lang_cat) && defined('CMS_LANG') && isset($lang_cat[CMS_LANG]) && is_array($lang_cat[CMS_LANG]) && isset($lang_cat[CMS_LANG]['name_orig']))
+		? $lang_cat[CMS_LANG]['name_orig']
+		: (defined('CMS_LANG') ? CMS_LANG : '');
+	}
+
+function colibri_item_event_user_is_logged($groups=NULL)
 	{
 	global $_USER;
+	return (is_object($_USER) && method_exists($_USER, 'is_logged')) ? $_USER->is_logged($groups) : false;
+	}
+
+function colibri_item_event_user_id()
+	{
+	global $_USER;
+	return (is_object($_USER) && method_exists($_USER, 'id')) ? $_USER->id() : NULL;
+	}
+
+function colibri_item_event_toggle_button($row, $op, $button_const, $flag_key)
+	{
+	if (!is_array($row)) return '';
+	$table_name = colibri_item_event_row_value($row, 'table_name');
+	$rec_id = colibri_item_event_positive_id(colibri_item_event_row_value($row, 'rec_id', colibri_item_event_row_value($row, 'id', 0)));
+	if (empty($table_name) || $rec_id===NULL) return '';
 
 	$o_form = new itForm2();
 	$o_form->add_data([
-		'user_id'	=> $_USER->id(),
-		'table_name' 	=> $row['table_name'],
-		'rec_id'	=> $row['rec_id'],
+		'user_id'	=> colibri_item_event_user_id(),
+		'table_name' 	=> $table_name,
+		'rec_id'	=> $rec_id,
 		'op'		=> $op,
 		]);
 	$o_form->compile();
-	$o_button = new itButton(get_const($button_const), 'submit', ['form'=>$o_form->form_id(), 'class' => 'admin'], $row[$flag_key] ? 'blue' : 'gray');
+	$o_button = new itButton(get_const($button_const), 'submit', ['form'=>$o_form->form_id(), 'class' => 'admin'], colibri_item_event_row_value($row, $flag_key, 0) ? 'blue' : 'gray');
 
 	$result = $o_form->code().$o_button->code();
 	unset($o_button, $o_form);
@@ -69,7 +103,7 @@ function colibri_item_event_link_button($title, $href, $color)
 function colibri_item_event_category_selector_options($prepared_arr, $value=NULL)
 	{
 	$options = [
-		'array' 	=> $prepared_arr['items'],
+		'array' 	=> (is_array($prepared_arr) && isset($prepared_arr['items']) && is_array($prepared_arr['items'])) ? $prepared_arr['items'] : [],
 		'titles'	=> 'title',
 		'values'	=> 'value',
 		'name'		=> 'category_id',
@@ -125,18 +159,20 @@ function get_item_new_event($row)
 function get_item_title_event($row)
 	{
 	global $lang_cat;
+	if (!is_array($row)) return '';
+	if (colibri_item_event_positive_id(colibri_item_event_row_value($row, 'rec_id', colibri_item_event_row_value($row, 'id', 0)))===NULL || empty(colibri_item_event_row_value($row, 'table_name'))) return '';
 
 	list($o_modal, $o_form) = colibri_item_event_modal_form(mstr_replace([
 		'[VALUE]'	=> get_item_articul($row),
-		'[LANG]'	=> $lang_cat[CMS_LANG]['name_orig'],
+		'[LANG]'	=> colibri_item_event_language_name(),
 		], get_const('ITEM_TITLE_QUERY')), 'medium', 'fadeAndUp');
 	$o_form->add_input([
 		'name'		=> 'value',
-		'value'		=> get_field_by_lang($row['title_xml'], CMS_LANG, ''),
+		'value'		=> get_field_by_lang(colibri_item_event_row_value($row, 'title_xml', ''), CMS_LANG, ''),
 		]);
 	$o_form->add_data([
-		'table_name' 	=> $row['table_name'],
-		'rec_id'	=> $row['rec_id'],
+		'table_name' 	=> colibri_item_event_row_value($row, 'table_name'),
+		'rec_id'	=> colibri_item_event_positive_id(colibri_item_event_row_value($row, 'rec_id', colibri_item_event_row_value($row, 'id', 0))),
 		'op'		=> 'ed_title'
 		]);
 	colibri_item_event_add_ok_cancel($o_form, $o_modal);
@@ -145,10 +181,12 @@ function get_item_title_event($row)
 
 function get_item_x_event($row)
 	{
+	if (!is_array($row)) return '';
+	if (colibri_item_event_positive_id(colibri_item_event_row_value($row, 'rec_id', colibri_item_event_row_value($row, 'id', 0)))===NULL || empty(colibri_item_event_row_value($row, 'table_name'))) return '';
 	list($o_modal, $o_form) = colibri_item_event_modal_form(str_replace('[VALUE]', get_item_articul($row), get_const('QUERY_ITEM_REMOVE')));
 	$o_form->add_data([
-		'table_name'	=> $row['table_name'],
-		'rec_id'	=> $row['rec_id'],
+		'table_name'	=> colibri_item_event_row_value($row, 'table_name'),
+		'rec_id'	=> colibri_item_event_positive_id(colibri_item_event_row_value($row, 'rec_id', colibri_item_event_row_value($row, 'id', 0))),
 		'op'		=> 'item_x',
 		]);
 	colibri_item_event_add_ok_cancel($o_form, $o_modal, 'red');
@@ -159,9 +197,9 @@ function get_item_add_event()
 	{
 	global $lang_cat, $prepared_arr, $_USER, $_RIGHTS;
 
-	if (!$_USER->is_logged($_RIGHTS['EDIT'])) return;
+	if (!colibri_item_event_user_is_logged(isset($_RIGHTS['EDIT']) ? $_RIGHTS['EDIT'] : NULL)) return;
 
-	list($o_modal, $o_form) = colibri_item_event_modal_form(str_replace ('[VALUE]', $lang_cat[CMS_LANG]['name_orig'], get_const('QUERY_ADD_ITEM')), 'medium');
+	list($o_modal, $o_form) = colibri_item_event_modal_form(str_replace ('[VALUE]', colibri_item_event_language_name(), get_const('QUERY_ADD_ITEM')), 'medium');
 	$o_form->add_input([
 		'name'		=> 'value',
 		'value'		=> '',
@@ -201,19 +239,21 @@ function get_item_articul_event($row)
 	{
 	global $prepared_arr, $_USER, $_RIGHTS;
 
-	if (!$_USER->is_logged($_RIGHTS['EDIT'])) return;
+	if (!is_array($row)) return '';
+	if (!colibri_item_event_user_is_logged(isset($_RIGHTS['EDIT']) ? $_RIGHTS['EDIT'] : NULL)) return;
+	if (colibri_item_event_positive_id(colibri_item_event_row_value($row, 'id', colibri_item_event_row_value($row, 'rec_id', 0)))===NULL) return '';
 
-	list($o_modal, $o_form) = colibri_item_event_modal_form(str_replace ('[VALUE]', get_field_by_lang($row['title_xml']), get_const('QUERY_ARTICUL_ITEM')));
+	list($o_modal, $o_form) = colibri_item_event_modal_form(str_replace ('[VALUE]', get_field_by_lang(colibri_item_event_row_value($row, 'title_xml', '')), get_const('QUERY_ARTICUL_ITEM')));
 
 	if (isset($prepared_arr['items']))
 		{
-		$o_form->add_selector(colibri_item_event_category_selector_options($prepared_arr, $row['category_id']));
+		$o_form->add_selector(colibri_item_event_category_selector_options($prepared_arr, colibri_item_event_row_value($row, 'category_id', 0)));
 		}
 
-	colibri_item_event_add_item_identity_fields($o_form, $row['serie'], $row['version']);
+	colibri_item_event_add_item_identity_fields($o_form, colibri_item_event_row_value($row, 'serie', ''), colibri_item_event_row_value($row, 'version', ''));
 	$o_form->add_data([
 		'table_name'	=> DEFAULT_ITEM_TABLE,
-		'rec_id'	=> $row['id'],
+		'rec_id'	=> colibri_item_event_positive_id(colibri_item_event_row_value($row, 'id', colibri_item_event_row_value($row, 'rec_id', 0))),
 		'op'		=> 'item_articul',
 		]);
 	colibri_item_event_add_ok_cancel($o_form, $o_modal);
@@ -227,23 +267,28 @@ function get_rewind_event()
 
 function get_buy_item_event($row)
 	{
-	$is_orderable = ($row['is_shop'] OR is_for_sale($row));
+	if (!is_array($row)) return '';
+	if (colibri_item_event_positive_id(colibri_item_event_row_value($row, 'id', 0))===NULL) return '';
+	$is_orderable = (colibri_item_event_row_value($row, 'is_shop', 0) OR is_for_sale($row));
 	return colibri_item_event_link_button(
-		$is_orderable ? str_replace('[VALUE]', $row['price'], get_const('BUTTON_BUY')) : get_const('BUTTON_CONTACT'),
-		$is_orderable ? '/'.CMS_LANG."/buy/{$row['id']}/" : '/'.CMS_LANG."/contacts/{$row['id']}/",
+		$is_orderable ? str_replace('[VALUE]', colibri_item_event_row_value($row, 'price', 0), get_const('BUTTON_BUY')) : get_const('BUTTON_CONTACT'),
+		$is_orderable ? '/'.CMS_LANG."/buy/".colibri_item_event_positive_id(colibri_item_event_row_value($row, 'id', 0))."/" : '/'.CMS_LANG."/contacts/".colibri_item_event_positive_id(colibri_item_event_row_value($row, 'id', 0))."/",
 		$is_orderable ? 'brown big' : 'green big'
 	);
 	}
 
 function get_order_item_event($row)
 	{
-	if ($row['is_shop'] OR is_for_sale($row)) return;
-	return colibri_item_event_link_button(get_const('BUTTON_ORDER'), '/'.CMS_LANG."/order/{$row['id']}/", 'yellow big');
+	if (!is_array($row)) return '';
+	if (colibri_item_event_positive_id(colibri_item_event_row_value($row, 'id', 0))===NULL) return '';
+	if (colibri_item_event_row_value($row, 'is_shop', 0) OR is_for_sale($row)) return;
+	return colibri_item_event_link_button(get_const('BUTTON_ORDER'), '/'.CMS_LANG."/order/".colibri_item_event_positive_id(colibri_item_event_row_value($row, 'id', 0))."/", 'yellow big');
 	}
 
 function get_item_calc_event($row, $table_name=DEFAULT_ITEM_TABLE, $form_name=DEFAULT_FORM_TABLE)
 	{
-	if ($row['is_shop'] OR is_for_sale($row)) return;
+	if (!is_array($row)) return '';
+	if (colibri_item_event_row_value($row, 'is_shop', 0) OR is_for_sale($row)) return;
 
 	$o_modal = new itModal();
 	$o_modal->set_size('large');
@@ -258,7 +303,7 @@ function get_item_calc_event($row, $table_name=DEFAULT_ITEM_TABLE, $form_name=DE
 	$o_form->add_data([
 		'form_name'	=> $form_name,
 		'form_id'	=> FORM2_CALC,
-		'price'		=> $row['price'],
+		'price'		=> colibri_item_event_row_value($row, 'price', 0),
 		'articul'	=> get_item_articul($row),
 		'op'		=> 'item_calc',
 		]);
@@ -302,9 +347,9 @@ function get_item_calc_event($row, $table_name=DEFAULT_ITEM_TABLE, $form_name=DE
 
 function get_price_item_event($row)
 	{
-	global $_USER;
-
-	if (!$_USER->is_logged()) return;
+	if (!is_array($row)) return '';
+	if (!colibri_item_event_user_is_logged()) return;
+	if (colibri_item_event_positive_id(colibri_item_event_row_value($row, 'rec_id', colibri_item_event_row_value($row, 'id', 0)))===NULL) return '';
 
 	list($o_modal, $o_form) = colibri_item_event_modal_form(mstr_replace([
 		'[VALUE]'	=> get_item_articul($row),
@@ -312,17 +357,17 @@ function get_price_item_event($row)
 	$o_form->add_input([
 		'label'		=> 'стоимость, $',
 		'name'		=> 'value',
-		'value'		=> $row['price'],
+		'value'		=> colibri_item_event_row_value($row, 'price', 0),
 		'compact'	=> true,
 		]);
 	$o_form->add_data([
 		'table_name' 	=> 'items',
-		'rec_id'	=> $row['rec_id'],
+		'rec_id'	=> colibri_item_event_positive_id(colibri_item_event_row_value($row, 'rec_id', colibri_item_event_row_value($row, 'id', 0))),
 		'op'		=> 'item_price'
 		]);
 	colibri_item_event_add_ok_cancel($o_form, $o_modal);
 
-	$result = colibri_item_event_modal_code($o_modal, $o_form, doubleval($row['price']).' $', 'yellow big', '');
+	$result = colibri_item_event_modal_code($o_modal, $o_form, doubleval(colibri_item_event_row_value($row, 'price', 0)).' $', 'yellow big', '');
 	return
 		TAB."<div class='item_price'>".
 		TAB."<div>".

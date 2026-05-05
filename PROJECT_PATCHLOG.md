@@ -110,3 +110,10 @@
   - hardened `itSiteMap` XML rendering by skipping invalid page rows, escaping XML values, and replacing deprecated `strftime()` use with `date()`
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and existing menu/sitemap semantics
   - added `docs/PUBLIC_NAVIGATION_SITEMAP_GUARD_STAGE.md`
+
+- M0 / P82 admin moderation action guard stabilization bundle
+  - stabilized legacy admin/moderation panel rendering against missing user runtime state, malformed status metadata, and empty DB rows
+  - guarded content moderation action events for status/category/moderate/title/date/language rows without changing operation names or hidden payload semantics
+  - guarded item admin action buttons for incomplete item rows while preserving valid-row form behavior
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy admin UI flow
+  - added `docs/ADMIN_MODERATION_ACTION_GUARD_STAGE.md`

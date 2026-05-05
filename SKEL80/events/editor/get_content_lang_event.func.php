@@ -7,11 +7,19 @@
 //..............................................................................
 // возвращает кнопку изменения заголовка контента для текущего языка
 //..............................................................................
+function get_content_lang_event_row_value($row, $key, $default=NULL)
+	{
+	return (is_array($row) && array_key_exists($key, $row)) ? $row[$key] : $default;
+	}
+
 function get_content_lang_event($row)
 	{
 	global $lang_cat;
 	global $prepared_arr;
-
+	if (!is_array($row)) return '';
+	$table_name = get_content_lang_event_row_value($row, 'table_name');
+	$rec_id = (int)get_content_lang_event_row_value($row, 'rec_id', get_content_lang_event_row_value($row, 'id', 0));
+	if (empty($table_name) || $rec_id<=0) return '';
 
 	if (!isset($prepared_arr['lang']) AND is_array($lang_cat))
 		{
@@ -25,10 +33,10 @@ function get_content_lang_event($row)
 
 		foreach ($lang_cat as $lang_key=>$lang_row)
 			{
-			if ($lang_row['allowed']==1)
+			if (is_array($lang_row) && get_content_lang_event_row_value($lang_row, 'allowed', 0)==1)
 				{
 				$prepared_arr['lang'][$lang_key] = [
-					'title' => get_const($lang_row['name_orig']),
+					'title' => get_const(get_content_lang_event_row_value($lang_row, 'name_orig', $lang_key)),
 					'value'	=> $lang_key,
 					]; 
 				}
@@ -37,7 +45,13 @@ function get_content_lang_event($row)
 			'title' => get_const('SEPARETED_LANG_TITLE'),
 			'value'	=> NULL,
 			]; 
-		}	
+		}
+
+	if (!isset($prepared_arr['lang']) || !is_array($prepared_arr['lang'])) return '';
+	$current_lang = get_content_lang_event_row_value($row, 'lang');
+	$current_lang_title = isset($prepared_arr['lang'][$current_lang]) && is_array($prepared_arr['lang'][$current_lang]) && isset($prepared_arr['lang'][$current_lang]['title'])
+		? $prepared_arr['lang'][$current_lang]['title']
+		: get_const('SEPARETED_LANG_TITLE');
 
 	$options = [
 		'array' 	=> $prepared_arr['lang'],
@@ -51,12 +65,12 @@ function get_content_lang_event($row)
 	$o_modal->set_animation('fadeAndUp');
 
 	$o_form = new itForm2();
-	$o_form->add_title(str_replace('[VALUE]', get_field_by_lang($row['title_xml']), get_const('ED_LANG_QUERY')));
+	$o_form->add_title(str_replace('[VALUE]', get_field_by_lang(get_content_lang_event_row_value($row, 'title_xml', '')), get_const('ED_LANG_QUERY')));
 
-	$o_form->add_selector('select', $options, $row['lang'], NULL, get_const('QUERY_LANG_CONTENT'));
+	$o_form->add_selector('select', $options, $current_lang, NULL, get_const('QUERY_LANG_CONTENT'));
 	$o_form->add_data([
-		'table_name'	=> $row['table_name'],
-		'rec_id'	=> $row['rec_id'],
+		'table_name'	=> $table_name,
+		'rec_id'	=> $rec_id,
 		'op'		=> 'lang',
 		]);
 	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
@@ -67,7 +81,7 @@ function get_content_lang_event($row)
  	$o_modal->compile();
 
 	$o_button = new itButton([
-		'title'	=> $prepared_arr['lang'][$row['lang']]['title'],
+		'title'	=> $current_lang_title,
 		'type'	=> 'modal',
 		'class' => 'admin',
 		'form'	=> $o_modal->form_id(),

@@ -7,9 +7,19 @@
 //..............................................................................
 // возвращает селектор статуса записи
 //..............................................................................
+function get_status_event_row_value($row, $key, $default=NULL)
+	{
+	return (is_array($row) && array_key_exists($key, $row)) ? $row[$key] : $default;
+	}
+
 function get_status_event($row, $selector='statuses')
 	{
 	global $prepared_arr, $statuses;
+	if (!is_array($row)) return '';
+	$table_name = get_status_event_row_value($row, 'table_name');
+	$rec_id = (int)get_status_event_row_value($row, 'rec_id', get_status_event_row_value($row, 'id', 0));
+	if (empty($table_name) || $rec_id<=0) return '';
+
 	$o_form = new itForm2();
 
 
@@ -20,11 +30,11 @@ function get_status_event($row, $selector='statuses')
 		//..............................................................................
 		foreach ($statuses as $gr_key=>$gr_row)
 			{
-			if ($gr_row['show']==1)
+			if (is_array($gr_row) && get_status_event_row_value($gr_row, 'show', 0)==1)
 				{
 				$prepared_arr['statuses'][$gr_key] = array
 					(
-					'title' => get_const($statuses[$gr_key]['title']),
+					'title' => get_const(get_status_event_row_value($statuses[$gr_key], 'title', 'STATUS_'.$gr_key)),
 					'value'	=> $gr_key,
 					); 
 				}
@@ -32,7 +42,7 @@ function get_status_event($row, $selector='statuses')
 		}
 
 
-	if (isset($prepared_arr[$selector]))
+	if (isset($prepared_arr[$selector]) && is_array($prepared_arr[$selector]))
 		{		
 		$options = [
 			'array' 	=> $prepared_arr[$selector],
@@ -41,12 +51,12 @@ function get_status_event($row, $selector='statuses')
 			'name'		=> 'status',
 			'form'		=> $o_form->form_id()
 			];
-		$o_form->add_selector('submit', $options, $row['status']);
+		$o_form->add_selector('submit', $options, get_status_event_row_value($row, 'status'));
 		} else add_error_message("no prepared index <b>{$selector}</b>");
 		
 	$o_form->add_data([
-		'table_name'	=> $row['table_name'],
-		'rec_id'	=> $row['rec_id'],
+		'table_name'	=> $table_name,
+		'rec_id'	=> $rec_id,
 		'op'		=> 'status'
 		]);
 

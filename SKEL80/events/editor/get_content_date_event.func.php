@@ -7,12 +7,27 @@
 //..............................................................................
 // возвращает кнопку изменения даты публикации контента
 //..............................................................................
-function get_content_date_event($row)
+function get_content_date_event_row_value($row, $key, $default=NULL)
+	{
+	return (is_array($row) && array_key_exists($key, $row)) ? $row[$key] : $default;
+	}
+
+function get_content_date_event_user_is_logged($groups)
 	{
 	global $_USER;
-	if (ready_val($row['category_id'])==-1) return;
+	return (is_object($_USER) && method_exists($_USER, 'is_logged')) ? $_USER->is_logged($groups) : false;
+	}
+
+function get_content_date_event($row)
+	{
+	if (!is_array($row)) return '';
+	if (ready_val(get_content_date_event_row_value($row, 'category_id'))==-1) return;
+	$datetime = get_content_date_event_row_value($row, 'datetime');
+	$table_name = get_content_date_event_row_value($row, 'table_name');
+	$rec_id = (int)get_content_date_event_row_value($row, 'rec_id', get_content_date_event_row_value($row, 'id', 0));
 	
-	if (!$_USER->is_logged(itEditor::moderators())) return TAB."<span class='content_date'>".get_local_date_str($row['datetime']).TAB."</span>";
+	if (!get_content_date_event_user_is_logged(itEditor::moderators())) return TAB."<span class='content_date'>".get_local_date_str($datetime).TAB."</span>";
+	if (empty($table_name) || $rec_id<=0) return TAB."<span class='content_date'>".get_local_date_str($datetime).TAB."</span>";
 
 	$o_modal = new itModal();
 	$o_modal->set_size('small');
@@ -20,11 +35,11 @@ function get_content_date_event($row)
 	
 	$o_form = new itForm2();
 	$o_form->add_title("<b>".get_const('QUERY_CHANGE_DATE')."</b>");
-	$o_form->add_date($row['datetime'], ['name' => 'datetime', 'type' => 'text']);
+	$o_form->add_date($datetime, ['name' => 'datetime', 'type' => 'text']);
 
 	$o_form->add_data([
-		'table_name'	=> $row['table_name'],
-		'rec_id'	=> $row['rec_id'],
+		'table_name'	=> $table_name,
+		'rec_id'	=> $rec_id,
 		'op'		=> 'datetime',
 		]);
 	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
@@ -34,7 +49,7 @@ function get_content_date_event($row)
 	$o_modal->add_field($o_form->code());
  	$o_modal->compile();
 
-	$o_button = new itButton(get_local_date_str($row['datetime']), 'textmodal', ['class' => ($row['datetime']) ? '' : 'change_button', 'form' => $o_modal->form_id()], '' );
+	$o_button = new itButton(get_local_date_str($datetime), 'textmodal', ['class' => ($datetime) ? '' : 'change_button', 'form' => $o_modal->form_id()], '' );
 
 	$result = TAB."<span class='content_date'>".$o_button->code().$o_modal->code().TAB."</span>";
 	unset($o_button, $o_form, $o_modal);
