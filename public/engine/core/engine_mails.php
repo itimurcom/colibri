@@ -14,6 +14,22 @@ function colibri_mail_request_text($key, $default='')
 	return trim((string)$value);
 	}
 
+function colibri_mail_array_value($row, $key, $default='')
+	{
+	return (is_array($row) AND isset($row[$key])) ? $row[$key] : $default;
+	}
+
+function colibri_mail_html_attr($value)
+	{
+	return htmlspecialchars((string)$value, ENT_QUOTES);
+	}
+
+function colibri_mail_measurement_color($form_id, $default='green')
+	{
+	global $_MEASURMENT;
+	return isset($_MEASURMENT[$form_id]['color']) ? $_MEASURMENT[$form_id]['color'] : $default;
+	}
+
 function colibri_mail_setting_value($key, $default='')
 	{
 	global $_SETTINGS;
@@ -40,11 +56,17 @@ function get_full_address_request()
 
 function mailtemplate_script(&$options)
 	{
+	if (!is_array($options))
+		{
+		$options = [];
+		}
+
+	$prepared = isset($options['prepared']) ? (string)$options['prepared'] : '';
 	$options['prepared'] = mstr_replace([
 		'[B]' => "<b>", '[/B]' => "</b>", '[RED]' => "<font color='red'>", '[BLUE]' => "<font color='blue'>", '[GREEN]' => "<font color='green'>",
 		'[/RED]' => "</font>", '[/BLUE]' => "</font>", '[/GREEN]' => "</font>", '[/COLOR]' => "</font>", '[BIG]' => "<h1>", '[/BIG]' => "</h1>",
 		'[SMALL]' => "<small>", '[/SMALL]' => "</small>", '[GAL]' => "<style>.gal .galcell {flex: 1 1 auto;}</style><div class='gal' style='display: flex;'>", '[/GAL]' => "</div>", '> ' => '>',
-	], $options['prepared']);
+	], $prepared);
 	return $options['prepared'];
 	}
 
@@ -99,9 +121,11 @@ function get_colibri_mail_template_result($prepared, $subject)
 function patch_colibri_admin_mail_articul(&$message)
 	{
 	$articul = colibri_mail_request_text('articul');
-	if ($articul === '' || !($item_rec = get_item_from_articul($articul))) return;
-	$img_str = (isset($item_rec['images'][0])) ? "<img style='display:table' src='".get_thumbnail($item_rec['images'][0], 'ADV_AVATAR')."'/>" : NULL;
-	$link = "<div style='text-align:center'><a href='".CMS_CURRENT_BASE_URL."/".CMS_LANG."/items/{$item_rec['id']}/' target='_blank'>{$img_str}<span>{$articul}</span></a></div>";
+	if ($articul === '' || !($item_rec = get_item_from_articul($articul)) || empty($item_rec['id'])) return;
+	$images = (isset($item_rec['images']) AND is_array($item_rec['images'])) ? $item_rec['images'] : [];
+	$img_str = (isset($images[0])) ? "<img style='display:table' src='".get_thumbnail($images[0], 'ADV_AVATAR')."'/>" : NULL;
+	$item_id = intval($item_rec['id']);
+	$link = "<div style='text-align:center'><a href='".CMS_CURRENT_BASE_URL."/".CMS_LANG."/items/{$item_id}/' target='_blank'>{$img_str}<span>{$articul}</span></a></div>";
 	$message = str_replace($articul, $link, $message);
 	}
 
@@ -183,49 +207,85 @@ function mailing_history_panel($email=NULL)
 
 function get_mailing_history_client_emails($row)
 	{
-	if (!empty($row['reply'])) return $row['reply'];
-	preg_match_all("/[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i", $row['message'], $matches);
-	return is_array($matches) ? implode(', ', array_column($matches, '0')) : '----';
+	$row = is_array($row) ? $row : [];
+	$reply = trim((string)colibri_mail_array_value($row, 'reply'));
+	if ($reply !== '') return $reply;
+
+	$message = (string)colibri_mail_array_value($row, 'message');
+	if ($message === '') return '----';
+
+	preg_match_all("/[\._a-zA-Z0-9-]+@[\._a-zA-Z0-9-]+/i", $message, $matches);
+	if (!isset($matches[0]) OR !is_array($matches[0]) OR !count($matches[0])) return '----';
+	return implode(', ', array_unique($matches[0]));
 	}
 
 function get_mailing_history_subject($subject)
 	{
-	global $_MEASURMENT;
+	$subject = (string)$subject;
 	return mstr_replace([
 		'Мерки' => "<b class='green'><br/>Мерки</b>",
-		'тип 1' => "<big class='".$_MEASURMENT[FORM2_MEASUREMENT]['color']."'>тип 1</big>",
-		'тип 2' => "<big class='".$_MEASURMENT[FORM2_MEASUREMENT2]['color']."'>тип 2</big>",
-		'тип 3' => "<big class='".$_MEASURMENT[FORM2_MEASUREMENT3]['color']."'>тип 3</big>",
-		'тип 4' => "<big class='".$_MEASURMENT[FORM2_MEASUREMENT4]['color']."'>тип 4</big>",
-		'тип 5' => "<big class='".$_MEASURMENT[FORM2_MEASUREMENT5]['color']."'>тип 5</big>",
+		'тип 1' => "<big class='".colibri_mail_measurement_color(FORM2_MEASUREMENT)."'>тип 1</big>",
+		'тип 2' => "<big class='".colibri_mail_measurement_color(FORM2_MEASUREMENT2)."'>тип 2</big>",
+		'тип 3' => "<big class='".colibri_mail_measurement_color(FORM2_MEASUREMENT3)."'>тип 3</big>",
+		'тип 4' => "<big class='".colibri_mail_measurement_color(FORM2_MEASUREMENT4)."'>тип 4</big>",
+		'тип 5' => "<big class='".colibri_mail_measurement_color(FORM2_MEASUREMENT5)."'>тип 5</big>",
 		'новый заказ' => "новый <b class='blue'>заказ</b>",
 		'сообщение' => "<b class='blue'>сообщение</b>",
 		'Заказ из магазина' => "<br/><b class='red'>Заказ</b> из магазина",
 	], $subject);
 	}
 
-function get_mailing_history_feed_row($row)
+function get_mailing_history_status_meta($status)
 	{
 	global $mailers;
-	if (empty($row['status'])) $row['status'] = 'ERROR';
-	$client_emails = get_mailing_history_client_emails($row);
-	$subject = get_mailing_history_subject($row['subject']);
-	$status = $row['code'];
+	$status = trim((string)$status);
+	if ($status === '') $status = 'ERROR';
+
+	if (is_array($mailers) AND isset($mailers[$status]) AND is_array($mailers[$status]))
+		{
+		return [
+			'status' => $status,
+			'color' => isset($mailers[$status]['color']) ? $mailers[$status]['color'] : 'red',
+			'title' => isset($mailers[$status]['title']) ? $mailers[$status]['title'] : 'ERROR',
+		];
+		}
+
+	return ['status' => $status, 'color' => 'red', 'title' => 'ERROR'];
+	}
+
+function get_mailing_history_feed_row($row)
+	{
+	$row = is_array($row) ? $row : [];
+	$status_meta = get_mailing_history_status_meta(colibri_mail_array_value($row, 'status', 'ERROR'));
+	$row['status'] = $status_meta['status'];
+
+	$mail_id = intval(colibri_mail_array_value($row, 'id'));
+	$datetime = colibri_mail_array_value($row, 'datetime');
+	$client_emails = colibri_mail_html_attr(get_mailing_history_client_emails($row));
+	$subject = get_mailing_history_subject(colibri_mail_array_value($row, 'subject'));
+	$recipient = colibri_mail_html_attr(colibri_mail_array_value($row, 'to'));
+	$code = colibri_mail_html_attr(colibri_mail_array_value($row, 'code'));
+	$status_color = colibri_mail_html_attr($status_meta['color']);
+	$status_title = get_const($status_meta['title']);
+
 	return TAB."<div class='row paylist'>".
-		TAB."<div class='field p1 left'>".TAB."#{$row['id']}".TAB."</div>".
-		TAB."<div class='field p2 center'>"."<small>".get_local_date_str($row['datetime'])."<br/>".get_time_str($row['datetime'])."</small>".TAB."</div>".
+		TAB."<div class='field p1 left'>".TAB."#{$mail_id}".TAB."</div>".
+		TAB."<div class='field p2 center'>"."<small>".get_local_date_str($datetime)."<br/>".get_time_str($datetime)."</small>".TAB."</div>".
 		TAB."<div class='field p5 left'>".TAB."<small>от:</small>&nbsp;<span class='blue'>{$client_emails}</span>".TAB."</div>".
 		TAB."<div class='field p7 left'>".TAB."<small>{$subject}</small>".TAB."</div>".
-		TAB."<div class='field p5 left'>".TAB."<small>на:&nbsp;{$row['to']}</small>".TAB."</div>".
+		TAB."<div class='field p5 left'>".TAB."<small>на:&nbsp;{$recipient}</small>".TAB."</div>".
 		TAB."<div class='field p1 img'>".get_mail_preview_event($row).TAB."</div>".
-		TAB."<div class='field p2 left'>".TAB."<small title='{$status}' class='".$mailers[$row['status']]['color']."'>".get_const($mailers[$row['status']]['title'])."</small>".TAB."</div>".
+		TAB."<div class='field p2 left'>".TAB."<small title='{$code}' class='{$status_color}'>".$status_title."</small>".TAB."</div>".
 	TAB."</div>";
 	}
 
 function get_mail_preview_event($row=NULL)
 	{
-	$mail_id = intval($row['id']);
-	$status = htmlspecialchars($row['status'], ENT_QUOTES);
+	$row = is_array($row) ? $row : [];
+	$mail_id = intval(colibri_mail_array_value($row, 'id'));
+	if ($mail_id <= 0) return '';
+
+	$status = colibri_mail_html_attr(colibri_mail_array_value($row, 'status', 'ERROR'));
 	return TAB."<a href='#/' data-reveal-id='mail-history-modal' class='green' onclick='return skel80OpenMailHistoryModal(this);' data-mail-id='{$mail_id}' data-mail-status='{$status}'>👁</a>";
 	}
 

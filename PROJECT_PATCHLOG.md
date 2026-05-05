@@ -147,3 +147,12 @@
   - guarded one-field feed rows, weighted-feed `show_as` size lookup, and more/fewer control wrapping against missing array keys
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy feed button semantics
   - added `docs/FEED_OPTION_DEFAULT_GUARD_HOTFIX_STAGE.md`
+
+- M0 / P87 mailing history template guard stabilization bundle
+  - stabilized mail history row rendering against incomplete mail DB rows and missing `reply`, `message`, `subject`, `to`, `code`, `status`, and `datetime` fields
+  - added fallback mail-status metadata so unknown or missing statuses no longer read absent `$mailers[...]` keys while preserving existing status labels for valid rows
+  - guarded mail preview links and mail spam/delete/restore actions against missing mail rows and empty `reply` values
+  - hardened `itMailTemplate` against missing `prepared`, `result`, `tpl`, `table_name`, `code`, and `subject` payload fields so mail rendering does not leak warnings into HTML/AJAX output
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy mail operation names
+  - added `docs/MAILING_HISTORY_TEMPLATE_GUARD_STAGE.md`
+

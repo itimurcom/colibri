@@ -25,7 +25,8 @@ class itMailTemplate
 	//..............................................................................
 	static function _strip_tags(&$options)
 		{
-		$options['prepared'] = htmlspecialchars_decode($options['prepared']);
+		$options = is_array($options) ? $options : [];
+		$options['prepared'] = htmlspecialchars_decode(isset($options['prepared']) ? (string)$options['prepared'] : '');
 		if (function_exists('mailtemplate_script'))
 			{
 			mailtemplate_script($options);	
@@ -33,7 +34,7 @@ class itMailTemplate
 			
 		$options['result'] = mstr_replace([
 			'[CODE]' => $options['prepared'],
-			], $options['result']);
+			], isset($options['result']) ? (string)$options['result'] : '');
 		
 		return 	$options['result'];	
 		}
@@ -45,7 +46,7 @@ class itMailTemplate
 		{
 		if ($row=itMySQL::_get_rec_from_db($table_name, $pattern_id))
 			{
-			return $row['subject'];
+			return isset($row['subject']) ? $row['subject'] : NULL;
 			}
 		}	
 
@@ -55,7 +56,9 @@ class itMailTemplate
 	static function _code(&$options, $links=true)
 		{
 //		$table_name = ready_val($options['table_name'], DEFAULT_MAILINGPATTERN_TABLE);
-		$tpl = ready_val($options['tpl'], DEFAULT_MAIL_TEMPLATE);
+		$options = is_array($options) ? $options : [];
+		$tpl = ready_value(isset($options['tpl']) ? $options['tpl'] : DEFAULT_MAIL_TEMPLATE, DEFAULT_MAIL_TEMPLATE);
+		$options['prepared'] = isset($options['prepared']) ? (string)$options['prepared'] : '';
 
 		if ($links) { $options['prepared'] = self::_links($options['prepared']); }
 
@@ -72,11 +75,12 @@ class itMailTemplate
 	//..............................................................................
 	static function _prepare(&$options)
 		{
-		$table_name = ready_val($options['table_name'], DEFAULT_MAILINGPATTERN_TABLE);
+		$options = is_array($options) ? $options : [];
+		$table_name = ready_value(isset($options['table_name']) ? $options['table_name'] : DEFAULT_MAILINGPATTERN_TABLE, DEFAULT_MAILINGPATTERN_TABLE);
 		if (isset($options['pattern_id']) AND ($row=itMySQL::_get_rec_from_db($table_name, $options['pattern_id'])))
 			{
-			$options['prepared'] = $row['code'];
-			$options['subject'] = $row['subject'];
+			$options['prepared'] = isset($row['code']) ? $row['code'] : '';
+			$options['subject'] = isset($row['subject']) ? $row['subject'] : '';
 			self::_code($options);
 			}	
 		}
@@ -86,6 +90,7 @@ class itMailTemplate
 	//..............................................................................
 	static function _links($text)
 		{
+		$text = (string)$text;
 		// компилипуем ссылки и изображения
 		$text = preg_replace_callback('/"[^"]*"(*SKIP)(*FAIL)|(http[s]?:[^\s|<|\'|\"]*)/i', function ($m)
 			{

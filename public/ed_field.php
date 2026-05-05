@@ -174,23 +174,30 @@ function ed_field_handle_mail_status_operation($operation, $data, $url)
 		return ed_field_redirect_result($url);
 		}
 
-	if ($mail = itMySQL::_get_rec_from_db('mails', $mail_id))
+	$mail = itMySQL::_get_rec_from_db('mails', $mail_id);
+	if (!is_array($mail) OR empty($mail['id']))
 		{
-		switch ($operation)
-			{
-			case 'spam':
-				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='SPAM' WHERE `reply` = '{$mail['reply']}'");
-				break;
-			case 'spam_x':
-				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='NOSPAM' WHERE `reply` = '{$mail['reply']}'");
-				break;
-			case 'mail_x':
-				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='DELETED' WHERE `id` = '{$mail['id']}'");
-				break;
-			case 'mail_not_x':
-				itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='NOSPAM' WHERE `id` = '{$mail['id']}'");
-				break;
-			}
+		return ed_field_redirect_result($url);
+		}
+
+	$mail_id = intval($mail['id']);
+	$reply = isset($mail['reply']) ? trim((string)$mail['reply']) : '';
+	$reply_condition = ($reply !== '') ? "`reply` = '".addslashes($reply)."'" : "`id` = '{$mail_id}'";
+
+	switch ($operation)
+		{
+		case 'spam':
+			itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='SPAM' WHERE {$reply_condition}");
+			break;
+		case 'spam_x':
+			itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='NOSPAM' WHERE {$reply_condition}");
+			break;
+		case 'mail_x':
+			itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='DELETED' WHERE `id` = '{$mail_id}'");
+			break;
+		case 'mail_not_x':
+			itMySQL::_request("UPDATE `".DB_PREFIX."mails` SET `status`='NOSPAM' WHERE `id` = '{$mail_id}'");
+			break;
 		}
 
 	return ed_field_redirect_result($url);
