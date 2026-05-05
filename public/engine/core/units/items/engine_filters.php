@@ -224,7 +224,7 @@ function get_items_sort_selector()
 		'values'	=> 'value',
 		'name'		=> 'sort',
 		'compact'	=> true,
-		'value'		=> ready_val(item_filter_value('sort')),
+		'value'		=> ready_value(item_filter_value('sort')),
 		'no_label'	=> true,
 		'ajax'		=> 'sort_price(this);',
 		'element_id'	=> 'sortsel',
@@ -250,8 +250,8 @@ function get_items_price_bounds($table_name='items', $db_prefix=DB_PREFIX, $step
 function get_items_price_selector($table_name='items', $db_prefix=DB_PREFIX)
 	{
 	$bounds = get_items_price_bounds($table_name, $db_prefix);
-	$min = ready_val(item_filter_value('min')) ? item_filter_value('min') : $bounds['min'];
-	$max = ready_val(item_filter_value('max')) ? item_filter_value('max') : $bounds['max'];
+	$min = ready_value(item_filter_value('min')) ? item_filter_value('min') : $bounds['min'];
+	$max = ready_value(item_filter_value('max')) ? item_filter_value('max') : $bounds['max'];
 
 	return minify_js("<script>
     $(function() {

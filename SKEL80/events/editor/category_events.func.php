@@ -14,7 +14,7 @@ function category_event_request_value($key, $default=NULL)
 
 function category_event_ready_request_value($key, $default=NULL)
 	{
-	return ready_val(category_event_request_value($key), $default);
+	return ready_value(category_event_request_value($key), $default);
 	}
 
 function category_event_data($payload=NULL)
@@ -38,7 +38,7 @@ function category_event_positive_id($value)
 
 function category_event_table_name($data, $default=DEFAULT_CATEGORY_TABLE)
 	{
-	$table_name = ready_val(category_event_data_value($data, 'table_name'), $default);
+	$table_name = ready_value(category_event_data_value($data, 'table_name'), $default);
 	return is_string($table_name) ? trim($table_name) : $default;
 	}
 

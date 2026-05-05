@@ -23,9 +23,9 @@ class itCategory
 		$category_counter++;
 		
 		$this->name 		= "category-{$category_counter}";
-		$this->table_name	= ready_val(self::row_value($options, 'table_name'), get_const('DEFAULT_CATEGORY_TABLE'));
-		$this->rec_id		= ready_val(self::row_value($options, 'rec_id'));
-		$this->prefix		= ready_val(self::row_value($options, 'prefix'), DB_PREFIX);
+		$this->table_name	= ready_value(self::row_value($options, 'table_name'), get_const('DEFAULT_CATEGORY_TABLE'));
+		$this->rec_id		= ready_value(self::row_value($options, 'rec_id'));
+		$this->prefix		= ready_value(self::row_value($options, 'prefix'), DB_PREFIX);
 		
 		$this->data 		= itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
 		$this->data		= is_array($this->data) ? $this->data : [];

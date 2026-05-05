@@ -44,7 +44,7 @@ class itFeed
 		$this->start 		= ready_val($options['start'], false);
 		$this->appear 		= ready_val($options['appear'], DEFAULT_FEED_APPEAR);
 		$this->fewer 		= ready_val($options['fewer'], NULL);
-		$this->loop		= ready_val($options['loop'], ready_val(unserialize(FEED_LOOP)[$this->name]));
+		$this->loop		= ready_val($options['loop'], ready_value(unserialize(FEED_LOOP)[$this->name]));
 		$this->onefield		= ready_val($options['onefield'], false);
 		$this->field		= ready_val($options['field'], 'ed_xml');
 		$this->rotate		= ready_val($options['rotate'], true);

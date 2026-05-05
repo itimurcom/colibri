@@ -84,7 +84,7 @@ function get_login_event($options=NULL)
 		]);
 	admin_event_add_ok_cancel($o_form, $o_modal);
 
-	if (ready_val(admin_event_array_value($options, 'reg')))
+	if (ready_value(admin_event_array_value($options, 'reg')))
 		{
 		$b_reg = new itButton(get_const('NODE_REGISTER'), 'text', ['href' => "/".CMS_LANG."/register/"], 'blue');
 		$o_form->add_field("<span class='gray'>".get_const('LOGIN_REGISTER_DESC').$b_reg->code().BR."</span>");

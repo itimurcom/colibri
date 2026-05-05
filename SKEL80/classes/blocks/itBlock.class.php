@@ -16,16 +16,16 @@ class itBlock
 		$this->options	= $options;
 		$this->rec_id	= $rec_id;
 
-		$this->table_name = ready_val(self::row_value($options, 'table_name'), DEFAULT_BLOCK_TABLE);
-		$this->editor_name = ready_val(self::row_value($options, 'content_name'), DEFAULT_CONTENT_TABLE);
+		$this->table_name = ready_value(self::row_value($options, 'table_name'), DEFAULT_BLOCK_TABLE);
+		$this->editor_name = ready_value(self::row_value($options, 'content_name'), DEFAULT_CONTENT_TABLE);
 
-		$this->no_data		= ready_val(self::row_value($options, 'no_data'), DEFAULT_NODATE);
-		$this->no_title		= ready_val(self::row_value($options, 'no_title'), DEFAULT_NOTITLE);
-		$this->no_lang		= ready_val(self::row_value($options, 'no_lang'), DEFAULT_NOLANG);
-		$this->no_avatar	= ready_val(self::row_value($options, 'no_avatar'), DEFAULT_NOAVATAR);
-		$this->no_moderate	= ready_val(self::row_value($options, 'no_moderate'), DEFAULT_NOMODERATE);
-		$this->no_related	= ready_val(self::row_value($options, 'no_related'), DEFAULT_NORELATED);
-		$this->edclass		= ready_val(self::row_value($options, 'edclass'), DEFAULT_EDCLASS);
+		$this->no_data		= ready_value(self::row_value($options, 'no_data'), DEFAULT_NODATE);
+		$this->no_title		= ready_value(self::row_value($options, 'no_title'), DEFAULT_NOTITLE);
+		$this->no_lang		= ready_value(self::row_value($options, 'no_lang'), DEFAULT_NOLANG);
+		$this->no_avatar	= ready_value(self::row_value($options, 'no_avatar'), DEFAULT_NOAVATAR);
+		$this->no_moderate	= ready_value(self::row_value($options, 'no_moderate'), DEFAULT_NOMODERATE);
+		$this->no_related	= ready_value(self::row_value($options, 'no_related'), DEFAULT_NORELATED);
+		$this->edclass		= ready_value(self::row_value($options, 'edclass'), DEFAULT_EDCLASS);
 
 		$this->data = itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
 

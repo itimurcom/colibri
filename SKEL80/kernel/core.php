@@ -199,6 +199,12 @@ function ready_val(&$val, $default=NULL)
 	return isset($val) ? $val : (!is_null($default) ? get_const($default) : NULL);
 	}
 
+// returns a ready value for expressions that cannot be passed to ready_val() by reference
+function ready_value($val, $default=NULL)
+	{
+	return isset($val) ? $val : (!is_null($default) ? get_const($default) : NULL);
+	}
+
 // возвращает индекс для начала списка элементов
 function rand_id()
 	{

@@ -37,7 +37,7 @@ function ed_field_request_value($key, $default=NULL)
 
 function ed_field_ready_request_value($key, $default=NULL)
 	{
-	return ready_val(ed_field_request_value($key, $default));
+	return ready_value(ed_field_request_value($key, $default));
 	}
 
 function ed_field_request_int($key, $default=0)

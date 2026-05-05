@@ -133,3 +133,10 @@
   - normalized missing `itSettings` defaults to an empty string before insert to respect the current non-null `value` column
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy settings/catalog semantics
   - added `docs/CATALOG_FEED_SETTINGS_NULL_HOTFIX_STAGE.md`
+
+- M0 / P85 ready_val expression callsite stabilization bundle
+  - added `ready_value()` as a by-value companion for expression/ternary/helper return values that cannot be passed into legacy `ready_val(&$val)`
+  - converted unsafe `ready_val()` expression call-sites in catalog item/category/object/block/feed/filter and editor/admin helper boundaries
+  - reduced the risk of PHP 8 fatal errors like `Argument #1 could not be passed by reference` without changing storage format or business logic
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy `ready_val()` API
+  - added `docs/READY_VAL_EXPRESSION_CALLSITE_STABILIZATION_STAGE.md`

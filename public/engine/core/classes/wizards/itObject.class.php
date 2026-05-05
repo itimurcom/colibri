@@ -28,21 +28,21 @@ class itObject
 		$object_counter ++;
 
 		$this->name 		= "object-{$object_counter}";
-		$this->table_name	= ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, get_const('DEFAULT_OBJECT_TABLE'));
-		$this->category_name	= ready_val(isset($options['category_name']) ? $options['category_name'] : NULL, get_const('DEFAULT_CATEGORY_TABLE'));
-		$this->rec_id		= ready_val(isset($options['rec_id']) ? $options['rec_id'] : NULL);
+		$this->table_name	= ready_value(isset($options['table_name']) ? $options['table_name'] : NULL, get_const('DEFAULT_OBJECT_TABLE'));
+		$this->category_name	= ready_value(isset($options['category_name']) ? $options['category_name'] : NULL, get_const('DEFAULT_CATEGORY_TABLE'));
+		$this->rec_id		= ready_value(isset($options['rec_id']) ? $options['rec_id'] : NULL);
 		$this->data 		= itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
 		$this->data		= is_array($this->data) ? $this->data : [];
 
-		$this->wiz_field	= ready_val(isset($options['wiz_field']) ? $options['wiz_field'] : NULL, DEFAULT_WIZARD_FIELD);
-		$this->cat_field	= ready_val(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
-		$this->wiz_values	= ready_val(isset($options['wiz_values']) ? $options['wiz_values'] : NULL, DEFAULT_WIZARD_VALUES);
+		$this->wiz_field	= ready_value(isset($options['wiz_field']) ? $options['wiz_field'] : NULL, DEFAULT_WIZARD_FIELD);
+		$this->cat_field	= ready_value(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
+		$this->wiz_values	= ready_value(isset($options['wiz_values']) ? $options['wiz_values'] : NULL, DEFAULT_WIZARD_VALUES);
 
-		$this->action		= ready_val(isset($options['action']) ? $options['action'] : NULL, DEFAULT_OBJECT_ACTION);
-		$this->method		= ready_val(isset($options['method']) ? $options['method'] : NULL, DEFAULT_OBJECT_METHOD);
-		$this->placeholder	= ready_val(isset($options['placeholder']) ? $options['placeholder'] : NULL, get_const('DEFAULT_PLACEHOLDER'));
-		$this->reCaptcha	= ready_val(isset($options['reCaptcha']) ? $options['reCaptcha'] : NULL, DEFAULT_OBJECT_CAPTCHA);
-		$this->op		= ready_val(isset($options['op']) ? $options['op'] : NULL, DEFAULT_OBJECT_OP);
+		$this->action		= ready_value(isset($options['action']) ? $options['action'] : NULL, DEFAULT_OBJECT_ACTION);
+		$this->method		= ready_value(isset($options['method']) ? $options['method'] : NULL, DEFAULT_OBJECT_METHOD);
+		$this->placeholder	= ready_value(isset($options['placeholder']) ? $options['placeholder'] : NULL, get_const('DEFAULT_PLACEHOLDER'));
+		$this->reCaptcha	= ready_value(isset($options['reCaptcha']) ? $options['reCaptcha'] : NULL, DEFAULT_OBJECT_CAPTCHA);
+		$this->op		= ready_value(isset($options['op']) ? $options['op'] : NULL, DEFAULT_OBJECT_OP);
 
 		$this->get_wizard();
 		}
@@ -148,16 +148,16 @@ class itObject
 		{
 		global $_USER;
 		$options = is_array($options) ? $options : [];
-		$cat_field = ready_val(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
+		$cat_field = ready_value(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
 		if (isset($options[$cat_field]))
 			{
-			$options['table_name']	= ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_WIZARD_TABLE);
+			$options['table_name']	= ready_value(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_WIZARD_TABLE);
 
 			$user_id = (is_object($_USER) AND method_exists($_USER, 'id')) ? $_USER->id() : NULL;
 
 			$values_arr = [
-				'user_id'	=> ready_val(isset($options['user_id']) ? $options['user_id'] : NULL, $user_id),
-				'avatar'	=> ready_val(isset($options['avatar']) ? $options['avatar'] : NULL),
+				'user_id'	=> ready_value(isset($options['user_id']) ? $options['user_id'] : NULL, $user_id),
+				'avatar'	=> ready_value(isset($options['avatar']) ? $options['avatar'] : NULL),
 				$cat_field	=> $options[$cat_field],
 				'status'	=> 'PUBLISHED',
 			];
@@ -180,7 +180,7 @@ class itObject
 		$options = is_array($options) ? $options : [];
 		if (isset($options['rec_id']) AND isset($options['name']))
 			{
-			$options['table_name'] = ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
+			$options['table_name'] = ready_value(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
 			$o_object = new itObject($options);
 			if (!is_array($o_object->data) OR empty($o_object->data))
 				{
@@ -192,7 +192,7 @@ class itObject
 				{
 				$o_object->data[$o_object->wiz_values] = [];
 				}
-			$o_object->data[$o_object->wiz_values][$options['name']] = ready_val(isset($options['value']) ? $options['value'] : NULL);
+			$o_object->data[$o_object->wiz_values][$options['name']] = ready_value(isset($options['value']) ? $options['value'] : NULL);
 			$o_object->store();
 			unset($o_object);
 			} else add_error_message('ERROR_OPTIONS_OBJECT');
@@ -201,10 +201,10 @@ class itObject
 	static function _set_category($options=NULL)
 		{
 		$options = is_array($options) ? $options : [];
-		$cat_field = ready_val(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
+		$cat_field = ready_value(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
 		if (isset($options['rec_id']) AND isset($options['value']))
 			{
-			$options['table_name'] = ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
+			$options['table_name'] = ready_value(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
 			itMySQL::_update_value_db($options['table_name'], $options['rec_id'], $options['value'], $cat_field);
 			} else add_error_message('ERROR_OPTIONS_OBJECT');
 		}
@@ -214,7 +214,7 @@ class itObject
 		$options = is_array($options) ? $options : [];
 		if (isset($options['rec_id']) AND isset($options['value']))
 			{
-			$options['table_name'] = ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
+			$options['table_name'] = ready_value(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
 			$row = itMySQL::_get_rec_from_db($options['table_name'], $options['rec_id']);
 			if (!is_array($row))
 				{
@@ -340,7 +340,7 @@ class itObject
 			$o_form->add_data([
 				'table_name'	=> $this->table_name,
 				'rec_id'	=> $this->rec_id,
-				$this->cat_field=> ready_val(isset($this->data[$this->cat_field]) ? $this->data[$this->cat_field] : NULL),
+				$this->cat_field=> ready_value(isset($this->data[$this->cat_field]) ? $this->data[$this->cat_field] : NULL),
 				'user_id'	=> (is_object($_USER) AND method_exists($_USER, 'id')) ? $_USER->id() : NULL,
 				]);
 			$o_form->add_hidden('op', $this->op);
@@ -376,12 +376,12 @@ class itObject
 	static function _form_update($options=NULL)
 		{
 		$options = is_array($options) ? $options : [];
-		$options['category_table'] 	= ready_val(isset($options['category_table']) ? $options['category_table'] : NULL, DEFAULT_CATEGORY_TABLE);
-		$options['table_name']		= ready_val(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
-		$options['wiz_field']		= ready_val(isset($options['wiz_field']) ? $options['wiz_field'] : NULL, DEFAULT_WIZARD_FIELD);
+		$options['category_table'] 	= ready_value(isset($options['category_table']) ? $options['category_table'] : NULL, DEFAULT_CATEGORY_TABLE);
+		$options['table_name']		= ready_value(isset($options['table_name']) ? $options['table_name'] : NULL, DEFAULT_OBJECT_TABLE);
+		$options['wiz_field']		= ready_value(isset($options['wiz_field']) ? $options['wiz_field'] : NULL, DEFAULT_WIZARD_FIELD);
 
-		$cat_field = ready_val(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
-		$rec_id = (int)ready_val(isset($options['rec_id']) ? $options['rec_id'] : NULL, isset($options[$cat_field]) ? $options[$cat_field] : NULL);
+		$cat_field = ready_value(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
+		$rec_id = (int)ready_value(isset($options['rec_id']) ? $options['rec_id'] : NULL, isset($options[$cat_field]) ? $options[$cat_field] : NULL);
 
 		if ($rec_id<=0)
 			{

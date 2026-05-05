@@ -38,10 +38,10 @@ class itItem
 		$item_counter ++;
 		
 		$this->name 		= "item-{$item_counter}";
-		$this->table_name	= ready_val(self::row_value($options, 'table_name'), get_const('DEFAULT_ITEM_TABLE'));
-		$this->object_name	= ready_val(self::row_value($options, 'objectname'), get_const('DEFAULT_OBJECT_TABLE'));	
-		$this->rec_id		= ready_val(self::row_value($options, 'rec_id'));
-		$this->wiz_values	= ready_val(self::row_value($options, 'wiz_values'), get_const('DEFAULT_WIZARD_VALUES'));
+		$this->table_name	= ready_value(self::row_value($options, 'table_name'), get_const('DEFAULT_ITEM_TABLE'));
+		$this->object_name	= ready_value(self::row_value($options, 'objectname'), get_const('DEFAULT_OBJECT_TABLE'));	
+		$this->rec_id		= ready_value(self::row_value($options, 'rec_id'));
+		$this->wiz_values	= ready_value(self::row_value($options, 'wiz_values'), get_const('DEFAULT_WIZARD_VALUES'));
 		$this->data 		= itMySQL::_get_rec_from_db($this->table_name, $this->rec_id);
 		$this->data		= is_array($this->data) ? $this->data : [];
 		$this->object		= NULL;
@@ -144,7 +144,7 @@ class itItem
 			foreach ($this->wizard as $wiz_key=>$wiz_row)
 				{
 				$values = self::row_value($this->data, $this->wiz_values, []);
-				$value  = ready_val(self::row_value($values, $wiz_key), 'NO_DATA');
+				$value  = ready_value(self::row_value($values, $wiz_key), 'NO_DATA');
 			
 			// проверим наличие заголовков и отдадим редультат	
 				$type = self::row_value($wiz_row, 'type');
@@ -161,7 +161,7 @@ class itItem
 							'value'	=> $wiz_row['values'][$sel_key],
 							];	
 						}
-					$value = ready_val(self::row_value(self::row_value($sel_arr, $value, []), 'title'), 'NO_DATA');
+					$value = ready_value(self::row_value(self::row_value($sel_arr, $value, []), 'title'), 'NO_DATA');
 					}  
 				$rows[] = 
 					TAB."<div class='row'>".
@@ -181,14 +181,14 @@ class itItem
 		$options = is_array($options) ? $options : [];
 		if (isset($options['object_id']))
 			{
-			$options['table_name']	= ready_val(self::row_value($options, 'table_name'), DEFAULT_ITEM_TABLE);
+			$options['table_name']	= ready_value(self::row_value($options, 'table_name'), DEFAULT_ITEM_TABLE);
 			$user_id = (is_object($_USER) AND method_exists($_USER, 'id')) ? $_USER->id() : NULL;
 			
 			$values_arr = [
-				'user_id'	=> ready_val(self::row_value($options, 'user_id'), $user_id),
-				'avatar'	=> ready_val(self::row_value($options, 'avatar')),
-				'price'		=> ready_val(self::row_value($options, 'price'), 0),
-				'object_id'	=> ready_val(self::row_value($options, 'object_id')),
+				'user_id'	=> ready_value(self::row_value($options, 'user_id'), $user_id),
+				'avatar'	=> ready_value(self::row_value($options, 'avatar')),
+				'price'		=> ready_value(self::row_value($options, 'price'), 0),
+				'object_id'	=> ready_value(self::row_value($options, 'object_id')),
 				'status'	=> 'PUBLISHED',
 				];
 			
@@ -206,11 +206,11 @@ class itItem
 		{
 		$row = is_array($row) ? $row : [];
 		return 
-			(ready_val(self::row_value($row, 'stock_id')) ? TAB.get_const('STOCK_TITLE').": ".self::row_value($row, 'stock_id') : '').
-			(ready_val(self::row_value($row, 'cabinet')) ? TAB."<br/>".get_const('CABINET_TITLE').": ".self::row_value($row, 'cabinet') : '').
-			(ready_val(self::row_value($row, 'rack')) ? TAB."<br/>".get_const('RACK_TITLE').": ".self::row_value($row, 'rack') : '').
-			(ready_val(self::row_value($row, 'position')) ? TAB."<br/>".get_const('POSITION_TITLE').": ".self::row_value($row, 'position') : '').
-			(ready_val(self::row_value($row, 'half')) ? TAB."<br/>".get_const('HALF_TITLE').": ".get_const('HULF_'.self::row_value($row, 'position')) : '').
+			(ready_value(self::row_value($row, 'stock_id')) ? TAB.get_const('STOCK_TITLE').": ".self::row_value($row, 'stock_id') : '').
+			(ready_value(self::row_value($row, 'cabinet')) ? TAB."<br/>".get_const('CABINET_TITLE').": ".self::row_value($row, 'cabinet') : '').
+			(ready_value(self::row_value($row, 'rack')) ? TAB."<br/>".get_const('RACK_TITLE').": ".self::row_value($row, 'rack') : '').
+			(ready_value(self::row_value($row, 'position')) ? TAB."<br/>".get_const('POSITION_TITLE').": ".self::row_value($row, 'position') : '').
+			(ready_value(self::row_value($row, 'half')) ? TAB."<br/>".get_const('HALF_TITLE').": ".get_const('HULF_'.self::row_value($row, 'position')) : '').
 			"";
 
 		}
@@ -220,9 +220,9 @@ class itItem
 		$row = is_array($row) ? $row : [];
 		return 
 //			(ready_val($row['stock_id']) ? TAB."<br/>".get_const('STOCK_TITLE').": {$row['stock_id']}" : '').
-			(ready_val(self::row_value($row, 'cabinet')) ? self::row_value($row, 'cabinet') : '').
-			(ready_val(self::row_value($row, 'rack')) ? "-".self::row_value($row, 'rack') : '').
-			(ready_val(self::row_value($row, 'position')) ? "-".self::row_value($row, 'position') : '').
+			(ready_value(self::row_value($row, 'cabinet')) ? self::row_value($row, 'cabinet') : '').
+			(ready_value(self::row_value($row, 'rack')) ? "-".self::row_value($row, 'rack') : '').
+			(ready_value(self::row_value($row, 'position')) ? "-".self::row_value($row, 'position') : '').
 //			(ready_val($row['half']) ? TAB."<br/>".get_const('HALF_TITLE').": ".get_const('HULF_'.$row['position']) : '').
 			"";
 

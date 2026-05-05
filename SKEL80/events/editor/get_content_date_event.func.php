@@ -21,7 +21,7 @@ function get_content_date_event_user_is_logged($groups)
 function get_content_date_event($row)
 	{
 	if (!is_array($row)) return '';
-	if (ready_val(get_content_date_event_row_value($row, 'category_id'))==-1) return;
+	if (ready_value(get_content_date_event_row_value($row, 'category_id'))==-1) return;
 	$datetime = get_content_date_event_row_value($row, 'datetime');
 	$table_name = get_content_date_event_row_value($row, 'table_name');
 	$rec_id = (int)get_content_date_event_row_value($row, 'rec_id', get_content_date_event_row_value($row, 'id', 0));
