@@ -7,12 +7,19 @@
 //..............................................................................
 // возвращает кнопку изменения родительской категории
 //..............................................................................
+function get_category_parent_event_row_value($row, $key, $default=NULL)
+	{
+	return (is_array($row) AND array_key_exists($key, $row)) ? $row[$key] : $default;
+	}
+
 function get_category_parent_event($row, $table_name=DEFAULT_CATEGORY_TABLE)
 	{
-	global $lang_cat;
 	global $prepared_arr;
+	if (!is_array($row)) return '';
+	$rec_id = (int)get_category_parent_event_row_value($row, 'id', get_category_parent_event_row_value($row, 'rec_id', 0));
+	if ($rec_id<=0) return '';
 
-	$parents = $prepared_arr['categories'];
+	$parents = (isset($prepared_arr['categories']) AND is_array($prepared_arr['categories'])) ? $prepared_arr['categories'] : [];
 	$options = array (
 		'array' 	=> $parents,
 		'titles'        => 'title',
@@ -26,13 +33,13 @@ function get_category_parent_event($row, $table_name=DEFAULT_CATEGORY_TABLE)
 	$o_modal->set_animation('fadeAndPop');
 	
 	$o_form = new itForm2();
-	$o_form->add_title(str_replace ('[VALUE]', "#{$row['id']} <b>".get_field_by_lang($row['title_xml'])."</b>", get_const('QUERY_CATEGORY_PARENT')));
-	$o_form->add_selector('select', $options, $row['parent_id'], NULL, get_const('QUERY_CHANGE_CATEGORY_PARENT'));
+	$o_form->add_title(str_replace ('[VALUE]', "#{$rec_id} <b>".get_field_by_lang(get_category_parent_event_row_value($row, 'title_xml'))."</b>", get_const('QUERY_CATEGORY_PARENT')));
+	$o_form->add_selector('select', $options, get_category_parent_event_row_value($row, 'parent_id', 0), NULL, get_const('QUERY_CHANGE_CATEGORY_PARENT'));
 	
 	
 	$o_form->add_data([
 		'table_name' 	=> $table_name,
-		'rec_id' 	=> $row['id'],
+		'rec_id' 	=> $rec_id,
 		'op'		=> 'set_parent',
 		]);
 	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	

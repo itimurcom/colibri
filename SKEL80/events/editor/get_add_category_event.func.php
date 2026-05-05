@@ -7,11 +7,19 @@
 //..............................................................................
 // возвращает кнопку добавления категории в окне группы
 //..............................................................................
+function get_add_category_event_lang_name()
+	{
+	global $lang_cat;
+	return (is_array($lang_cat) AND defined('CMS_LANG') AND isset($lang_cat[CMS_LANG]) AND is_array($lang_cat[CMS_LANG]) AND isset($lang_cat[CMS_LANG]['name_orig']))
+		? $lang_cat[CMS_LANG]['name_orig']
+		: (defined('CMS_LANG') ? CMS_LANG : '');
+	}
+
 function get_add_category_event($table_name=DEFAULT_CATEGORY_TABLE)
-	{	
-	global $lang_cat, $prepared_arr, $_USER, $_RIGHTS;
+	{
+	global $prepared_arr, $_USER, $_RIGHTS;
 	
-	if (!$_USER->is_logged($_RIGHTS['EDIT'])) return;
+	if (!is_object($_USER) OR !method_exists($_USER, 'is_logged') OR !$_USER->is_logged(isset($_RIGHTS['EDIT']) ? $_RIGHTS['EDIT'] : NULL)) return;
 
 	$o_modal = new itModal();
 	$o_modal->set_size('medium');
@@ -23,10 +31,10 @@ function get_add_category_event($table_name=DEFAULT_CATEGORY_TABLE)
 	$o_form->add_input([
 		'name'		=> 'value',
 		'value'		=> '',
-		'label'		=> str_replace('[VALUE]', $lang_cat[CMS_LANG]['name_orig'], get_const('ADD_CATEGORY_LABEL')),
+		'label'		=> str_replace('[VALUE]', get_add_category_event_lang_name(), get_const('ADD_CATEGORY_LABEL')),
 		]);
 	
-	if(isset($prepared_arr['categories']))
+	if(isset($prepared_arr['categories']) AND is_array($prepared_arr['categories']))
 		{
 		$options = [
 			'array' 	=> $prepared_arr['categories'],

@@ -381,18 +381,24 @@ class itObject
 		$options['wiz_field']		= ready_val(isset($options['wiz_field']) ? $options['wiz_field'] : NULL, DEFAULT_WIZARD_FIELD);
 
 		$cat_field = ready_val(isset($options['cat_field']) ? $options['cat_field'] : NULL, DEFAULT_CAT_FIELD);
+		$rec_id = (int)ready_val(isset($options['rec_id']) ? $options['rec_id'] : NULL, isset($options[$cat_field]) ? $options[$cat_field] : NULL);
 
-		if (!isset($options[$cat_field]))
+		if ($rec_id<=0)
 			{
 			add_error_message('ERROR_OPTIONS_OBJECT');
-			return;
+			return false;
 			}
 
-		$o_object = new itObject(['table_name' => $options['table_name'], 'rec_id' => $options[$cat_field]]);
-		if (!is_array($o_object->wizard))
+		$o_object = new itObject(['table_name' => $options['table_name'], 'rec_id' => $rec_id]);
+		if (!is_array($o_object->wizard) OR !is_array($o_object->data) OR empty($o_object->data))
 			{
 			unset($o_object);
-			return;
+			return false;
+			}
+
+		if (!isset($o_object->data[$o_object->wiz_values]) OR !is_array($o_object->data[$o_object->wiz_values]))
+			{
+			$o_object->data[$o_object->wiz_values] = [];
 			}
 
 		foreach($o_object->wizard as $wiz_key => $wiz_row)
@@ -402,8 +408,9 @@ class itObject
 				$o_object->data[$o_object->wiz_values][$wiz_key] = $options[$wiz_key];
 				}
 			}
-		$o_object->store();
+		$result = $o_object->store();
 		unset($o_object);
+		return $result;
 		}
 
 	static function _count($category_id=NULL, $table_name=DEFAULT_OBJECT_TABLE, $db_prefix=DB_PREFIX)

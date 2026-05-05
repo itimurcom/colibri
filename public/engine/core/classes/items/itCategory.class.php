@@ -152,29 +152,43 @@ class itCategory
 	// устанавливает родительскую категорию для категории
 	static function set_parent($category_id=NULL, $parent_id=0, $table_name=DEFAULT_CATEGORY_TABLE, $db_prefix=DB_PREFIX)
 		{
+		$category_id = (int)$category_id;
+		$parent_id = (int)$parent_id;
+		if ($category_id<=0 OR empty($table_name))
+			{
+			add_error_message('ERROR_SETTING_PARENT');
+			return false;
+			}
 		if ($category_id==$parent_id)
 			{
 			add_error_message('ERROR_CYCLE_PARENT');
-			return;
+			return false;
 			}
 		$row = itMySQL::_get_rec_from_db($table_name, $category_id);
 		if (!is_array($row))
 			{
 			add_error_message('ERROR_SETTING_PARENT');
-			return;
+			return false;
 			}
 		
 		//установим нового родителя для категории
 		itMySQL::_update_value_db($table_name, $category_id, $parent_id, 'parent_id');
+		return true;
 		}
 	// удаление категории
 	static function x($category_id=NULL, $table_name=DEFAULT_CATEGORY_TABLE, $db_prefix=DB_PREFIX)
 		{
+		$category_id = (int)$category_id;
+		if ($category_id<=0 OR empty($table_name))
+			{
+			add_error_message('ERROR_REMOVEING_CATEGORY');
+			return false;
+			}
 		$row = itMySQL::_get_rec_from_db($table_name, $category_id);
 		if (!is_array($row))
 			{
 			add_error_message('ERROR_REMOVEING_CATEGORY');
-			return;
+			return false;
 			}
 		// обновим родительский каталог
 		$query = "UPDATE `{$db_prefix}{$table_name}` SET `parent_id`='".self::row_value($row, 'parent_id', 0)."' WHERE `parent_id`='".self::row_value($row, 'id')."'";
@@ -182,6 +196,7 @@ class itCategory
 		
 		//установим нового родителя для категории
 		itMySQL::_update_value_db($table_name, $category_id, 'DELETED', 'status');
+		return true;
 		}
 	// обработчик событий категории
 	static function events($url='/', $path=UPLOADS_ROOT)

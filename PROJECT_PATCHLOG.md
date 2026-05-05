@@ -117,3 +117,12 @@
   - guarded item admin action buttons for incomplete item rows while preserving valid-row form behavior
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy admin UI flow
   - added `docs/ADMIN_MODERATION_ACTION_GUARD_STAGE.md`
+
+- M0 / P83 category object editor action guard stabilization bundle
+  - stabilized legacy category/object editor action handlers against missing operation keys, broken encrypted payloads, incomplete rows, and stale modal submissions
+  - guarded category/object modal render helpers against missing prepared arrays, absent user runtime state, and incomplete row metadata
+  - fixed the PHP 8 fatal-risk `data` token in the category title modal and corrected the object-add input `label` metadata typo
+  - hardened object form update target selection by preferring `rec_id` while preserving the old category-field fallback
+  - guarded destructive moderation basket cleanup against malformed table/status request payloads and undefined DB-prefix state
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy editor UI flow
+  - added `docs/CATEGORY_OBJECT_EDITOR_ACTION_GUARD_STAGE.md`

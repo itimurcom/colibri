@@ -7,24 +7,39 @@
 //..............................................................................
 // возвращает кнопку изменения заголовка контента для текущего языка
 //..............................................................................
-function get_category_title_event($row, $table_name=DEFAULT_CATEGORY_TABLE)
+function get_category_title_event_row_value($row, $key, $default=NULL)
+	{
+	return (is_array($row) AND array_key_exists($key, $row)) ? $row[$key] : $default;
+	}
+
+function get_category_title_event_lang_name()
 	{
 	global $lang_cat;
+	return (is_array($lang_cat) AND defined('CMS_LANG') AND isset($lang_cat[CMS_LANG]) AND is_array($lang_cat[CMS_LANG]) AND isset($lang_cat[CMS_LANG]['name_orig']))
+		? $lang_cat[CMS_LANG]['name_orig']
+		: (defined('CMS_LANG') ? CMS_LANG : '');
+	}
+
+function get_category_title_event($row, $table_name=DEFAULT_CATEGORY_TABLE)
+	{
+	if (!is_array($row)) return '';
+	$rec_id = (int)get_category_title_event_row_value($row, 'id', get_category_title_event_row_value($row, 'rec_id', 0));
+	if ($rec_id<=0) return '';
 
 	$o_modal = new itModal();
 	$o_modal->set_size('medium');
 	$o_modal->set_animation('fadeAndUp');
 
 	$o_form = new itForm2();
-	$o_form->add_title(str_replace('[VALUE]', "#{$row['id']}<br/>({$lang_cat[CMS_LANG]['name_orig']})", get_const('ED_CATEGORY_QUERY')));
+	$o_form->add_title(str_replace('[VALUE]', "#{$rec_id}<br/>(".get_category_title_event_lang_name().")", get_const('ED_CATEGORY_QUERY')));
 
 	$o_form->add_input([
 		'name'		=> 'value',
-		'value'		=> get_field_by_lang($row['title_xml']),
+		'value'		=> get_field_by_lang(get_category_title_event_row_value($row, 'title_xml', [])),
 		]);
-	$o_form->add_hidden(data, itEditor::event_data([
+	$o_form->add_hidden('data', itEditor::event_data([
 		'table_name'	=> $table_name,
-		'rec_id'	=> $row['id'],
+		'rec_id'	=> $rec_id,
 		'op'		=> 'ed_title',
 		]));
 	$o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id()], 'blue' );	
