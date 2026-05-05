@@ -12,6 +12,26 @@ class itFeed
 	public $element_id, $name, $position, $onefield, $field, $params;
 	public $MAXINBLOCK, $WASRESET, $COUNTAL, $field_rec;
 
+	// returns an option value without emitting undefined array key warnings
+	private static function option_value($options, $key, $default=NULL)
+		{
+		if (is_array($options) && isset($options[$key]))
+			{
+			return $options[$key];
+			}
+		return !is_null($default) ? get_const($default) : NULL;
+		}
+
+	// decodes serialized feed settings safely
+	private static function option_array($value)
+		{
+		if (is_string($value))
+			{
+			$value = @unserialize($value);
+			}
+		return is_array($value) ? $value : [];
+		}
+
 	// конструктор класса - создает блок и кнопку с параметрами из запроса
 	public function __construct($options=NULL)
 		{
@@ -19,41 +39,45 @@ class itFeed
 		$feed_counter++;
 		$options = is_array($options) ? $options : [];
 
-		$this->sql		= ready_val($options['sql']);
-		$this->order 		= ready_val($options['order']);
-		$this->limit_explicit	= array_key_exists('limit', $options) && $options['limit'] !== NULL && $options['limit'] !== '';
+		$this->sql		= self::option_value($options, 'sql');
+		$this->order 		= self::option_value($options, 'order');
+		$this->limit_explicit	= isset($options['limit']) && $options['limit'] !== '';
 		$this->limit		= $this->limit_explicit ? intval($options['limit']) : intval(get_const('FEED_LIMIT'));
-		$this->need_total	= array_key_exists('need_total', $options) ? !!$options['need_total'] : true;
+		$this->need_total	= isset($options['need_total']) ? !!$options['need_total'] : true;
 		$this->total_count_resolved = false;
 
 		if (is_null($this->sql))
 			{
-			$this->table_name 	= ready_val($options['table'], get_const('DEFAULT_CONTENT_TABLE'));
-			$this->prefix 		= ready_val($options['prefix'], get_const('DB_PREFIX'));
-			$this->fields 		= ready_val($options['fields'],'*');
-			$this->condition 	= ready_val($options['condition'],'1');
-			$this->order 		= ready_val($options['order']);
-			$this->group 		= ready_val($options['group']);
+			$this->table_name 	= self::option_value($options, 'table', get_const('DEFAULT_CONTENT_TABLE'));
+			$this->prefix 		= self::option_value($options, 'prefix', get_const('DB_PREFIX'));
+			$this->fields 		= self::option_value($options, 'fields','*');
+			$this->condition 	= self::option_value($options, 'condition','1');
+			$this->order 		= self::option_value($options, 'order');
+			$this->group 		= self::option_value($options, 'group');
 			}
 
-		$this->element_id	= ready_val($options['element_id'], "feed-{$feed_counter}");
-		$this->name 		= ready_val($options['name'], ready_val($options['table'], NULL));
-		$this->position		= intval(ready_val($options['position'], 0));
-		$this->weight 		= ready_val($options['weight'], false);
-		$this->async 		= ready_val($options['async'],false);
-		$this->start 		= ready_val($options['start'], false);
-		$this->appear 		= ready_val($options['appear'], DEFAULT_FEED_APPEAR);
-		$this->fewer 		= ready_val($options['fewer'], NULL);
-		$this->loop		= ready_val($options['loop'], ready_value(unserialize(FEED_LOOP)[$this->name]));
-		$this->onefield		= ready_val($options['onefield'], false);
-		$this->field		= ready_val($options['field'], 'ed_xml');
-		$this->rotate		= ready_val($options['rotate'], true);
-		$this->nodiv		= ready_val($options['nodiv'], false);
-		$this->func		= ready_val($options['func']);
-		$this->params		= ready_val($options['params']);
+		$table_name_option	= self::option_value($options, 'table');
+		$loop_options		= self::option_array(defined('FEED_LOOP') ? FEED_LOOP : []);
+		$this->element_id	= self::option_value($options, 'element_id', "feed-{$feed_counter}");
+		$this->name 		= self::option_value($options, 'name', $table_name_option);
+		$this->position		= intval(self::option_value($options, 'position', 0));
+		$this->weight 		= self::option_value($options, 'weight', false);
+		$this->async 		= self::option_value($options, 'async', false);
+		$this->start 		= self::option_value($options, 'start', false);
+		$this->appear 		= self::option_value($options, 'appear', DEFAULT_FEED_APPEAR);
+		$this->fewer 		= self::option_value($options, 'fewer', NULL);
+		$this->loop		= self::option_value($options, 'loop', self::option_value($loop_options, $this->name));
+		$this->onefield		= self::option_value($options, 'onefield', false);
+		$this->field		= self::option_value($options, 'field', 'ed_xml');
+		$this->rotate		= self::option_value($options, 'rotate', true);
+		$this->nodiv		= self::option_value($options, 'nodiv', false);
+		$this->func		= self::option_value($options, 'func');
+		$this->params		= self::option_value($options, 'params');
 
-		$fnum_arr = ($this->start) ? unserialize(FEED_START) : unserialize(FEED_NUMBER);
-		$this->MAXINBLOCK	= intval(ready_val($fnum_arr[$this->name], DEFAULT_FEED_NUM));
+		$fnum_arr = self::option_array($this->start
+			? (defined('FEED_START') ? FEED_START : [])
+			: (defined('FEED_NUMBER') ? FEED_NUMBER : []));
+		$this->MAXINBLOCK	= intval(self::option_value($fnum_arr, $this->name, DEFAULT_FEED_NUM));
 		$this->WASRESET		= false;
 		$this->COUNTAL		= NULL;
 		$this->COUNTALL		= NULL;
@@ -150,7 +174,8 @@ class itFeed
 				$record = is_array($this->request) ? ready_val($this->request[0]) : NULL;
 				if (is_array($record) && isset($record[$this->field]))
 					{
-					$this->field_rec = is_array($record[$this->field]) ? $record[$this->field] : json_decode($record[$this->field], JSON_ALLOWED);
+					$field_value = isset($record[$this->field]) ? $record[$this->field] : NULL;
+				$this->field_rec = is_array($field_value) ? $field_value : (!is_null($field_value) ? json_decode($field_value, JSON_ALLOWED) : []);
 					}
 				}
 			}
@@ -450,14 +475,16 @@ class itFeed
 	// wraps compiled feed code with controls and optional feed div
 	private function wrap_feed_code($code)
 		{
+		$fewer_code = (is_array($this->rows) && isset($this->rows['fewer'])) ? $this->rows['fewer'] : NULL;
+		$more_code = (is_array($this->rows) && isset($this->rows['more'])) ? $this->rows['more'] : NULL;
 		return
-			ready_val($this->rows['fewer']).
+			$fewer_code.
 			(($code)
 				? ((!$this->nodiv) ? TAB."<div class='feed_div'>" : '').
 				$code.
 				((!$this->nodiv) ? TAB."</div>" : '')
 				: '').
-			ready_val($this->rows['more']);
+			$more_code;
 		}
 
 	// compiles standard feed block to HTML

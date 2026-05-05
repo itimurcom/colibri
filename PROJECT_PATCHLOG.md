@@ -140,3 +140,10 @@
   - reduced the risk of PHP 8 fatal errors like `Argument #1 could not be passed by reference` without changing storage format or business logic
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy `ready_val()` API
   - added `docs/READY_VAL_EXPRESSION_CALLSITE_STABILIZATION_STAGE.md`
+
+- M0 / P86 feed option default guard hotfix bundle
+  - fixed `/mailing/` AJAX JSON pollution from `Undefined array key "mailing_history"` in `itFeed` when a feed name is absent from serialized `FEED_LOOP` settings
+  - added local guarded option/config reads inside `itFeed` for constructor options and `FEED_LOOP`/`FEED_START`/`FEED_NUMBER` maps without changing feed payload format
+  - guarded one-field feed rows, weighted-feed `show_as` size lookup, and more/fewer control wrapping against missing array keys
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy feed button semantics
+  - added `docs/FEED_OPTION_DEFAULT_GUARD_HOTFIX_STAGE.md`
