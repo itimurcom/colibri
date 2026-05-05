@@ -126,3 +126,10 @@
   - guarded destructive moderation basket cleanup against malformed table/status request payloads and undefined DB-prefix state
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy editor UI flow
   - added `docs/CATEGORY_OBJECT_EDITOR_ACTION_GUARD_STAGE.md`
+
+- M0 / P84 catalog feed / settings null regression hotfix bundle
+  - fixed catalog feed `ready_val()` by-reference fatals by normalizing temporary request/filter values into local variables before calling `ready_val()`
+  - prevented `/settings/` password-panel fields from creating settings rows with NULL values when optional request keys are absent
+  - normalized missing `itSettings` defaults to an empty string before insert to respect the current non-null `value` column
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy settings/catalog semantics
+  - added `docs/CATALOG_FEED_SETTINGS_NULL_HOTFIX_STAGE.md`

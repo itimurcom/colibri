@@ -23,8 +23,9 @@ class itSettings
 			}
 
 		$this->default  = (is_null($default))
-				? ((defined("{$name}_DEFAULT")) ?  get_const("{$name}_DEFAULT") : NULL)
+				? ((defined("{$name}_DEFAULT")) ?  get_const("{$name}_DEFAULT") : '')
 				: $default;
+		if (is_null($this->default)) $this->default = '';
 		if (is_array($request))
 			{
 			$this->rec_id 	= $request[0]['id'];
@@ -40,6 +41,8 @@ class itSettings
 
 	static function create($name=NULL, $id_of_user=NULL, $value=NULL, $table_name=DEFAULT_SETTING_TABLE)
 		{
+		if (is_null($value)) $value = '';
+
 		$values_arr = array (
 			'name' 		=> $name,
 			'user_id'	=> $id_of_user,

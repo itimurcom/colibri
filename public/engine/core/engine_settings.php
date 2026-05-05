@@ -1,7 +1,9 @@
 <?php 
 function settings_request_value($key)
 	{
-	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	if (!isset($_REQUEST[$key])) return '';
+	$value = $_REQUEST[$key];
+	return ready_val($value);
 	}
 
 function get_settings_form($class='', $data=[], $form_options=[])

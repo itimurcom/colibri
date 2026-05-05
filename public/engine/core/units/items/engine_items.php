@@ -168,7 +168,9 @@ function get_items_feed_regexp_filter($session_key, $column)
 
 function get_items_feed_order()
 	{
-	switch (ready_val(items_filter_value('sort')))
+	$sort = items_filter_value('sort');
+	$sort = ready_val($sort);
+	switch ($sort)
 		{
 		case 'price_up' :
 			return "`price` ASC";
@@ -402,7 +404,8 @@ function get_items_compiled_feed($sql, $order_str, $fewer=false)
 
 function get_items_fewer_feed_code($sql, $order_str)
 	{
-	if (!ready_val(isset($_REQUEST['anchor']) ? $_REQUEST['anchor'] : NULL)) return ['counter' => NULL, 'code' => NULL];
+	$anchor = isset($_REQUEST['anchor']) ? $_REQUEST['anchor'] : NULL;
+	if (!ready_val($anchor)) return ['counter' => NULL, 'code' => NULL];
 
 	$o_fewer = get_items_compiled_feed($sql, $order_str, true);
 	$counter = $o_fewer->count_all();
@@ -426,7 +429,9 @@ function get_items_feed()
 	{
 	global $plug_og;
 
-	$sql = get_items_feed_sql(ready_val(isset($_REQUEST['view']) ? $_REQUEST['view'] : NULL));
+	$feed_view = isset($_REQUEST['view']) ? $_REQUEST['view'] : NULL;
+	$feed_view = ready_val($feed_view);
+	$sql = get_items_feed_sql($feed_view);
 	$order_str = get_items_feed_order();
 	$o_feed = get_items_compiled_feed($sql, $order_str);
 	$fewer = get_items_fewer_feed_code($sql, $order_str);
@@ -455,8 +460,10 @@ function get_item_avatar_image($item_rec=NULL, $class='SERIE_AVATAR')
 function get_items_feed_row_animation($row)
 	{
 	$row_id = items_row_value($row, 'id');
-	$active_id = ready_val(isset($_REQUEST['rec_id']) ? $_REQUEST['rec_id'] : NULL);
-	$anchor_id = ready_val(isset($_REQUEST['anchor']) ? $_REQUEST['anchor'] : NULL);
+	$active_id = isset($_REQUEST['rec_id']) ? $_REQUEST['rec_id'] : NULL;
+	$active_id = ready_val($active_id);
+	$anchor_id = isset($_REQUEST['anchor']) ? $_REQUEST['anchor'] : NULL;
+	$anchor_id = ready_val($anchor_id);
 	return (($row_id == $active_id) OR ($row_id == $anchor_id))
 		? [' animatedParent animateOnce', ' animated tada']
 		: [NULL, NULL];
