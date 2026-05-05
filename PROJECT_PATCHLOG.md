@@ -103,3 +103,10 @@
   - restricted `itFocus` session assignment to existing fields to avoid PHP 8.x dynamic-property output from arbitrary session keys
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public function names, and legacy UI behavior
   - added `docs/SESSION_CATALOG_PERSONALIZATION_GUARD_STAGE.md`
+
+- M0 / P81 public navigation sitemap guard stabilization bundle
+  - stabilized public menu/navigation helpers against malformed `$a_menu`, `$cat_cat`, and `$cat_more` rows without changing route structure
+  - guarded `public/sitemap.php` against missing menu arrays, empty DB result sets, incomplete item rows, and missing localized item URLs
+  - hardened `itSiteMap` XML rendering by skipping invalid page rows, escaping XML values, and replacing deprecated `strftime()` use with `date()`
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and existing menu/sitemap semantics
+  - added `docs/PUBLIC_NAVIGATION_SITEMAP_GUARD_STAGE.md`
