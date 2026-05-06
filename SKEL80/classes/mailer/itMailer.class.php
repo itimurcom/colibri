@@ -11,15 +11,26 @@ class itMailer
 	{
 	public $table_name, $num, $force;
 
+	static function row_value($row, $key, $default=NULL)
+		{
+		return (is_array($row) AND array_key_exists($key, $row)) ? $row[$key] : $default;
+		}
+
+	static function row_text($row, $key, $default='')
+		{
+		return trim((string)self::row_value($row, $key, $default));
+		}
+
 	//..............................................................................
 	// конструктор класса - готовит данные для писем и отправляет их из стека
 	//..............................................................................	
 	public function __construct($options = NULL, $table_name=DEFAULT_MAIL_TABLE)
 		{
+		$options = is_array($options) ? $options : [];
 		$this->table_name = $table_name;
 		
-		$this->num = isset($options['num']) ? $options['num'] : DEFAULT_MAIL_PACKET;
-		$this->force = isset($options['force']) ? $options['force'] : false;		
+		$this->num = isset($options['num']) ? max(1, intval($options['num'])) : DEFAULT_MAIL_PACKET;
+		$this->force = !empty($options['force']);		
 		$this->stack();
 		}
 
@@ -29,9 +40,11 @@ class itMailer
 	//..............................................................................	
 	public function stack()
 		{
+		$mess_arr = [];
 		try	{
 			$mess_arr = itMySQL::_get_arr_from_db($this->table_name, "`status` IN ('WAIT'".($this->force ? ",'ERROR'" : NULL).")", "`datetime` ASC LIMIT {$this->num}");
 			} catch	(Exception $e) {
+				$mess_arr = [];
 				}
 			
 		if (is_array($mess_arr))
@@ -58,6 +71,10 @@ class itMailer
 	static function send($row, $html=true)
 		{
 		global $_SETTINGS;
+		$row = is_array($row) ? $row : [];
+		$mail_id = intval(self::row_value($row, 'id', 0));
+		$to = self::row_text($row, 'to');
+		if ($mail_id <= 0 OR $to === '') return false;
 /*		$boundary = strtoupper(uniqid(time()));
 		$type = ($html) ? 'text/html' : 'text/plain';
 
@@ -111,33 +128,35 @@ class itMailer
 			}
 */
 
-		$from_email = !empty($row['from']) ? $row['from'] : (defined('DEFAULT_ADMIN_EMAIL') ? DEFAULT_ADMIN_EMAIL : trim(isset($_SETTINGS['SITE_ADMIN_EMAIL']['value']) ? $_SETTINGS['SITE_ADMIN_EMAIL']['value'] : ''));
+		$from_email = self::row_text($row, 'from', (defined('DEFAULT_ADMIN_EMAIL') ? DEFAULT_ADMIN_EMAIL : trim(isset($_SETTINGS['SITE_ADMIN_EMAIL']['value']) ? $_SETTINGS['SITE_ADMIN_EMAIL']['value'] : '')));
 		$from_name = defined('CMS_NAME') ? CMS_NAME : (defined('SITE_NAME') ? SITE_NAME : 'SKEL80');
 		$smptmail->setFrom($from_email, $from_name); // Ваш Email
-		$smptmail->addAddress($row['to']); // Email получателя
+		$smptmail->addAddress($to); // Email получателя
 
 
-		if (isset($row['reply']) and isEmail($row['reply']))
+		$reply = self::row_text($row, 'reply');
+		if ($reply !== '' AND isEmail($reply))
 			{
 			$smptmail->ClearReplyTos();
-			if (isset($row['name']))
+			$name = self::row_text($row, 'name');
+			if ($name !== '')
 				{
-				$smptmail->AddReplyTo($row['reply'], $row['name']);	
-				} else $smptmail->AddReplyTo($row['reply']); // ответ нужно добавлять ПЕРЕД setFrom
+				$smptmail->AddReplyTo($reply, $name);	
+				} else $smptmail->AddReplyTo($reply); // ответ нужно добавлять ПЕРЕД setFrom
 			}
 
 
 		$smptmail->isHTML(true); 
-		$smptmail->Subject = $row['subject'];
-		$smptmail->Body = $row['message']; // Текст письма		
+		$smptmail->Subject = self::row_text($row, 'subject');
+		$smptmail->Body = (string)self::row_value($row, 'message', ''); // Текст письма		
 		
 		if ($smptmail->send())
 			{
-			itMail::status($row['id'],'SEND');
-			itMail::code($row['id'],'Ok');
+			itMail::status($mail_id,'SEND');
+			itMail::code($mail_id,'Ok');
 			} else	{
-				itMail::status($row['id'],'ERROR');
-				itMail::code($row['id'], $smptmail->ErrorInfo);
+				itMail::status($mail_id,'ERROR');
+				itMail::code($mail_id, $smptmail->ErrorInfo);
 				}
 		unset($smptmail);
 		}
@@ -155,7 +174,7 @@ class itMailer
 
 		if (is_null($filename))
 			{
-			add_error_message("error <b>attaching</b> file <b>[$file]</b>");
+			add_error_message("error <b>attaching</b> file <b>[".htmlspecialchars((string)$file, ENT_QUOTES)."]</b>");
 			return;
 			}
 

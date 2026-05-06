@@ -194,3 +194,18 @@
   - guarded slider/share/category-list helpers against missing server/request fields, empty DB rows, and incomplete row metadata that could leak warnings into HTML
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy UI output contracts
   - added `docs/PUBLIC_UI_HELPER_REQUEST_GUARD_STAGE.md`
+
+- M0 / P93 mailing queue send guard stabilization bundle
+  - stabilized the legacy mail queue/sender layer after the mailing-history/feed fixes by guarding `itMail`, `itMailer`, and `itMailings` payload reads
+  - guarded mail construction, compile, attachment, push, push-all, queue packet, sender row, mailing-list, mailing-run, and stats helpers against partial arrays and missing DB fields
+  - fixed `itMailings::_send()` so it uses the provided `$options` payload instead of an undefined `$row` variable and inserts the prepared queued mail row only once
+  - skipped malformed queue/send rows with empty recipients or invalid ids instead of leaking warnings/fatals into mailing UI or background send flow
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, mail table names, and existing mail statuses
+  - added `docs/MAILING_QUEUE_SEND_GUARD_STAGE.md`
+
+- M0 / P94 product schema markup guard stabilization bundle
+  - stabilized legacy product structured-data output in `itMarkUp` against partial `$_MARKUP`, partial constructor options, missing review/image fields, and absent request `rec_id`
+  - replaced direct product markup/global/request reads with local guarded by-value helpers so missing product metadata no longer leaks warnings into JSON-LD/RDFA/microdata output
+  - normalized product image slots `0/1/2` and initialized structured-data output globals before appending markup
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and existing product schema output blocks
+  - added `docs/PRODUCT_SCHEMA_MARKUP_GUARD_STAGE.md`

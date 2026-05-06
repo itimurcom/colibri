@@ -6,102 +6,93 @@ class itMarkUp
 	{
 	public $image, $name, $brand, $description, $offers, $url, $price, $currency, $condition, $availability, $expire, $seller, $sku, $mpn, $review;
 
+	private static function option_value($row, $key, $default=NULL)
+		{
+		return (is_array($row) AND array_key_exists($key, $row))
+			? ready_value($row[$key], $default)
+			: $default;
+		}
+
+	private static function request_value($key, $default=NULL)
+		{
+		return (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($key, $_REQUEST))
+			? ready_value($_REQUEST[$key], $default)
+			: $default;
+		}
+
+	private static function review_value($row, $key, $default)
+		{
+		$review = (is_array($row) AND isset($row['review']) AND is_array($row['review']))
+			? $row['review']
+			: [];
+		return self::option_value($review, $key, $default);
+		}
+
+	private static function normalize_images($image)
+		{
+		if (!is_array($image))
+			{
+			$image = [0 => $image];
+			}
+
+		if (!array_key_exists(0, $image))
+			{
+			$image[0] = NULL;
+			}
+
+		if (!array_key_exists(1, $image))
+			{
+			$image[1] = $image[0];
+			}
+
+		if (!array_key_exists(2, $image))
+			{
+			$image[2] = $image[1];
+			}
+
+		return $image;
+		}
+
 	public function __construct($options = NULL)
 		{
 		global $_MARKUP;
 
-		$this->image = isset($options['image'])
-		 		? $options['image']
-		 		: ready_val($_MARKUP['image']);		// Повторяющееся поле ImageObject или URL на картинки 1x1, 4x3, 16x9
+		if (!is_array($options)) $options = [];
+		if (!is_array($_MARKUP)) $_MARKUP = [];
 
-		if (!is_array($this->image))
-			{
-			$image = $this->image;
-			$this->image = NULL;
-			$this->image[0] = $image;
-			}
+		$this->image = self::normalize_images(self::option_value($options, 'image', self::option_value($_MARKUP, 'image')));		// Повторяющееся поле ImageObject или URL на картинки 1x1, 4x3, 16x9
 
-		if (!isset($this->image[1]))
-			{
-			$this->image[1] = $this->image[0];
-			}
+		$this->name = self::option_value($options, 'name', self::option_value($_MARKUP, 'name'));		// Название товара
+		$this->brand = self::option_value($options, 'brand', self::option_value($_MARKUP, 'brand', CMS_NAME));// Бренд товара
+		$this->description = self::option_value($options, 'description', self::option_value($_MARKUP, 'description'));	// Описание товара
 
-		if (!isset($this->image[2]))
-			{
-			$this->image[2] = $this->image[1];
-			}
+		$this->brand = self::option_value($options, 'brand', self::option_value($_MARKUP, 'brand', CMS_NAME));// Бренд
 
-		$this->name = isset($options['name'])
-				? $options['name']
-				: ready_val($_MARKUP['name']);		// Название товара
-		$this->brand = isset($options['brand'])
-				? $options['brand']
-				: ready_val($_MARKUP['brand'], CMS_NAME);// Бренд товара
-		$this->description = isset($options['description'])
-				? $options['description']
-				: ready_val($_MARKUP['description']);	// Описание товара
+		$this->offers = self::option_value($options, 'offers', self::option_value($_MARKUP, 'offers')); 	// Условия продажи товара. Включает вложенный элемент Offer или AggregateOffer
 
-		$this->brand = isset($options['brand'])
-				? $options['brand']
-				: ready_val($_MARKUP['brand'], CMS_NAME);// Бренд
+		$this->url = self::option_value($options, 'url', self::option_value($_MARKUP, 'url', get_request_url())); 	// ссылка на товар
 
-		$this->offers = isset($options['offers'])
-				? $options['offers']
-				: ready_val($_MARKUP['offers']); 	// Условия продажи товара. Включает вложенный элемент Offer или AggregateOffer
+		$this->price = str_replace(',', '.', self::option_value($options, 'price', self::option_value($_MARKUP, 'price', '0.00'))); 		// Цена товара. Следуйте инструкциям schema.org
 
-		$this->url = isset($options['url'])
-				? $options['url']
-				: ready_val($_MARKUP['url'], get_request_url()); 	// ссылка на товар
+		$this->currency = self::option_value($options, 'currency', self::option_value($_MARKUP, 'currency', 'USD'));		// Валюта, в которой указана цена товара. Используйте трехбуквенный формат ISO 4217
 
-		$this->price = str_replace(',', '.', (isset($options['price'])
-				? $options['price']
-				: ready_val($_MARKUP['price'], '0.00'))); 		// Цена товара. Следуйте инструкциям schema.org
+		$this->condition  = self::option_value($options, 'condition', self::option_value($_MARKUP, 'condition', 'NewCondition'));	// состояние товара NewCondition,DamagedCondition,RefurbishedCondition,UsedCondition
 
-		$this->currency = isset($options['currency'])
-				? $options['currency']
-				: ready_val($_MARKUP['currency'], 'USD');		// Валюта, в которой указана цена товара. Используйте трехбуквенный формат ISO 4217
+		$this->availability  = self::option_value($options, 'availability', self::option_value($_MARKUP, 'availability', 'InStock'));	// наличие Discontinued,InStock,InStoreOnly,LimitedAvailability,OnlineOnly,OutOfStock,PreOrder,PreSale,SoldOut
 
-		$this->condition  = isset($options['condition'])
-				? $options['condition']
-				: ready_val($_MARKUP['condition'], 'NewCondition');	// состояние товара NewCondition,DamagedCondition,RefurbishedCondition,UsedCondition
+		$this->expire  = self::option_value($options, 'expire', self::option_value($_MARKUP, 'expire', skel80_strftime_compat("%Y-01-01", strtotime('now +1 year'), 'en'))); 			// Дата (в формате ISO 8601), после которой цена перестанет действовать.
 
-		$this->availability  = isset($options['availability'])
-				? $options['availability']
-				: ready_val($_MARKUP['availability'], 'InStock');	// наличие Discontinued,InStock,InStoreOnly,LimitedAvailability,OnlineOnly,OutOfStock,PreOrder,PreSale,SoldOut
+		$this->seller  = self::option_value($options, 'seller', self::option_value($_MARKUP, 'seller', CMS_NAME)); // продавец
 
-		$this->expire  = isset($options['expire'])
-				? $options['expire']
-				: ready_val($_MARKUP['expire'], skel80_strftime_compat("%Y-01-01", strtotime('now +1 year'), 'en')); 			// Дата (в формате ISO 8601), после которой цена перестанет действовать.
+		$this->sku  = self::option_value($options, 'sku', self::option_value($_MARKUP, 'sku', self::request_value('rec_id'))); 	// SKU товара на складе
 
-		$this->seller  = isset($options['seller'])
-				? $options['seller']
-				: ready_val($_MARKUP['seller'], CMS_NAME); // продавец
+		$this->mpn  = self::option_value($options, 'mpn', self::option_value($_MARKUP, 'mpn', $this->sku)); 		// MPN код товара для тех изелий, у которых нет GTIN
 
-		$this->sku  = isset($options['sku'])
-				? $options['sku']
-				: ready_val($_MARKUP['sku'], $_REQUEST['rec_id']); 	// SKU товара на складе
+		$this->review['count']	= self::review_value($options, 'count', self::review_value($_MARKUP, 'count', 1));						// колиичество оценок
 
-		$this->mpn  = isset($options['mpn'])
-				? $options['mpn']
-				: ready_val($_MARKUP['mpn'], $this->sku ); 		// MPN код товара для тех изелий, у которых нет GTIN
+		$this->review['value']	= self::review_value($options, 'value', self::review_value($_MARKUP, 'value', 5));						// оценока
 
-		$this->review['count']	= isset($options['review'])
-			? ready_val($options['review']['count'], 1)
-			: (isset($_MARKUP['review'])
-				? ready_val($_MARKUP['review']['count'], 1)
-				: 1);						// колиичество оценок
-
-		$this->review['value']	= isset($options['review'])
-			? ready_val($options['review']['value'], 5)
-			: (isset($_MARKUP['review'])
-				? ready_val($_MARKUP['review']['value'], 5)
-				: 5);						// оценока
-
-		$this->review['author']	= isset($options['review'])
-			? ready_val($options['review']['author'], CMS_NAME)
-			: (isset($_MARKUP['review'])
-				? ready_val($_MARKUP['review']['author'], CMS_NAME)
-				: CMS_NAME);					// автор оценки
+		$this->review['author']	= self::review_value($options, 'author', self::review_value($_MARKUP, 'author', CMS_NAME));					// автор оценки
 
 		$this->prepare();
 		}
@@ -109,6 +100,11 @@ class itMarkUp
 	public function prepare()
 		{
 		global $_LDJSON, $_RDFA, $_SCHEMA;
+
+		if (!isset($_LDJSON) OR !is_string($_LDJSON)) $_LDJSON = '';
+		if (!isset($_RDFA) OR !is_string($_RDFA)) $_RDFA = '';
+		if (!isset($_SCHEMA) OR !is_string($_SCHEMA)) $_SCHEMA = '';
+
 		$_LDJSON .= TAB.'<script type="application/ld+json">
 {
   "@context": "https://schema.org/",

@@ -9,6 +9,22 @@
 //..............................................................................
 class itMailings
 	{
+	static function option_value($row, $key, $default=NULL)
+		{
+		return (is_array($row) AND array_key_exists($key, $row)) ? $row[$key] : $default;
+		}
+
+	static function option_text($row, $key, $default='')
+		{
+		return trim((string)self::option_value($row, $key, $default));
+		}
+
+	static function email_list($row)
+		{
+		if (!is_array($row) OR !isset($row['emails_xml']) OR !is_array($row['emails_xml'])) return [];
+		return $row['emails_xml'];
+		}
+
 	//..............................................................................
 	// конструктор класса
 	//..............................................................................
@@ -21,11 +37,13 @@ class itMailings
 	//..............................................................................
 	static function _create_list($options=NULL, $table_name=DEFAULT_MAILINGLIST_TABLE)
 		{
+		$options = is_array($options) ? $options : [];
+		$emails = self::option_value($options, 'emails', []);
 		$values_arr = [
 			'title_xml'	=> [
-				CMS_LANG	=> ready_val($options['title'])
+				CMS_LANG	=> self::option_text($options, 'title')
 				],
-			'emails_xml'	=> ready_val($options['emails']),
+			'emails_xml'	=> is_array($emails) ? $emails : [],
 			'status'	=> 'PUBLISHED',
 			];
 		return itMySQL::_insert_rec($table_name, $values_arr);
@@ -36,20 +54,24 @@ class itMailings
 	//..............................................................................
 	static function _add_to_list($mailing_list_id=NULL, $options=NULL, $table_name=DEFAULT_MAILINGLIST_TABLE)
 		{
-		if ( ($row = itMySQL::_get_rec_from_db($table_name, $mailing_list_id)) AND !is_null($options))
+		$options = is_array($options) ? $options : [];
+		$email = self::option_text($options, 'email');
+		if ($email === '') return;
+		if ( ($row = itMySQL::_get_rec_from_db($table_name, $mailing_list_id)) )
 			{
-			if (!isset($row['emails_xml'][$options['email']]))
-				$row['emails_xml'][$options['email']] = NULL;
+			$emails_xml = self::email_list($row);
+			if (!isset($emails_xml[$email]) OR !is_array($emails_xml[$email]))
+				$emails_xml[$email] = [];
 			if (isset($options['user_id']))
 				{
-				$row['emails_xml'][$options['email']]['user_id'] = $options['user_id'];
+				$emails_xml[$email]['user_id'] = $options['user_id'];
 				}
 			if (isset($options['name']))
 				{
-				$row['emails_xml'][$options['email']]['name'] = $options['name'];
+				$emails_xml[$email]['name'] = $options['name'];
 				}
 
-			itMySQL::_update_value_db($table_name, $mailing_list_id, $row['emails_xml'], 'emails_xml');
+			itMySQL::_update_value_db($table_name, $mailing_list_id, $emails_xml, 'emails_xml');
 			}
 		}
 
@@ -61,6 +83,8 @@ class itMailings
 		{
 		if ( ($row = itMySQL::_get_rec_from_db($table_name, $mailing_list_id)) AND !is_null($import))
 			{
+			$row['emails_xml'] = self::email_list($row);
+			$import = (string)$import;
 			$lines = explode("\n",$import);
 			$data = explode(",", $import);
 			
@@ -70,26 +94,28 @@ class itMailings
 				foreach($lines as $email_row)
 					{
 					$data = explode(",",$email_row);
-					if (!isset($data[1]))
-						$data[1] = NULL;
-					if (isEmail(trim($data[0])))
+					$email = isset($data[0]) ? trim($data[0]) : '';
+					$name = isset($data[1]) ? trim($data[1]) : '';
+					if (isEmail($email))
 						{
-						$row['emails_xml'][trim($data[0])]['name'] = trim($data[1]);
+						$row['emails_xml'][$email]['name'] = $name;
 						}
 					}
 				} else
 
-			if (isEmail(trim($data[1])))
+			if (isset($data[1]) AND isEmail(trim($data[1])))
 				{
 				// это список emails	
 				foreach($data as $email)
 					{
-					$row['emails_xml'][trim($email)]=NULL;
+					$email = trim($email);
+					if ($email !== '' AND isEmail($email)) $row['emails_xml'][$email]=NULL;
 					}
-				} else if (isEmail(trim($data[0])))
+				} else if (isset($data[0]) AND isEmail(trim($data[0])))
 					{
 					// передали один email и его имя
-					$row['emails_xml'][trim($data[0])]['name'] = trim($data[1]);
+					$email = trim($data[0]);
+					$row['emails_xml'][$email]['name'] = isset($data[1]) ? trim($data[1]) : '';
 					} else	{
 						// ошибка
 //						add_error_message('NO_EMAILS_IMPORTED');
@@ -107,11 +133,13 @@ class itMailings
 		{
 		if ( ($row = itMySQL::_get_rec_from_db($table_name, $mailing_list_id)) AND !is_null($list))
 			{
+			$row['emails_xml'] = self::email_list($row);
 			// это список emails удаляем
-			foreach(explode(",", $list) as $email)
+			foreach(explode(",", (string)$list) as $email)
 				{
 				$email_name = trim($email);
-				if (isset($row['emails_xml'][$email_name]) OR @is_null($row['emails_xml'][$email_name]))
+				if ($email_name === '') continue;
+				if (array_key_exists($email_name, $row['emails_xml']))
 					{
 					unset($row['emails_xml'][$email_name]);
 					}
@@ -135,7 +163,7 @@ class itMailings
 		{
 		if ($row=itMySQL::_get_rec_from_db($table_name, $mailing_list_id))
 			{
-			return $row['name'];
+			return self::option_text($row, 'name');
 			}
 		}
 	//..............................................................................
@@ -143,33 +171,37 @@ class itMailings
 	//..............................................................................
 	static function _send($options=NULL, $table_name = DEFAULT_MAIL_TABLE)
 		{
-		$rec_id  = itMySQL::_last_id('mails');
+		$options = is_array($options) ? $options : [];
+		$to = self::option_text($options, 'to');
+		if ($to === '') return NULL;
 
-
-		$now = ready_val($row['datetime'], mysql_now());
+		$rec_id  = itMySQL::_last_id($table_name);
+		$now = self::option_text($options, 'datetime', mysql_now());
 		
 		$data = itEditor::event_data([
 			'time'		=> $now,
 			'rec_id'	=> $rec_id,
 			]);
 
+		$message = (string)self::option_value($options, 'message', '');
 		$values_arr = [
-			'from' 		=> ready_val($row['from'], DEFAULT_ADMIN_NAME),
-			'to' 		=> $options['to'],
-			'subject' 	=> $options['subject'],
-			'reply'		=> ready_val($row['reply']),
-			'message'	=> str_replace('[MAILID]', $data, $row['message']),
+			'from' 		=> self::option_text($options, 'from', DEFAULT_ADMIN_NAME),
+			'to' 		=> $to,
+			'subject' 	=> self::option_text($options, 'subject'),
+			'reply'		=> self::option_text($options, 'reply'),
+			'message'	=> str_replace('[MAILID]', $data, $message),
 			'status' 	=> 'WAIT',
-			'files_xml'	=> ready_val($options['files']),
+			'files_xml'	=> self::option_value($options, 'files', NULL),
 			'datetime'	=> $now,
 			];
 			
-		if ( $rec_id != ($real_id = itMySQL::_insert_rec($table_name, $values_arr)) )
+		$real_id = itMySQL::_insert_rec($table_name, $values_arr);
+		if ($rec_id != $real_id)
 			{
-			itMySQL::_update_value_db('mails', $real_id, str_replace('[MAILID]', $real_id, $options['message']), 'message');
+			itMySQL::_update_value_db($table_name, $real_id, str_replace('[MAILID]', $real_id, $message), 'message');
 			}
 			
-		return itMySQL::_insert_rec($table_name, $values_arr);
+		return $real_id;
 		}
 		
 	//..............................................................................
@@ -183,31 +215,38 @@ class itMailings
 			$values_arr['keys'] = ['from','to','reply','subject','message','files_xml', 'datetime', 'status'];
 			
 
-			$rec_id	= itMySQL::_last_id('mails');
+			$rec_id	= itMySQL::_last_id($table_name);
 	
-			$index = 0;
 			foreach ($emails_arr as $row)
 				{
-				$now = ready_val($row['datetime'], mysql_now());
+				$row = is_array($row) ? $row : [];
+				$to = self::option_text($row, 'to');
+				if ($to === '') continue;
+
+				$now = self::option_text($row, 'datetime', mysql_now());
 				
 				$data = itEditor::event_data([
 					'time'		=> $now,
 					'rec_id'	=> $rec_id,
 					]);
 
+				$message = (string)self::option_value($row, 'message', '');
 				$values_arr[] = [
-					ready_val($row['from'], DEFAULT_ADMIN_NAME),
-					$row['to'],
-					ready_val($row['reply']),
-					$row['subject'],
-					str_replace('[MAILID]', $data, $row['message']),
-					ready_val($row['files']),
+					self::option_text($row, 'from', DEFAULT_ADMIN_NAME),
+					$to,
+					self::option_text($row, 'reply'),
+					self::option_text($row, 'subject'),
+					str_replace('[MAILID]', $data, $message),
+					self::option_value($row, 'files', NULL),
 					$now,
 					'WAIT',
 					];
 				$rec_id++;
 				}
-			itMySQL::_insert_rec($table_name, $values_arr);
+			if (count($values_arr)>1)
+				{
+				itMySQL::_insert_rec($table_name, $values_arr);
+				}
 			return $now;
 			}
 		if ($forse)
@@ -224,81 +263,106 @@ class itMailings
 		{
 		if ($row=itMySQL::_get_rec_from_db($table_name,$mailing_id))
 			{
-			switch ($row['object'])
+			$row = is_array($row) ? $row : [];
+			$object = self::option_text($row, 'object');
+			switch ($object)
 				{
 				case 'LIST' : {
 					// подготовим рассылку по списку
-					if ($maillist =itMySQL::_get_rec_from_db($list_name, $row['object_id']) )
+					if ($maillist = itMySQL::_get_rec_from_db($list_name, self::option_value($row, 'object_id')) )
 						{
-						foreach($maillist['emails_xml'] as $email_key=>$email_row)
+						$mails = [];
+						foreach(self::email_list($maillist) as $email_key=>$email_row)
 							{
+							$email_row = is_array($email_row) ? $email_row : [];
+							if (!isEmail($email_key)) continue;
+
 							$options = [
-							'name'		=> $email_row['name'],
-							'pattern_id'	=> $row['pattern_id'],
+							'name'		=> self::option_text($email_row, 'name'),
+							'pattern_id'	=> self::option_value($row, 'pattern_id'),
 							];
-	
-							itMailTemplate::_prepare($options);								
+
+							itMailTemplate::_prepare($options);							
 							$mails[] = [
 								'to'		=> $email_key,
-								'subject'	=> CMS_NAME.' | '.itMailTemplate::_subj($row['pattern_id']),
-								'message'	=> $options['result'],
+								'subject'	=> CMS_NAME.' | '.itMailTemplate::_subj(self::option_value($row, 'pattern_id')),
+								'message'	=> self::option_value($options, 'result', ''),
 								];	
 							}
-						itMailings::_send_arr($mails);
-						return true;
+						if (count($mails))
+							{
+							itMailings::_send_arr($mails);
+							return true;
+							}
+						return false;
 						}
 					break;
 					}
 				case 'PRO' : {
-					if (is_array($array_of_users = trPro::_pro_users()))
+					if (class_exists('trPro') AND is_array($array_of_users = trPro::_pro_users()))
 						{
+						$mails = [];
 						foreach($array_of_users as $row_of_user)
 							{
-							if (isEmail($email_name = itUser::get_email($row_of_user['id'])))
+							$row_of_user = is_array($row_of_user) ? $row_of_user : [];
+							$user_id = self::option_value($row_of_user, 'id');
+							if (isEmail($email_name = itUser::get_email($user_id)))
 								{
 								$options = [
-									'user_id'	=> $row_of_user['id'],
-									'pattern_id'	=> $row['pattern_id'],
+									'user_id'	=> $user_id,
+									'pattern_id'	=> self::option_value($row, 'pattern_id'),
 									];
 								itMailTemplate::_prepare($options);
 								$mails[] = [
 									'to'		=> $email_name,
-									'subject'	=> CMS_NAME.' | '.$options['subject'],
-									'message'	=> $options['result'],	
+									'subject'	=> CMS_NAME.' | '.self::option_text($options, 'subject'),
+									'message'	=> self::option_value($options, 'result', ''),	
 									];
 								}
 							}
-						itMailings::_send_arr($mails);
-						return true;
+						if (count($mails))
+							{
+							itMailings::_send_arr($mails);
+							return true;
+							}
+						return false;
 						} else return false;
 					break;	
 					}
 
 				case 'CHAT' : {
-					if (is_array($array_of_users = trCHatRoom::_has_access($row['object_id'])))
+					if (class_exists('trCHatRoom') AND is_array($array_of_users = trCHatRoom::_has_access(self::option_value($row, 'object_id'))))
 						{
+						$mails = [];
 						foreach($array_of_users as $row_of_user)
 							{
-							if (isEmail($email_name = itUser::get_email($row_of_user['user_id'])))
+							$row_of_user = is_array($row_of_user) ? $row_of_user : [];
+							$user_id = self::option_value($row_of_user, 'user_id');
+							if (isEmail($email_name = itUser::get_email($user_id)))
 								{
 								$options = [
-									'user_id'	=> $row_of_user['user_id'],
-									'pattern_id'	=> $row['pattern_id'],
+									'user_id'	=> $user_id,
+									'pattern_id'	=> self::option_value($row, 'pattern_id'),
 									];
 								itMailTemplate::_prepare($options);
 								$mails[] = [
 									'to'		=> $email_name,
-									'subject'	=> CMS_NAME.' | '.$options['subject'],
-									'message'	=> $options['result'],	
+									'subject'	=> CMS_NAME.' | '.self::option_text($options, 'subject'),
+									'message'	=> self::option_value($options, 'result', ''),	
 									];
 								}
 							}
-						itMailings::_send_arr($mails);
-						return true;
+						if (count($mails))
+							{
+							itMailings::_send_arr($mails);
+							return true;
+							}
+						return false;
 						} else return false;
 					break;	
 					}				}	
 			}
+		return false;
 		}
 		
 	//..............................................................................
@@ -307,7 +371,7 @@ class itMailings
 	static function _count_wait($table_name = DEFAULT_MAIL_TABLE, $db_prefix=DB_PREFIX)
 		{
 		$request = itMySQL::_request("SELECT COUNT(`id`) AS count FROM {$db_prefix}{$table_name} WHERE `status`='WAIT'");
-		return (is_array($request) ? $request[0]['count'] : 0);
+		return (is_array($request) AND isset($request[0]) AND is_array($request[0]) AND isset($request[0]['count'])) ? intval($request[0]['count']) : 0;
 		}
 		
 
@@ -325,7 +389,8 @@ class itMailings
 				$result['count'] = count($request);
 				foreach($request as $mail)
 					{
-					$result[$mail['status']] = isset($result[$mail['status']]) ? ($result[$mail['status']]+1) : 1;
+					$status = self::option_text($mail, 'status', 'ERROR');
+					$result[$status] = isset($result[$status]) ? ($result[$status]+1) : 1;
 					}
 				} else {
 					$result = [
@@ -341,7 +406,7 @@ class itMailings
 		
 	static function _strip_logo($text)
 		{
-		return preg_replace("/top_left_logo(.*).png/iUs", "top_left_logo.png", $text);
+		return preg_replace("/top_left_logo(.*).png/iUs", "top_left_logo.png", (string)$text);
 		}
 	
 	}

@@ -14,6 +14,16 @@ class itMail
 	public $table_name, $rec_id, $ed_rec;
 	public $fields, $files;
 
+	static function option_value($options, $key, $default=NULL)
+		{
+		return (is_array($options) AND array_key_exists($key, $options)) ? $options[$key] : $default;
+		}
+
+	static function text_value($options, $key, $default='')
+		{
+		return trim((string)self::option_value($options, $key, $default));
+		}
+
 	//..............................................................................
 	// конструктор - создает объект письма
 	//..............................................................................
@@ -28,6 +38,25 @@ class itMail
 		{
 		$this->table_name = $table_name;			
 		$this->from = DEFAULT_ADMIN_NAME;
+		$this->to = '';
+		$this->subject = '';
+		$this->message = '';
+		$this->code = '';
+		$this->status = '';
+		$this->fields = [];
+		$this->files = [];
+
+		if (is_array($options))
+			{
+			$this->from = self::text_value($options, 'from', $this->from);
+			$this->to = self::text_value($options, 'to');
+			$this->subject = self::text_value($options, 'subject');
+			$this->message = (string)self::option_value($options, 'message', '');
+			$this->code = self::text_value($options, 'code');
+			$this->status = self::text_value($options, 'status');
+			$this->files = is_array(self::option_value($options, 'files')) ? self::option_value($options, 'files') : [];
+			return;
+			}
 
 		if (intval($options)>0)
 			{
@@ -35,12 +64,12 @@ class itMail
 			if (is_array($this->ed_rec = itMySQL::_get_rec_from_db($table_name, $options)))
 				{
 				$this->rec_id 	= $options;
-				$this->from 	= $this->ed_rec['from'];
-				$this->to 	= $this->ed_rec['to'];
-				$this->subject 	= $this->ed_rec['subject'];
-				$this->message	= $this->ed_rec['message'];
-				$this->code 	= $this->ed_rec['code'];
-				$this->status 	= $this->ed_rec['status'];
+				$this->from 	= self::text_value($this->ed_rec, 'from', $this->from);
+				$this->to 	= self::text_value($this->ed_rec, 'to');
+				$this->subject 	= self::text_value($this->ed_rec, 'subject');
+				$this->message	= (string)self::option_value($this->ed_rec, 'message', '');
+				$this->code 	= self::text_value($this->ed_rec, 'code');
+				$this->status 	= self::text_value($this->ed_rec, 'status');
 				}
 			}
 		}
@@ -78,23 +107,28 @@ class itMail
 		{
 		if (is_array($this->fields))
 			foreach ($this->fields as $key=>$row)
-				switch ($row['type'])
+				{
+				if (!is_array($row)) continue;
+				$type = self::text_value($row, 'type');
+				$value = (string)self::option_value($row, 'value', '');
+				switch ($type)
 					{                    
 					case 'tpl' :
 						{
-						$this->message .= $row['value'];
+						$this->message .= $value;
 						break;
 						}
 					case 'text' : {
-						$this->message .= TAB.$row['value'].TAB;
+						$this->message .= TAB.$value.TAB;
 						break;
 						}
 					case 'html' :
 						{
-						$this->message .= TAB."<p>{$row['value']}".TAB."</p>";
+						$this->message .= TAB."<p>{$value}".TAB."</p>";
 						break;
 						}
 					}
+				}
 		}
 
 	//..............................................................................
@@ -113,6 +147,7 @@ class itMail
 	//..............................................................................	
 	public function add_tpl($tpl=NULL, $repl_arr=NULL)
 		{
+		$repl_arr = is_array($repl_arr) ? $repl_arr : [];
 		$search = [];
 		$replace = [];
 		if (count($repl_arr))
@@ -151,7 +186,8 @@ class itMail
 	//..............................................................................	
 	public function attach($file)
 		{
-		$this->files[] = $file;
+		if (!is_array($this->files)) $this->files = [];
+		if ($file !== NULL AND $file !== '') $this->files[] = $file;
 		}
 
 
@@ -173,20 +209,22 @@ class itMail
 
 		if ($this->to == 'all')
 			{
-			$this->push_all(); return;
+			$this->push_all($status); return;
 			}
+
+		if (trim((string)$this->to) === '') return;
 
 		$db = new itMySQL();
 
 		$values = array (
-			'from' 		=> $this->from,
-			'to' 		=> $this->to,
-			'subject' 	=> $this->subject,
-			'message'	=> $this->message,
-			'status' 	=> $status,
+			'from' 		=> trim((string)$this->from),
+			'to' 		=> trim((string)$this->to),
+			'subject' 	=> (string)$this->subject,
+			'message'	=> (string)$this->message,
+			'status' 	=> trim((string)$status),
 			);
 
-		if (is_array($this->files))
+		if (is_array($this->files) AND count($this->files))
 			{
 			$values['xml_files'] = json_encode($this->files);
 			}
@@ -195,9 +233,10 @@ class itMail
 		if (intval($this->rec_id)>0)
 			{
 			// повторная отправка и обновление данных
+			$set = [];
 			foreach ($values as $key=>$row)
 				{
-				$set[] = "`$key` = '$row'";
+				$set[] = "`$key` = '".addslashes((string)$row)."'";
 				}
 			$keys_str = implode(',', $set);
 			$query = "update {$db->db_prefix}{$this->table_name} set $keys_str where `id`='{$this->rec_id}'";
@@ -215,15 +254,24 @@ class itMail
 	//..............................................................................	
 	public function push_all($status='WAIT', $table_of_user = DEFAULT_USER_TABLE) 
 		{
-		if (is_array($this->files))
+		if (is_array($this->files) AND count($this->files))
 			{
 			$values['xml_files'] = json_encode($this->files);
 			} else $values['xml_files'] = '';
 
+		$this->from = trim((string)$this->from);
+		$this->subject = (string)$this->subject;
+		$this->message = (string)$this->message;
+
 		$db = new itMySQL();
+		$from_sql = addslashes($this->from);
+		$subject_sql = addslashes($this->subject);
+		$message_sql = addslashes($this->message);
+		$files_sql = addslashes((string)$values['xml_files']);
+		$status_sql = addslashes((string)$status);
 		// отправим всем сообщение
 		$db->request("INSERT INTO {$db->db_prefix}{$this->table_name} (`from`, `to`, `subject`, `message`, `files_xml`, `status`) ".
-			"SELECT '{$this->from}', {$db->db_prefix}$table_of_user.email, '{$this->subject}', '".$this->message."', '{$values['xml_files']}', '{$status}' ".
+			"SELECT '{$from_sql}', {$db->db_prefix}$table_of_user.email, '{$subject_sql}', '{$message_sql}', '{$files_sql}', '{$status_sql}' ".
 			"FROM {$db->db_prefix}$table_of_user WHERE `group_id`<>".get_const('GR_ADMIN')." and `email`<>''");
 		unset($db);
 		}
