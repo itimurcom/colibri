@@ -209,3 +209,10 @@
   - normalized product image slots `0/1/2` and initialized structured-data output globals before appending markup
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and existing product schema output blocks
   - added `docs/PRODUCT_SCHEMA_MARKUP_GUARD_STAGE.md`
+
+- M0 / P95 user auth / session guard stabilization bundle
+  - stabilized legacy user/auth/session runtime around `itUser`, `itUserReg`, login/logout/social-login entrypoints, customer profile helpers, and session message queues
+  - guarded malformed session hash rows, missing user/session DB rows, absent `$_USER`, incomplete social-provider config, and optional login/customer request values
+  - normalized the legacy `$_SESSION['error']` message queue before duplicate checks so malformed rows no longer leak warnings into HTML/AJAX output
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, existing login/logout redirects, and social provider names
+  - added `docs/USER_AUTH_SESSION_GUARD_STAGE.md`

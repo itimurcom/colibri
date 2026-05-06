@@ -7,6 +7,9 @@ Class itUser
 	// Конструктор класса, создаем объект проверяя условия
 	public function __construct($options=NULL)
 		{
+		$options = is_array($options) ? $options : [];
+		$this->data = NULL;
+		$this->is_logged = false;
 		$this->table_name = isset($options['table_name']) ? $options['table_name'] : DEFAULT_USER_TABLE;
 		$this->db_prefix = isset($options['db_prefix']) ? $options['db_prefix'] : DB_PREFIX;
 		$this->rec_id = isset($options['rec_id']) ? $options['rec_id'] : NULL;
@@ -19,6 +22,16 @@ Class itUser
 		}
 
 
+	static function row_value($row, $key, $default=NULL)
+		{
+		return (is_array($row) AND array_key_exists($key, $row)) ? $row[$key] : $default;
+		}
+
+	static function session_value($key, $default=NULL)
+		{
+		return (isset($_SESSION) AND is_array($_SESSION) AND array_key_exists($key, $_SESSION)) ? $_SESSION[$key] : $default;
+		}
+
 	// 	ОПЕРАЦИИ И ПРОВЕРКИ
 
 
@@ -30,8 +43,10 @@ Class itUser
 			$this->get_user_from_db($id_of_user);
 			}
 
+		if (empty($this->rec_id)) return false;
 		$this->create_session();
 		$this->is_logged = true;
+		return true;
 		}
 
 
@@ -59,7 +74,7 @@ Class itUser
 		if ($id_of_user!=NULL)
 			{
 			$this->data = itMySQL::_get_rec_from_db($table_name, $id_of_user);
-			if (is_null($this->data))
+			if (!is_array($this->data))
 				{                    
 				$this->logout();
 				} else	{
@@ -73,7 +88,7 @@ Class itUser
 	public function is_correct_user($login='', $password='')
 		{		
 		$query = "SELECT * FROM {$this->db_prefix}{$this->table_name} WHERE ( (`login` = '$login') or (`email` ='$login') ) and (`password` = password('$password') )";
-		if (is_array($request = itMySQL::_request($query)))
+		if (is_array($request = itMySQL::_request($query)) AND isset($request[0]) AND is_array($request[0]) AND !empty($request[0]['id']))
 			{
 			$this->login($request[0]['id']);
 			return true;
@@ -103,7 +118,7 @@ Class itUser
 		
 		if ( isset($_SESSION[SESSION_PREFIX.'HASH']) )
 			{
-			if (!is_array($hash_data = itUser::_hash_arr()))
+			if (!is_array($hash_data = itUser::_hash_arr()) OR empty($hash_data['session_id']) OR empty($hash_data['user_id']) OR empty($hash_data['expiretime']) OR !isset($hash_data['user_agent']) OR !isset($hash_data['uuid']) OR !isset($hash_data['user_ip']))
 				{
 				$error_message ='USER_HASH_ERROR';
 				$onerror = 'ARRAY';				
@@ -113,10 +128,10 @@ Class itUser
 			$this->session_row = (is_null($this->session_row ) ? itMySQL::_get_rec_from_db($table_name, $hash_data['session_id']) : $this->session_row);
 				
 			// проверим открыта ли сессия
-			if (!is_null($this->session_row))
+			if (is_array($this->session_row))
 				{
 				//  открыта ли сессия?
-				if ($this->session_row['status']!='PUBLISHED')
+				if (self::row_value($this->session_row, 'status')!='PUBLISHED')
 					{
 					$error_message ='USER_SESSION_CLOSED';
 					$onerror = 'CLOSED';
@@ -130,7 +145,7 @@ Class itUser
 					$error = true;
 					} else
 				// пользователь?	
-				if ($hash_data['user_id']!=$this->session_row['user_id'])
+				if ($hash_data['user_id']!=self::row_value($this->session_row, 'user_id'))
 					{
 					$error_message ='USER_HASH_ERROR_USERID';
 					$onerror = 'USERID';
@@ -144,7 +159,7 @@ Class itUser
 					$error = true;
 					} else
 				// уникальный uuid?	
-				if ($hash_data['uuid']!=$this->session_row['uuid'])
+				if ($hash_data['uuid']!=self::row_value($this->session_row, 'uuid'))
 					{
 					$error_message ='USER_HASH_ERROR_UUID';
 					$onerror = 'UUID';
@@ -153,7 +168,7 @@ Class itUser
 				// IP НО Остался Браузер и пользователь?
 				if ( (	$hash_data['user_ip']!=$this->user_ip) AND
 						( 
-						($hash_data['user_agent']!=$this->user_agent) OR ($hash_data['uuid']!=$this->session_row['uuid']) 
+						($hash_data['user_agent']!=$this->user_agent) OR ($hash_data['uuid']!=self::row_value($this->session_row, 'uuid')) 
 						)
 						)
 					{
@@ -168,9 +183,9 @@ Class itUser
 					$error = true;
 					}
 					
-			if ($hash_data['user_ip']!=$this->user_ip)
+			if (is_array($hash_data) AND isset($hash_data['user_ip']) AND ($hash_data['user_ip']!=$this->user_ip))
 				{	
-				$this->change_ip($this->session_row['id'], $table_name);
+				$this->change_ip(self::row_value($this->session_row, 'id'), $table_name);
 				}					
 
 			} else	{
@@ -197,7 +212,7 @@ Class itUser
 			} else 			// все в норме, откроем работу с пользователем
 				{
 				$this->is_logged = true;
-				$this->get_user_from_db($this->session_row['user_id']);
+				$this->get_user_from_db(self::row_value($this->session_row, 'user_id'));
 				$this->used(); // там же и хеш данные обновятся
 				}
 
@@ -208,9 +223,9 @@ Class itUser
 		{
 		// 
 		$options = array (
-			'user_id'	=> $this->data['id'],
+			'user_id'	=> self::row_value($this->data, 'id'),
 			'datetime' 	=> time(),
-			'user_email'	=> $this->data['email'],
+			'user_email'	=> self::row_value($this->data, 'email'),
 			);
 		return urlencode(simple_encrypt(serialize($options)));
 		}
@@ -221,7 +236,8 @@ Class itUser
 		$result = @unserialize(simple_decrypt($hash));
 		if (is_array($result) AND isset($result['user_id']) AND intval($result['user_id']))
 			{
-			$result['expired'] = time() > strtotime(EXPIRED_HASH, $result['datetime']);
+			$datetime = isset($result['datetime']) ? $result['datetime'] : time();
+			$result['expired'] = time() > strtotime(EXPIRED_HASH, $datetime);
 			if ($result['expired'])
 				{
 				add_error_message(get_const(ERROR_EXPIRED_HASH));
@@ -239,7 +255,8 @@ Class itUser
 		{
 		$this->check();
 		if ($group_array==NULL) $group_array = ['ADMIN'];
-		return (($this->is_logged) and (($group_array == 'ANY') or in_array($this->data['group_id'], $group_array)));
+		$group_id = self::row_value($this->data, 'group_id');
+		return (($this->is_logged) and (($group_array == 'ANY') or (is_array($group_array) AND in_array($group_id, $group_array))));
 		}
 
 	// обновляет отметку последнего использования
@@ -275,7 +292,8 @@ Class itUser
 	// возвращает отметку последнего использования
 	static function _used($id_of_user=NULL, $table_name=DEFAULT_USER_TABLE, $db_prefix=DB_PREFIX)
 		{
-		return !is_null($row = itMySQL::_get_rec_from_db($table_name, $id_of_user)) ? $row['used']	: NULL;
+		$row = itMySQL::_get_rec_from_db($table_name, $id_of_user);
+		return is_array($row) ? self::row_value($row, 'used') : NULL;
 		}
 
 	// возвращает значение id пользователя
@@ -293,7 +311,7 @@ Class itUser
 			}
 
 		$query = "SELECT * FROM {$db_prefix}{$table_name} WHERE ( (`login`='$login_of_user') or (`email`='$login_of_user') or (`name`='$login_of_user'))";
-		$result = (is_array($request = itMySQL::_request($query))) ? $request[0]['id'] : NULL;
+		$result = (is_array($request = itMySQL::_request($query)) AND isset($request[0]) AND is_array($request[0])) ? self::row_value($request[0], 'id') : NULL;
 		return $result;
 		}
 
@@ -321,6 +339,8 @@ Class itUser
 		{
 		$result = get_const('NO_TITLE');
 
+		if (!is_array($row)) return $result;
+
 		if (isset($row['name']) and ($row['name']!=''))
 			{
 			$result = $row['name'];
@@ -331,14 +351,14 @@ Class itUser
 			$result = $row['social']['name'];
 			} else
 
-		if ($row['email']!='')
+		if (self::row_value($row, 'email', '')!='')
 			{
-			$result = $row['email'];
+			$result = self::row_value($row, 'email', '');
 			} else
 
-		if ($row['login']!='')
+		if (self::row_value($row, 'login', '')!='')
 			{
-			$result = $row['login'];
+			$result = self::row_value($row, 'login', '');
 			}
 
 		return $result;
@@ -356,9 +376,11 @@ Class itUser
 		{
 		$result = ($answer) ? get_const('NO_SET') : $answer;
 
+		if (!is_array($row)) return $result;
+
 		if (isset($row['email']) and ($row['email']!=''))
 			{
-			$result = $row['email'];
+			$result = self::row_value($row, 'email', '');
 			} else
 
 		if (isset($row['social']['email']))
@@ -366,9 +388,9 @@ Class itUser
 			$result = $row['social']['email'];
 			} else
 
-		if (isEmail($row['login']))
+		if (isEmail(self::row_value($row, 'login', '')))
 			{
-			$result = $row['login'];
+			$result = self::row_value($row, 'login', '');
 			}
 		return $result;
 		}
@@ -386,6 +408,8 @@ Class itUser
 		{
 		$result = get_const('NO_SET');
 
+		if (!is_array($row)) return $result;
+
 		if (isset($row['phone']) and ($row['phone']!=''))
 			{
 			$result = $row['phone'];
@@ -396,9 +420,9 @@ Class itUser
 			$result = $row['social']['phone'];
 			} else
 
-		if (isPhone($row['login']))
+		if (isPhone(self::row_value($row, 'login', '')))
 			{
-			$result = $row['login'];
+			$result = self::row_value($row, 'login', '');
 			}
 		return $result;
 		}
@@ -413,29 +437,29 @@ Class itUser
 	// возаращает ссылку на доступную установленную аватарку
 	static function get_user_avatar_img($rec_of_user=NULL)
 		{
-		if ($rec_of_user==NULL) return;
+		if (!is_array($rec_of_user)) return;
 
-		if ($rec_of_user['avatar']=='')
+		if (self::row_value($rec_of_user, 'avatar', '')=='')
 			{
 			if (isset($rec_of_user['social']['avatar']))
 				{
 				return $rec_of_user['social']['avatar'];
 				}
-			} else return $rec_of_user['avatar'];
+			} else return self::row_value($rec_of_user, 'avatar');
 		}
 
 
 	// возвращает разрешенный логин для пользователя
 	static function get_allowed_user_login($rec_of_user=NULL)
 		{
-		if ($rec_of_user==NULL) return;
-		elseif ($rec_of_user['email']!='') 
+		if (!is_array($rec_of_user)) return;
+		elseif (self::row_value($rec_of_user, 'email', '')!='') 
 			{
-			return $rec_of_user['email'];
+			return self::row_value($rec_of_user, 'email');
 			}
-		elseif ($rec_of_user['login']!='') 
+		elseif (self::row_value($rec_of_user, 'login', '')!='') 
 			{
-			return $rec_of_user['login'];
+			return self::row_value($rec_of_user, 'login');
 			}
 		}
 
@@ -443,7 +467,8 @@ Class itUser
 	// возвращает дату регистрации пользователя
 	static function registered($id_of_user=NULL, $table_name = DEFAULT_USER_TABLE)
 		{
-		return !is_null($row = itMySQL::_get_rec_from_db($table_name, $id_of_user)) ? $row['datetime'] : NULL;
+		$row = itMySQL::_get_rec_from_db($table_name, $id_of_user);
+		return is_array($row) ? self::row_value($row, 'datetime') : NULL;
 		}
 
 
@@ -455,9 +480,11 @@ Class itUser
 	// устанавливает hash код данных сессии для браузера
 	static function _hash($data=NULL)
 		{
-		if (is_array($data))
+		if (is_array($data) AND !empty($data['user_id']))
 			{
-			$data['expiretime'] = get_mysql_datetime(strtotime(EXPIRED_HASH, strtotime(itUser::_used($data['user_id']))));
+			$used = itUser::_used($data['user_id']);
+			$base_time = $used ? strtotime($used) : time();
+			$data['expiretime'] = get_mysql_datetime(strtotime(EXPIRED_HASH, $base_time));
 			$_SESSION[SESSION_PREFIX.'HASH'] = itEditor::event_data($data);
 			} else
 				unset($_SESSION[SESSION_PREFIX.'HASH']);
@@ -466,8 +493,10 @@ Class itUser
 	// возвращает массив данных, записанный на стороне сессии браузера
 	static function _hash_arr()
 		{
-		$result = @unserialize(simple_decrypt($_SESSION[SESSION_PREFIX.'HASH']));
-		return $result;
+		$hash = self::session_value(SESSION_PREFIX.'HASH');
+		if (empty($hash)) return NULL;
+		$result = @unserialize(simple_decrypt($hash));
+		return is_array($result) ? $result : NULL;
 		}
 
 	// создает запись про новую сессию
@@ -484,7 +513,8 @@ Class itUser
 			];
 
 		// сбросим сессии других пользоватлей, если не даминистратор
-		if (ready_val($this->data['group_id'], 'USER') != 'ADMIN')
+		$group_id = self::row_value($this->data, 'group_id', 'USER');
+		if (ready_value($group_id, 'USER') != 'ADMIN')
 			{
 			if ($counter = itUser::_close_all($this->rec_id))
 				{
@@ -503,7 +533,10 @@ Class itUser
 	// безобъектная модель удаления hash-кода сессии для указанного пользователя
 	static function _close_all($id_of_user=NULL, $table_name = DEFAULT_SESSION_TABLE, $db_prefix=DB_PREFIX)
 		{
+		if (empty($id_of_user)) return 0;
+		$counter = 0;
 		$now = mysql_now();
+
 		$query =
 			"UPDATE {$db_prefix}{$table_name} ".
 			"SET `status`='CLOSE', ".
@@ -518,11 +551,13 @@ Class itUser
 		{
 		if (is_null($session_id))
 			{
-			$session_id = is_array($data = itUser::_hash_arr()) ? $data['session_id'] : NULL;
+			$session_id = (is_array($data = itUser::_hash_arr()) AND isset($data['session_id'])) ? $data['session_id'] : NULL;
 			}
 			
 		$now = mysql_now();
 		
+		if (empty($session_id)) return;
+
 		$query =
 			"UPDATE {$db_prefix}{$table_name} ".
 			"SET `status`='CLOSE', ".
@@ -534,13 +569,16 @@ Class itUser
 	// проверяет есть ли открытая сессия для пользователя
 	static function is_user_online($id_of_user=NULL, $table_name = DEFAULT_SESSION_TABLE, $db_prefix=DB_PREFIX)
 		{
+		if (empty($id_of_user)) return false;
 		$query = "SELECT * FROM {$db_prefix}{$table_name} WHERE `user_id`='{$id_of_user}' AND `status`='PUBLISHED' ORDER BY `datetime` DESC LIMIT 1";
 		$request = itMySQL::_request($query);
-		if (is_array($request))
+		if (is_array($request) AND isset($request[0]) AND is_array($request[0]))
 			{
 // 			foreach ($request as $session_row)
 				{
-				if ( time() > strtotime(EXPIRED_HASH,strtotime(itUser::_used($id_of_user))) ) // время с последнего использования было просрочено
+				$used = itUser::_used($id_of_user);
+				$used_time = $used ? strtotime($used) : time();
+				if ( time() > strtotime(EXPIRED_HASH, $used_time) ) // время с последнего использования было просрочено
 					{
 //					echo "CLOSE: {$id_of_user} / {$request[0]['id']}<br/>";
 					itUser::_close_all($id_of_user);
@@ -554,7 +592,7 @@ Class itUser
 	// проверяет есть ли открытая сессия для пользователя
 	static function _is_user_online($id_of_user=NULL, $table_name = DEFAULT_SESSION_TABLE, $db_prefix=DB_PREFIX)
 		{
-		self::is_user_online($id_of_user, $table_name, $db_prefix);
+		return self::is_user_online($id_of_user, $table_name, $db_prefix);
 		}
 
 	} // class;

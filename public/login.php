@@ -6,9 +6,20 @@ $data = itEditor::_redata();
 
 global $_USER;
 
+function login_user_runtime()
+	{
+	global $_USER;
+	return (isset($_USER) AND is_object($_USER)) ? $_USER : NULL;
+	}
+
 function login_request_value($key='', $default='')
 	{
-	return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+	return (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($key, $_REQUEST)) ? $_REQUEST[$key] : $default;
+	}
+
+function login_request_has($key='')
+	{
+	return (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($key, $_REQUEST));
 	}
 
 function login_session_value($path=[], $default=NULL)
@@ -25,7 +36,8 @@ function login_session_value($path=[], $default=NULL)
 	return $value;
 	}
 
-if ($_USER->is_logged())
+$_USER = login_user_runtime();
+if (is_object($_USER) AND $_USER->is_logged())
 	{
 	cms_smart_redirect();
 	} else {
@@ -45,15 +57,15 @@ if ($_USER->is_logged())
 
 		$user_login = login_request_value('user_login');
 		$user_password = login_request_value('user_password');
-		$has_login = isset($_REQUEST['user_login']);
-		$has_password = isset($_REQUEST['user_password']);
+		$has_login = login_request_has('user_login');
+		$has_password = login_request_has('user_password');
 
 		$redirect_url = login_request_value('url', NULL);
 
-		if ($has_login AND $has_password
+		if (is_object($_USER) AND $has_login AND $has_password
 			AND $_USER->is_correct_user($user_login, $user_password) )
 			{
-			if ($_USER->is_logged('ANY') AND !is_null($redirect_url))
+			if (is_object($_USER) AND $_USER->is_logged('ANY') AND !is_null($redirect_url))
 				{
 				cms_redirect_page($redirect_url);
 				} else	{
@@ -63,6 +75,7 @@ if ($_USER->is_logged())
 						} else cms_smart_redirect();
 					}
 			} else {
+				if (!isset($_SESSION['focus']) OR !is_array($_SESSION['focus'])) $_SESSION['focus'] = [];
 				$_SESSION['focus']['color'] = 'blue';
 
 				if (!$has_login OR $user_login=='')

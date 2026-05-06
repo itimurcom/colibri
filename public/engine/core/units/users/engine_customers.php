@@ -1,7 +1,7 @@
 <?php
 function customer_request_value($key, $default=NULL)
 	{
-	return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+	return (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($key, $_REQUEST)) ? $_REQUEST[$key] : $default;
 	}
 
 function customer_request_ready_value($key, $default=NULL)
@@ -31,6 +31,7 @@ function customer_by_email($email=NULL, $table_name=DEFAULT_USER_TABLE, $db_pref
 
 function customer_normalize_phone($phone)
 	{
+	$phone = (string)$phone;
 	return mstr_replace([
 		'(' 	=> '',
 		')'	=> '',
@@ -166,7 +167,9 @@ function js_replace_userdata()
 	$do_replace = " function upd_user() {";
 	foreach ($replace as $key=>$value)
 			{
-			$do_replace .= "update_f2_input('{$key}', '{$value}');\n";
+			$safe_key = addslashes((string)$key);
+			$safe_value = addslashes((string)$value);
+			$do_replace .= "update_f2_input('{$safe_key}', '{$safe_value}');\n";
 			}
 	$do_replace .= "} upd_user();";
 
@@ -175,6 +178,6 @@ function js_replace_userdata()
 function update_userdata_script()
 	{
 	global $_USER;
-	return 	($_USER->is_logged('ANY') ? "<script>".js_replace_userdata()."</script>" : NULL);
+	return 	((isset($_USER) AND is_object($_USER) AND method_exists($_USER, 'is_logged') AND $_USER->is_logged('ANY')) ? "<script>".js_replace_userdata()."</script>" : NULL);
 	}
 ?>

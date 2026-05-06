@@ -1,7 +1,7 @@
 <?php 
 function customer_event_request_value($key, $default=NULL)
 	{
-	return isset($_REQUEST[$key]) ? $_REQUEST[$key] : $default;
+	return (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($key, $_REQUEST)) ? $_REQUEST[$key] : $default;
 	}
 
 function customer_event_request_ready_value($key, $default=NULL)
@@ -10,9 +10,27 @@ function customer_event_request_ready_value($key, $default=NULL)
 	return ready_val($value, $default);
 	}
 
-function customer_event_user_data($key, $default='')
+function customer_event_user_runtime()
 	{
 	global $_USER;
+	return (isset($_USER) AND is_object($_USER)) ? $_USER : NULL;
+	}
+
+function customer_event_user_is_logged($groups='ANY')
+	{
+	$_USER = customer_event_user_runtime();
+	return (is_object($_USER) AND method_exists($_USER, 'is_logged')) ? $_USER->is_logged($groups) : false;
+	}
+
+function customer_event_user_login($id_of_user)
+	{
+	$_USER = customer_event_user_runtime();
+	return (is_object($_USER) AND method_exists($_USER, 'login')) ? $_USER->login($id_of_user) : false;
+	}
+
+function customer_event_user_data($key, $default='')
+	{
+	$_USER = customer_event_user_runtime();
 	return isset($_USER->data) && is_array($_USER->data) && isset($_USER->data[$key]) ? $_USER->data[$key] : $default;
 	}
 
@@ -124,7 +142,7 @@ function customer_register_event(&$register)
 	$o_form->add_button(get_const('BUTTON_REGISTER'), 'submit', ['form' => $o_form->form_id(), 'show' => true], 'blue' );
 	$o_form->add_button(get_const('BUTTON_CLEAR'), 'a', ['ajax'=>"f2_reset('".$o_form->form_id()."');"], 'green' );
 
-	if ($_USER->is_logged())
+	if (customer_event_user_is_logged())
 		{
 		$o_form->store();
 		}
@@ -145,7 +163,7 @@ function customer_edit_event()
 	{
 	global $_USER;
 
-	if (!$_USER->is_logged('ANY')) return;
+	if (!customer_event_user_is_logged('ANY')) return;
 
 	list($o_modal, $o_form) = customer_modal_form(str_replace ('[VALUE]', customer_event_user_data('email'), get_const('QUERY_EDIT_USER')));
 
@@ -192,7 +210,7 @@ function customer_ajaxlogin_event(&$login)
 	{
 	global $_USER;
 
-	if ($_USER->is_logged('ANY')) return;
+	if (customer_event_user_is_logged('ANY')) return;
 
 	$o_form = customer_enter_form('cus_enter', '/ed_field.php', 'ajaxenter', 'ajaxsubmit', ['ajax' => 'refine_events();']);
 	$result = $o_form->_view();
@@ -241,7 +259,7 @@ function customer_ajaxpin_event(&$pined)
 	if ($pined)
 		{
 		itMySQL::_update_value_db('users', $id_of_user, 'ACTIVE', 'status');
-		$_USER->login($id_of_user);
+		customer_event_user_login($id_of_user);
 
 		$do_replace = (customer_event_request_value('path') =='register/pin')
 			? "window.location.href = '".CMS_CURRENT_BASE_URL."/".CMS_LANG."/cabinet/';"

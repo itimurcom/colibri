@@ -3,18 +3,30 @@
 function add_error_message($message='Error', $color=NULL, $keep=false, $debug=false)
 	{
 	if ($debug)
-		{	
-		$debug = debug_backtrace()[1];
-		$message = "$message File:".basename($debug['file'])." Line:{$debug['line']}";
+		{
+		$trace = debug_backtrace();
+		$debug = (isset($trace[1]) AND is_array($trace[1])) ? $trace[1] : [];
+		$message = $message." File:".basename(isset($debug['file']) ? $debug['file'] : '')." Line:".(isset($debug['line']) ? $debug['line'] : '');
 		}
-		
-	if (!isset($_SESSION['error']) OR !is_array($_SESSION['error']) OR (array_search($message, array_column($_SESSION['error'],'msg'))===false))
-	$_SESSION['error'][] = array(
-		'msg' => $message,
-		'color' => is_null($color) ? ((defined('DEFAULT_ERROR_COLOR') ? get_const('DEFAULT_ERROR_COLOR') : 'red')) : $color,			
-		'keep'	=> $keep,
-		);
-	
-	
+
+	if (!isset($_SESSION['error']) OR !is_array($_SESSION['error']))
+		{
+		$_SESSION['error'] = [];
+		}
+
+	$messages = [];
+	foreach ($_SESSION['error'] as $row)
+		{
+		if (is_array($row) AND isset($row['msg'])) $messages[] = $row['msg'];
+		}
+
+	if (array_search($message, $messages)===false)
+		{
+		$_SESSION['error'][] = array(
+			'msg' => $message,
+			'color' => is_null($color) ? ((defined('DEFAULT_ERROR_COLOR') ? get_const('DEFAULT_ERROR_COLOR') : 'red')) : $color,
+			'keep'	=> $keep,
+			);
+		}
 	}
 ?>
