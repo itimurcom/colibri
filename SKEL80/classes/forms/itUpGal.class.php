@@ -17,22 +17,26 @@ class itUpGal
 	public function __construct($options=NULL)
 		{
 		global $upgal_counter;
+		$options = is_array($options) ? $options : [];
+		$class_options = (isset($options['class']) AND is_array($options['class'])) ? $options['class'] : [];
 		
 	
-		$this->form_id		= ready_val($options['form_id'], "");
-		$this->name		= ready_val($options['name'], DEFAULT_UPGAL_NAME);
-		$this->element_id	= ready_val($options['element_id'], "{$this->form_id}-{$this->name}");
+		$this->form_id		= ready_val(isset($options['form_id']) ? $options['form_id'] : NULL, "");
+		$this->name		= ready_val(isset($options['name']) ? $options['name'] : NULL, DEFAULT_UPGAL_NAME);
+		$this->element_id	= ready_val(isset($options['element_id']) ? $options['element_id'] : NULL, "{$this->form_id}-{$this->name}");
 		
-		$this->upgal_class	= ready_val($options['class']['main'], DEFAULT_UPGAL_CLASS);
-		$this->upgal_field	= ready_val($options['class']['field'], DEFAULT_UPGAL_FIELD);
-		$this->upgal_img	= ready_val($options['class']['img'], DEFAULT_UPGAL_IMG);
+		$this->upgal_class	= ready_val(isset($class_options['main']) ? $class_options['main'] : NULL, DEFAULT_UPGAL_CLASS);
+		$this->upgal_field	= ready_val(isset($class_options['field']) ? $class_options['field'] : NULL, DEFAULT_UPGAL_FIELD);
+		$this->upgal_img	= ready_val(isset($class_options['img']) ? $class_options['img'] : NULL, DEFAULT_UPGAL_IMG);
 
-		$this->value		= ready_val($options['value'], isset($_REQUEST[$this->name]) ? $_REQUEST[$this->name] : '');
+		$request_value = (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($this->name, $_REQUEST)) ? $_REQUEST[$this->name] : '';
+		$this->value		= ready_val(isset($options['value']) ? $options['value'] : NULL, $request_value);
+		$this->value		= is_array($this->value) ? implode(DEFAULT_UPGAL_DELIMITER, $this->value) : (string)$this->value;
 		
-		$this->compact		= ready_val($options['compact'], DEFAULT_UPGAL_COMPACT);
+		$this->compact		= ready_val(isset($options['compact']) ? $options['compact'] : NULL, DEFAULT_UPGAL_COMPACT);
 		$this->label_compact 	= $this->compact ? " class='compact'" : "";
 		$this->field_compact 	= $this->compact ? " compact" : "";
-		$this->label		= ready_val($options['label'], TAB."\t<label{$this->label_compact}>{$this->label}</label>");
+		$this->label		= ready_val(isset($options['label']) ? $options['label'] : NULL, TAB."\t<label{$this->label_compact}></label>");
 		
 		// данные для построения кода поля
 		$this->data_field	= "{$this->element_id}";

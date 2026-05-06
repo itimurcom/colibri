@@ -13,27 +13,29 @@ class itInput2
 		{
 		global $input_counter;
 		$input_counter++;
+		$options = is_array($options) ? $options : [];
 		
-		$this->form_id		= ready_val($options['form_id'], "");
-		$this->name		= ready_val($options['name'], "input-{$input_counter}");
-		$this->element_id	= ready_val($options['element_id'], "{$this->form_id}-{$this->name}");
-		$this->class		= ready_val($options['class']);
+		$this->form_id		= ready_val(isset($options['form_id']) ? $options['form_id'] : NULL, "");
+		$this->name		= ready_val(isset($options['name']) ? $options['name'] : NULL, "input-{$input_counter}");
+		$this->element_id	= ready_val(isset($options['element_id']) ? $options['element_id'] : NULL, "{$this->form_id}-{$this->name}");
+		$this->class		= ready_val(isset($options['class']) ? $options['class'] : NULL);
 		$this->value		= (isset($options['value']) AND !empty($options['value']))
 			? $options['value']
 			: itForm2::_check_value($options, $this->name);
 		
-		$this->placeholder	= ready_val($options['placeholder']);
-		$this->label		= ready_val($options['label']);
-		$this->no_label		= ready_val($options['no_label'], DEFAULT_INPUT_NOLABEL);
-		$this->compact		= ready_val($options['compact'], DEFAULT_INPUT_COMPACT);
-		$this->type		= ready_val($options['type'], DEFAULT_INPUT_TYPE);
-		$this->grow		= ready_val($options['grow'], DEFAULT_INPUT_GROW);		
-		$this->min		= ready_val($options['min']);				
-		$this->max		= ready_val($options['max']);
-		$this->multi		= ready_val($options['multi'], isset($_REQUEST['multi']) ? $_REQUEST['multi'] : 1);
-		$this->ajax 		= ready_val($options['ajax']);					
+		$this->placeholder	= ready_val(isset($options['placeholder']) ? $options['placeholder'] : NULL);
+		$this->label		= ready_val(isset($options['label']) ? $options['label'] : NULL);
+		$this->no_label		= ready_val(isset($options['no_label']) ? $options['no_label'] : NULL, DEFAULT_INPUT_NOLABEL);
+		$this->compact		= ready_val(isset($options['compact']) ? $options['compact'] : NULL, DEFAULT_INPUT_COMPACT);
+		$this->type		= ready_val(isset($options['type']) ? $options['type'] : NULL, DEFAULT_INPUT_TYPE);
+		$this->grow		= ready_val(isset($options['grow']) ? $options['grow'] : NULL, DEFAULT_INPUT_GROW);		
+		$this->min		= ready_val(isset($options['min']) ? $options['min'] : NULL);				
+		$this->max		= ready_val(isset($options['max']) ? $options['max'] : NULL);
+		$request_multi = (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists('multi', $_REQUEST)) ? $_REQUEST['multi'] : 1;
+		$this->multi		= ready_val(isset($options['multi']) ? $options['multi'] : NULL, $request_multi);
+		$this->ajax 		= ready_val(isset($options['ajax']) ? $options['ajax'] : NULL);					
 
-		$this->readonly		= ready_val($options['readonly'], false);
+		$this->readonly		= ready_val(isset($options['readonly']) ? $options['readonly'] : NULL, false);
 		
 		$this->compile();
 		}
@@ -83,6 +85,7 @@ class itInput2
 		$value_str = is_array($this->value)
 			? get_field_by_lang($this->value, CMS_LANG, NULL)
 			: get_const($this->value);
+		$value_str = is_scalar($value_str) ? (string)$value_str : '';
 		$value_str = htmlentities(stripslashes($value_str));
 		
 		$min_str = !is_null($this->min) ? " min=\"{$this->min}\"" : NULL;

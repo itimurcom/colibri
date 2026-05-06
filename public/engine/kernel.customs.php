@@ -12,7 +12,8 @@ global $_USER, $_SETTINGS;
 	$_SETTINGS['SITE_ADMIN_EMAIL']['value'] = itSettings::get('SITE_ADMIN_EMAIL', NULL);
 
 	// пользователь входа SMTP
-	define('SITE_SMTP_USER_DEFAULT', 'robot@'.$_SERVER['SERVER_NAME']);
+	$server_name = isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] !== '' ? $_SERVER['SERVER_NAME'] : 'localhost';
+	define('SITE_SMTP_USER_DEFAULT', 'robot@'.$server_name);
 	$_SETTINGS['SITE_SMTP_USER'] = array (
 		'name'		=> 'SITE_SMTP_USER',
 		'title'		=> 'SITE_SMTP_USER_TITLE',

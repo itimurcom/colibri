@@ -12,29 +12,31 @@ class itSelect2
 	public function __construct($options=NULL)
 		{
 		global $selector_counter;
-		$selector_counter++;		
+		$selector_counter++;
+		$options = is_array($options) ? $options : [];
 
-		$this->element_id 	= ready_val($options['element_id'], "itSelect-{$selector_counter}");
+		$this->element_id 	= ready_val(isset($options['element_id']) ? $options['element_id'] : NULL, "itSelect-{$selector_counter}");
 
-		$this->name 		= ready_val($options['name']);
-		$this->form_id		= ready_val($options['form_id']);							
-		$this->ajax 		= ready_val($options['ajax']);
+		$this->name 		= ready_val(isset($options['name']) ? $options['name'] : NULL);
+		$this->form_id		= ready_val(isset($options['form_id']) ? $options['form_id'] : NULL);							
+		$this->ajax 		= ready_val(isset($options['ajax']) ? $options['ajax'] : NULL);
 
-		$this->array		= ready_val($options['array']);
-		$this->titles		= ready_val($options['titles'], 'title');
-		$this->values		= ready_val($options['values'], 'value');
-		$this->show			= ready_val($options['show'], 'show');
-		$this->enable		= ready_val($options['enable'], 'enable');
-		$this->color		= ready_val($options['color'], 'color');
-		$this->bg_color		= ready_val($options['bg_color'], 'bg_color');
+		$this->array		= ready_val(isset($options['array']) ? $options['array'] : NULL);
+		$this->titles		= ready_val(isset($options['titles']) ? $options['titles'] : NULL, 'title');
+		$this->values		= ready_val(isset($options['values']) ? $options['values'] : NULL, 'value');
+		$this->show			= ready_val(isset($options['show']) ? $options['show'] : NULL, 'show');
+		$this->enable		= ready_val(isset($options['enable']) ? $options['enable'] : NULL, 'enable');
+		$this->color		= ready_val(isset($options['color']) ? $options['color'] : NULL, 'color');
+		$this->bg_color		= ready_val(isset($options['bg_color']) ? $options['bg_color'] : NULL, 'bg_color');
 		
-		$this->class 		= ready_val($options['class']);		
-		$this->compact		= ready_val($options['compact'], false);
-		$this->type			= ready_val($options['type'], 'select');		
+		$this->class 		= ready_val(isset($options['class']) ? $options['class'] : NULL);		
+		$this->compact		= ready_val(isset($options['compact']) ? $options['compact'] : NULL, false);
+		$this->type			= ready_val(isset($options['type']) ? $options['type'] : NULL, 'select');		
 
-		$this->label 		= ready_val($options['label']);		
-		$this->no_label		= ready_val($options['no_label'], DEFAULT_SELECT_NOLABEL);
-		$this->value		= itForm2::_smart_value(ready_val($options['value'], isset($_REQUEST[$this->name]) ? $_REQUEST[$this->name] : ''));
+		$this->label 		= ready_val(isset($options['label']) ? $options['label'] : NULL);		
+		$this->no_label		= ready_val(isset($options['no_label']) ? $options['no_label'] : NULL, DEFAULT_SELECT_NOLABEL);
+		$request_value = (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($this->name, $_REQUEST)) ? $_REQUEST[$this->name] : '';
+		$this->value		= itForm2::_smart_value(ready_val(isset($options['value']) ? $options['value'] : NULL, $request_value));
 		$this->compile();
 		}
 
@@ -45,14 +47,17 @@ class itSelect2
 		$compile_code = NULL;
 		$this->sel_rec = NULL;
 		// подготовим данные для селектора
-		if ( !is_null($this->array) and isset($this->titles) and isset($this->values) )
+		if ( !is_null($this->array) and isset($this->titles) and isset($this->values) and is_array($this->array) )
 			{
 			$index = 0;
 			foreach ($this->array as $row)
 				{
+				$row = is_array($row) ? $row : [];
 				$index++;
+				$title_value = isset($row[$this->titles]) ? $row[$this->titles] : "autotitle{$index}";
+				$title = is_array($tmp = ready_val($title_value, "autotitle{$index}")) ? get_field_by_lang($title_value) : get_const($tmp);
 				$this->sel_rec[] = array (
-					'title' 	=> @is_array($tmp = ready_val($row[$this->titles], "autotitle{$index}")) ? get_field_by_lang($row[$this->titles]) : get_const($tmp),
+					'title' 	=> $title,
 //					'value' 	=> is_array($tmp = ready_val($row[$this->values], "{$index}")) 		? get_field_by_lang($row[$this->values]) : $tmp,
 					'value'		=> isset($row[$this->values]) ? $row[$this->values] : "autooption{$index}",
 
@@ -92,7 +97,7 @@ class itSelect2
 				{
 				if ($row['show']==1)
 					{
-				       	$compile_code .= TAB."<option ".
+			       	$compile_code .= TAB."<option ".
 						( ($this->value==$row['value']) ? 'selected ' : '').
 						( ($row['enable']!=1) ? 'disabled ' : '').
 						"value = '{$row['value']}' class='{$row['class']}{$row['color']}{$row['bg_color']}'>{$row['title']}</option>";
@@ -101,7 +106,7 @@ class itSelect2
 				}
 			$compile_code .= TAB."</select>";
 			} else	{
-				if ($_USER->is_logged())
+				if (is_object($_USER) AND method_exists($_USER, 'is_logged') AND $_USER->is_logged())
 					{
 					$compile_code = 
 						TAB."<select size='1' {$class_str} id='{$this->element_id}' name='{$this->name}'></select>";

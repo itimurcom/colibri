@@ -216,3 +216,10 @@
   - normalized the legacy `$_SESSION['error']` message queue before duplicate checks so malformed rows no longer leak warnings into HTML/AJAX output
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, existing login/logout redirects, and social provider names
   - added `docs/USER_AUTH_SESSION_GUARD_STAGE.md`
+
+- M0 / P96 runtime warning sweep / legacy boundary stabilization bundle
+  - stabilized legacy form and f2 value-control constructors against missing option arrays, nested class options, malformed select/set rows, and optional request fallbacks
+  - guarded session-backed memcache fallback storage, missing user runtime for cache keys, image-resizer metadata/logo handling, request URL generation, SMTP default host initialization, and legacy diagnostic/language utility entrypoints
+  - normalized scalar/array values before `stripslashes()` / `htmlentities()` / gallery CSV parsing to reduce PHP 8.x warning output in HTML/AJAX/form rendering
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, WYSIWYG/FORM storage semantics, and URL/language-prefix behavior
+  - added `docs/RUNTIME_WARNING_SWEEP_LEGACY_BOUNDARY_STAGE.md`

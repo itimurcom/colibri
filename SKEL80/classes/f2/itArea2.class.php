@@ -12,20 +12,22 @@ class itArea2
 		{
 		global $area_counter;
 		$area_counter++;
+		$options = is_array($options) ? $options : [];
 
-//		if ($options['name'] == 'f2_values') {print_r($options); die;}
+//		if (isset($options['name']) AND $options['name'] == 'f2_values') {print_r($options); die;}
 		
-		$this->form_id		= ready_val($options['form_id'], "");
-		$this->name		= ready_val($options['name'], "area-{$area_counter}");
-		$this->element_id	= ready_val($options['element_id'], "{$this->form_id}-{$this->name}");
+		$this->form_id		= ready_val(isset($options['form_id']) ? $options['form_id'] : NULL, "");
+		$this->name		= ready_val(isset($options['name']) ? $options['name'] : NULL, "area-{$area_counter}");
+		$this->element_id	= ready_val(isset($options['element_id']) ? $options['element_id'] : NULL, "{$this->form_id}-{$this->name}");
 		$this->class		= "fixed";
-		$this->value		= itForm2::_smart_value(ready_val($options['value'], isset($_REQUEST[$this->name]) ? $_REQUEST[$this->name] : ''), true);
+		$request_value = (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($this->name, $_REQUEST)) ? $_REQUEST[$this->name] : '';
+		$this->value		= itForm2::_smart_value(ready_val(isset($options['value']) ? $options['value'] : NULL, $request_value), true);
 		
-		$this->placeholder	= ready_val($options['placeholder']);
-		$this->label		= ready_val($options['label']);
-		$this->no_label		= ready_val($options['no_label'], DEFAULT_AREA_NOLABEL);		
-		$this->compact		= ready_val($options['compact'], DEFAULT_AREA_COMPACT);
-		$this->max		= ready_val($options['max']);
+		$this->placeholder	= ready_val(isset($options['placeholder']) ? $options['placeholder'] : NULL);
+		$this->label		= ready_val(isset($options['label']) ? $options['label'] : NULL);
+		$this->no_label		= ready_val(isset($options['no_label']) ? $options['no_label'] : NULL, DEFAULT_AREA_NOLABEL);		
+		$this->compact		= ready_val(isset($options['compact']) ? $options['compact'] : NULL, DEFAULT_AREA_COMPACT);
+		$this->max		= ready_val(isset($options['max']) ? $options['max'] : NULL);
 		$this->compile();
 		}
 
@@ -52,9 +54,11 @@ class itArea2
 				});
 			</script>") : "";
 			
+		$value = is_array($this->value) ? get_field_by_lang($this->value, CMS_LANG, '') : $this->value;
+		$value = is_scalar($value) ? (string)$value : '';
 		$compile_code =				
 				TAB."\t<textarea id=\"{$this->element_id}\"{$class_str} name=\"{$this->name}\"".(($this->placeholder) ? " placeholder=\"{$this->label}\"" : '').">".
-				htmlentities(stripslashes($this->value)).
+				htmlentities(stripslashes($value)).
 				"</textarea>".
 				$protection_str;
 

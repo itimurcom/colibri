@@ -36,8 +36,10 @@ class itResizer
 				{
 				echo "resize reading error {$this->input_image_name}";
 				debug_print_backtrace();
+				return;
 				}
-		@$exif_info = exif_read_data($this->input_image_name);
+		$exif_info = @exif_read_data($this->input_image_name);
+		$exif_info = is_array($exif_info) ? $exif_info : [];
 
 		// определим тип изображения
 		$image_type 	= $image_info[2];
@@ -47,6 +49,7 @@ class itResizer
 		$input_y 	= $image_info[1];
 	
 		// создадим изображение того типа, которому соотсветстует файл изображения
+		$img = NULL;
 		switch($image_type)
 			{
 			case IMAGETYPE_JPEG : {
@@ -64,6 +67,8 @@ class itResizer
 	         		break;
 				}
 			}
+
+		if (!$img) return;
 
 		// повернем изображение если есть данные
 		if(!empty($exif_info['Orientation']))
@@ -175,9 +180,17 @@ class itResizer
 		// ------------------------------------------------------------------	
 		// накладываем логотип, если указан файл логотипа и файл приустствует
 		// ------------------------------------------------------------------
-		if ( ($this->logo_name !='') and file_exists($_SERVER['DOCUMENT_ROOT'].$this->logo_name) )
+		$document_root = isset($_SERVER['DOCUMENT_ROOT']) && $_SERVER['DOCUMENT_ROOT'] !== '' ? rtrim($_SERVER['DOCUMENT_ROOT'], '/') : '';
+		$logo_path = ($document_root !== '') ? $document_root.$this->logo_name : $this->logo_name;
+		if ( ($this->logo_name !='') and file_exists($logo_path) )
 			{
-			$img_logo = imagecreatefrompng($_SERVER['DOCUMENT_ROOT'].$this->logo_name);
+			$img_logo = @imagecreatefrompng($logo_path);
+			if (!$img_logo)
+				{
+				$img_logo = NULL;
+				}
+			else
+				{
                 
 			// ширина и высота изображения логотипа
 			$logo_sx = imagesx($img_logo);
@@ -339,6 +352,7 @@ class itResizer
 			imagecopyresized($img_out, $img_logo, $logo_image_x, $logo_image_y, 0, 0, $logo_sx, $logo_sy, $logo_sx, $logo_sy);
 			imagedestroy($img_logo);
 			} // ----- if ---------
+			}
 
 		// выводим изоражение в файл заданного качества (для jpeg изображений) и того же типа, что и входное изображение
 		if ( $image_type == IMAGETYPE_JPEG )

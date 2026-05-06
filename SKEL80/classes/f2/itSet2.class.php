@@ -11,22 +11,23 @@ class itSet2
 		{
 		global $set_counter, $_TIMES;
 		$set_counter ++;
+		$options = is_array($options) ? $options : [];
 		
-		$this->name 		= ready_val($options['name'], "set-{$set_counter}");
-		$this->element_id 	= ready_val($options['element_id'], "set-{$set_counter}");
-		$this->form_id		= ready_val($options['form_id']);
-		$this->type 		= ready_val($options['type'], DEFAULT_SET_TYPE);
-		$this->class 		= ready_val($options['class'], DEFAULT_SET_CLASS);
-		$this->label		= ready_val($options['label']);
-		$this->no_label		= ready_val($options['no_label'], DEFAULT_SET_NOLABEL);
-		$this->compact		= ready_val($options['compact'], DEFAULT_SET_COMPACT);
-		$this->ajax		= ready_val($options['ajax']);
+		$this->name 		= ready_val(isset($options['name']) ? $options['name'] : NULL, "set-{$set_counter}");
+		$this->element_id 	= ready_val(isset($options['element_id']) ? $options['element_id'] : NULL, "set-{$set_counter}");
+		$this->form_id		= ready_val(isset($options['form_id']) ? $options['form_id'] : NULL);
+		$this->type 		= ready_val(isset($options['type']) ? $options['type'] : NULL, DEFAULT_SET_TYPE);
+		$this->class 		= ready_val(isset($options['class']) ? $options['class'] : NULL, DEFAULT_SET_CLASS);
+		$this->label		= ready_val(isset($options['label']) ? $options['label'] : NULL);
+		$this->no_label		= ready_val(isset($options['no_label']) ? $options['no_label'] : NULL, DEFAULT_SET_NOLABEL);
+		$this->compact		= ready_val(isset($options['compact']) ? $options['compact'] : NULL, DEFAULT_SET_COMPACT);
+		$this->ajax		= ready_val(isset($options['ajax']) ? $options['ajax'] : NULL);
 		
-		$this->array		= ready_val($options['array']);
-		$this->titles		= ready_val($options['titles'], 'title');
-		$this->values		= ready_val($options['values'], 'value');
-		$this->colors		= ready_val($options['colors'], 'color');		
-		$this->value		= ready_val($options['value']);	
+		$this->array		= ready_val(isset($options['array']) ? $options['array'] : NULL);
+		$this->titles		= ready_val(isset($options['titles']) ? $options['titles'] : NULL, 'title');
+		$this->values		= ready_val(isset($options['values']) ? $options['values'] : NULL, 'value');
+		$this->colors		= ready_val(isset($options['colors']) ? $options['colors'] : NULL, 'color');		
+		$this->value		= ready_val(isset($options['value']) ? $options['value'] : NULL);	
 
 		$this->compile();
 		}
@@ -59,13 +60,17 @@ class itSet2
 			$index = 0;
 			foreach ($this->array as $row)
 				{
-				$title = is_array($tmp = ready_val($row[$this->titles], "{$index}")) ? get_field_by_lang($row[$this->titles]) : get_const($tmp);
+				$row = is_array($row) ? $row : [];
+				$title_value = isset($row[$this->titles]) ? $row[$this->titles] : "{$index}";
+				$title = is_array($tmp = ready_val($title_value, "{$index}")) ? get_field_by_lang($title_value) : get_const($tmp);
 				$value = isset($row[$this->values]) ? $row[$this->values] : "autooption{$index}";
 				
 				$current_value = is_array($this->value) && isset($this->value["$value"])
 					? $this->value["$value"]
 					: NULL;
-				$checked = (ready_val($current_value) OR (isset($_REQUEST["{$this->name}_{$value}"]) AND ($_REQUEST["{$this->name}_{$value}"]=='on'))) ? ' checked' : '';
+				$request_key = "{$this->name}_{$value}";
+				$request_checked = (isset($_REQUEST) AND is_array($_REQUEST) AND isset($_REQUEST[$request_key]) AND ($_REQUEST[$request_key]=='on'));
+				$checked = (ready_val($current_value) OR $request_checked) ? ' checked' : '';
 				
 				$color_str = isset($row[$this->colors]) ? " {$row[$this->colors]}" : NULL;
 				$compile_code .= 
