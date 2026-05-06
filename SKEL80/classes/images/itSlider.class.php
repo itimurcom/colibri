@@ -20,12 +20,14 @@ class itSlider
 		{
 		global $_USER;
 		global $slider_count;
+		$options = is_array($options) ? $options : [];
 
-		$this->table_name 	= ready_val($options['table'], DEFAULT_SLIDER_TABLE);
-		$this->db_prefix	= ready_val($options['prefix'], DB_PREFIX);
-		$this->time		= ready_val($options['time'], 6000);
+		$this->table_name 	= ready_value($options['table'] ?? NULL, DEFAULT_SLIDER_TABLE);
+		$this->db_prefix	= ready_value($options['prefix'] ?? NULL, DB_PREFIX);
+		$this->time		= ready_value($options['time'] ?? NULL, 6000);
+		$is_logged = (isset($_USER) AND is_object($_USER) AND method_exists($_USER, 'is_logged') AND $_USER->is_logged());
 		
-		if ($_USER->is_logged())
+		if ($is_logged)
 			{
 			$query = "SELECT * FROM {$this->db_prefix}{$this->table_name} WHERE 1 ".
 				"ORDER by `status`, `id`";
@@ -35,6 +37,7 @@ class itSlider
 				}
 
 		$this->ed_rec = itMySQL::_request($query);
+		$this->ed_rec = is_array($this->ed_rec) ? $this->ed_rec : [];
 		$slider_count++;
 		}
 
@@ -42,21 +45,24 @@ class itSlider
 	public function compile()
 		{
 		global $slider_count, $_USER;
+		$is_logged = (isset($_USER) AND is_object($_USER) AND method_exists($_USER, 'is_logged') AND $_USER->is_logged());
 
-		if (count($this->ed_rec)==0) return;
+		if (!is_array($this->ed_rec) OR count($this->ed_rec)==0) return;
 		$result = TAB."<div id='slider-$slider_count' class='main_slider'>";
 
 		$selected_slide = 0;
+		$request_slide = ready_value($_REQUEST['slide'] ?? NULL, NULL);
 
 		foreach ($this->ed_rec as $key=>$row)
 			{
-			if (isset($_REQUEST['slide']) and ($row['id']==$_REQUEST['slide']) )
+			if (!is_array($row)) continue;
+			if (!is_null($request_slide) and ready_value($row['id'] ?? NULL, NULL)==$request_slide )
 				{
 				$selected_slide = $key;
 				}
-			$title = get_field_by_lang($row['title_xml']);
-			$href = get_field_by_lang($row['href_xml']);
-			$src = get_thumbnail($row['avatar'], 'SLIDER_MAIN');
+			$title = get_field_by_lang(ready_value($row['title_xml'] ?? NULL, []));
+			$href = get_field_by_lang(ready_value($row['href_xml'] ?? NULL, []));
+			$src = get_thumbnail(ready_value($row['avatar'] ?? NULL, NULL), 'SLIDER_MAIN');
 
 			if ($title!=NO_TITLE) 
 				{
@@ -72,7 +78,7 @@ class itSlider
 							TAB."</div>";
 				} else $title_str = '';
 
-			$admin_str = ($_USER->is_logged()) ? TAB."<div class='slider_admin'>".get_slider_x_event($row, $key).get_slider_href_event($row, $key).get_slider_title_event($row, $key).TAB."</div>" : '';
+			$admin_str = ($is_logged) ? TAB."<div class='slider_admin'>".get_slider_x_event($row, $key).get_slider_href_event($row, $key).get_slider_title_event($row, $key).TAB."</div>" : '';
 
 			if (($title==NO_TITLE) and ($href!=NO_TITLE))
 				{
@@ -85,13 +91,13 @@ class itSlider
 				$slide_str.
 				$title_str.
 				$admin_str.
-				(($_USER->is_logged()) ? TAB."<div class='slider_n'>#".($key+1)."</div>" : '').
+				(($is_logged) ? TAB."<div class='slider_n'>#".($key+1)."</div>" : '').
 				TAB."</div>";
 
 			unset($title);
 			}
 		$result .= TAB."</div>";
-		$result .= TAB."	<script>
+		$result .= TAB."\t<script>
 			$('#slider-$slider_count').css('height','0');
 			$(document).ready(function()
 				{
@@ -100,12 +106,12 @@ class itSlider
 					pause : {$this->time},
 					useCSS : false,
 					mode : 'horizontal',
-					startSlide : ".(($_USER->is_logged()) ? $selected_slide : 0).",
-					auto : ".(($_USER->is_logged() or (count($this->ed_rec)<2)) ? 'false' : 'true').",
+					startSlide : ".(($is_logged) ? $selected_slide : 0).",
+					auto : ".(($is_logged or (count($this->ed_rec)<2)) ? 'false' : 'true').",
 					moveSlides : 1,
 					touchEnabled : (navigator.maxTouchPoints > 0),
-					".(($_USER->is_logged()) ? "infiniteLoop : false,\n" : '')."
-					".(($_USER->is_logged()) ?  "pause : ".get_const('DEFAULT_SLIDER_PAUSE').",\n": '')."
+					".(($is_logged) ? "infiniteLoop : false,\n" : '')."
+					".(($is_logged) ?  "pause : ".get_const('DEFAULT_SLIDER_PAUSE').",\n": '')."
 					});
 				$('#slider-$slider_count').animate({opacity:1},600);
 				});
@@ -117,8 +123,11 @@ class itSlider
 	static function set_title($rec_id, $value, $lang=CMS_LANG, $table_name=DEFAULT_SLIDER_TABLE)
 		{
 		$ed_rec = itMySQL::_get_rec_from_db($table_name, $rec_id);
-		$ed_rec['title_xml'][$lang] = $value;
-		itMySQL::_update_value_db($table_name, $rec_id, $ed_rec['title_xml'], 'title_xml');
+		if (!is_array($ed_rec)) return false;
+		$title_xml = ready_value($ed_rec['title_xml'] ?? NULL, []);
+		$title_xml = is_array($title_xml) ? $title_xml : [];
+		$title_xml[$lang] = $value;
+		itMySQL::_update_value_db($table_name, $rec_id, $title_xml, 'title_xml');
 		}
 
 	// устанавливает надпись слайдера для конкретного языка
@@ -132,8 +141,11 @@ class itSlider
 	static function set_href($rec_id, $value, $lang=CMS_LANG, $table_name=DEFAULT_SLIDER_TABLE)
 		{
 		$ed_rec = itMySQL::_get_rec_from_db($table_name, $rec_id);
-		$ed_rec['href_xml'][$lang] = $value;
-		itMySQL::_update_value_db($table_name, $rec_id, $ed_rec['href_xml'], 'href_xml');
+		if (!is_array($ed_rec)) return false;
+		$href_xml = ready_value($ed_rec['href_xml'] ?? NULL, []);
+		$href_xml = is_array($href_xml) ? $href_xml : [];
+		$href_xml[$lang] = $value;
+		itMySQL::_update_value_db($table_name, $rec_id, $href_xml, 'href_xml');
 		}
 
 

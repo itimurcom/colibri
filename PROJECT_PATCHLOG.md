@@ -186,3 +186,11 @@
   - guarded `itMarkOrg` organization schema options against partial `address`, `contacts`, `same`, and empty global markup payloads while preserving valid JSON-LD output
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public theme file names, and valid header/schema output semantics
   - added `docs/THEME_HEADER_SCHEMA_OUTPUT_GUARD_STAGE.md`
+
+- M0 / P92 public UI helper request guard stabilization bundle
+  - stabilized autocomplete/search helper rendering against missing `term` request values, malformed DB rows, and incomplete autocomplete result payloads
+  - guarded public language/menu/prepared-array helpers against missing request keys, partial global arrays, and absent user runtime objects
+  - stabilized legacy `itMenu` top/mobile rendering and fixed the old fallback-link `$link` variable issue without changing menu semantics
+  - guarded slider/share/category-list helpers against missing server/request fields, empty DB rows, and incomplete row metadata that could leak warnings into HTML
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy UI output contracts
+  - added `docs/PUBLIC_UI_HELPER_REQUEST_GUARD_STAGE.md`

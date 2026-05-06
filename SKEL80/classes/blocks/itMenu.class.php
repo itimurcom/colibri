@@ -6,7 +6,7 @@ definition([
 	'DEFAULT_MENU_FIXED'	=> false,
 	'DEFAULT_MENU_MOBILE'	=> false,
 
-	'SHOW_TOP_BOTTOM'	=> 1,
+	'SHOW_TOP_BOTTOM'		=> 1,
 	'SHOW_TOP_ONLY'		=> 2,
 	'SHOW_BOTTOM_ONLY'	=> 3,
 
@@ -80,26 +80,54 @@ class itMenu
 		{
 		global $itmenu_count;
 		$itmenu_count++;
+		$options = is_array($options) ? $options : [];
 		$this->element_id 		= "itmenu-{$itmenu_count}";
 
-		$this->data 		= ready_val($options['data'], NULL);
-		$this->subdata		= ready_val($options['subdata'], NULL);
+		$this->data 		= ready_value($options['data'] ?? NULL, []);
+		$this->data 		= is_array($this->data) ? $this->data : [];
+		$this->subdata		= ready_value($options['subdata'] ?? NULL, []);
+		$this->subdata		= is_array($this->subdata) ? $this->subdata : [];
+		$this->code 		= [];
 
 		$this->colors 	= unserialize(DEFAULT_MENU_COLORS);
-		$this->colors	= isset($options['colors']) ? array_merge($this->colors, $options['colors']) : $this->colors;
+		$this->colors 	= is_array($this->colors) ? $this->colors : [];
+		$custom_colors = ready_value($options['colors'] ?? NULL, []);
+		$this->colors	= is_array($custom_colors) ? array_replace_recursive($this->colors, $custom_colors) : $this->colors;
 
-		$this->fixed 	= ready_val($options['fixed'], DEFAULT_MENU_FIXED);		// фиксированное меню плавает при прокрутке
-		$this->mobile	= ready_val($options['mobile'], DEFAULT_MENU_MOBILE);		// мобильная версия меню (прячет основное/ заменяет боковым)
+		$this->fixed 	= ready_value($options['fixed'] ?? NULL, DEFAULT_MENU_FIXED);		// фиксированное меню плавает при прокрутке
+		$this->mobile	= ready_value($options['mobile'] ?? NULL, DEFAULT_MENU_MOBILE);		// мобильная версия меню (прячет основное/ заменяет боковым)
+		}
+
+	private function current_view()
+		{
+		return ready_value($_REQUEST['view'] ?? NULL, '');
+		}
+
+	private function row_link($row)
+		{
+		$link = ready_value($row['link'] ?? NULL, NULL);
+		if (!is_null($link) AND $link!=='') return $link;
+
+		$controller = ready_value($row['controller'] ?? NULL, '');
+		return ($controller!=='') ? "/".CMS_LANG."/{$controller}/" : "/".CMS_LANG."/";
+		}
+
+	private function color_value($group, $state, $field, $default='')
+		{
+		return ready_value($this->colors[$group][$state][$field] ?? NULL, $default);
 		}
 
 	public function prepare_top()
 		{
 		$rows = [];
+		$current_view = $this->current_view();
 
 		foreach ($this->data as $key=>$row)
 			{
-			$selected  = ($row['view']==$_REQUEST['view']) ? " selected" : '';
-			if ($row['show'] AND ready_val($row['top']))
+			if (!is_array($row)) continue;
+			$row_view = ready_value($row['view'] ?? NULL, '');
+			$selected  = ($row_view!=='' AND $row_view==$current_view) ? " selected" : '';
+			if (ready_value($row['show'] ?? NULL, false) AND ready_value($row['top'] ?? NULL, false))
 				{
 				if (isset($row['code']) AND !is_null($row['code']))
 					{
@@ -108,10 +136,10 @@ class itMenu
 						$row['code'].
 						TAB."</div>";
 					} else	{
-						$link = is_null($row['link']) ? "/".CMS_LANG."/{$row['controller']}/" : $link;
+						$link = $this->row_link($row);
 						$rows[] =
 							TAB."<div class='itmenu_top_button{$selected} menu-{$key} boxed' onclick=\"window.location.href='$link'\">".
-							TAB.get_const($row['title']).
+							TAB.get_const(ready_value($row['title'] ?? NULL, '')) .
 							TAB."</div>";
 						}
 				}
@@ -122,24 +150,24 @@ class itMenu
 		$style =
 			TAB."<style>
 				{
-				color: {$this->colors['menu']['common']['color']};
-				background: {$this->colors['menu']['common']['back']};
+				color: ".$this->color_value('menu', 'common', 'color', 'white').";
+				background: ".$this->color_value('menu', 'common', 'back', 'transparent').";
 				width: {$size}%;
 				}
 
 				{
-				color: {$this->colors['menu']['selected']['color']};
-				background: {$this->colors['menu']['selected']['back']};
+				color: ".$this->color_value('menu', 'selected', 'color', 'white').";
+				background: ".$this->color_value('menu', 'selected', 'back', 'transparent').";
 				}
 
 				{
-				color: {$this->colors['menu']['hover']['color']};
-				background: {$this->colors['menu']['hover']['back']};
+				color: ".$this->color_value('menu', 'hover', 'color', 'white').";
+				background: ".$this->color_value('menu', 'hover', 'back', 'transparent').";
 				}
 
 				{
-				color: {$this->colors['menu']['seleover']['color']};
-				background: {$this->colors['menu']['seleover']['back']};
+				color: ".$this->color_value('menu', 'seleover', 'color', 'white').";
+				background: ".$this->color_value('menu', 'seleover', 'back', 'transparent').";
 				}".
 			TAB."</style>";
 
@@ -155,14 +183,16 @@ class itMenu
 		{
 		$rows = [];
 		$selected_str = '';
+		$current_view = $this->current_view();
 		foreach ($this->data as $key=>$row)
 			{
-			if ($row['show'] AND ready_val($row['mobile']))
+			if (!is_array($row)) continue;
+			if (ready_value($row['show'] ?? NULL, false) AND ready_value($row['mobile'] ?? NULL, false))
 				{
-				if ($row['view']==$_REQUEST['view'])
+				if (ready_value($row['view'] ?? NULL, '')==$current_view)
 					{
 					$selected  = " selected";
-					$selected_str = get_const($row['title']);
+					$selected_str = get_const(ready_value($row['title'] ?? NULL, ''));
 					} else	{
 						$selected  = "";
 						}
@@ -173,10 +203,10 @@ class itMenu
 						$row['code'].
 						TAB."</div>";
 					} else	{
-						$link = is_null($row['link']) ? "/".CMS_LANG."/{$row['controller']}/" : $link;
+						$link = $this->row_link($row);
 						$rows[] =
 							TAB."<div class='itmenu_mobile_button{$selected} menu-{$key} boxed' onclick=\"window.location.href='$link'\">".
-							TAB.get_const($row['title']).
+							TAB.get_const(ready_value($row['title'] ?? NULL, '')).
 
 							TAB."</div>";
 						}
@@ -185,24 +215,24 @@ class itMenu
 			$style =
 			TAB."<style>
 				{
-				color: {$this->colors['mobile']['common']['color']};
-				background: {$this->colors['mobile']['common']['back']};
+				color: ".$this->color_value('mobile', 'common', 'color', 'white').";
+				background: ".$this->color_value('mobile', 'common', 'back', 'transparent').";
 
 				}
 
 				{
-				color: {$this->colors['mobile']['selected']['color']};
-				background: {$this->colors['mobile']['selected']['back']};
+				color: ".$this->color_value('mobile', 'selected', 'color', 'white').";
+				background: ".$this->color_value('mobile', 'selected', 'back', 'transparent').";
 				}
 
 				{
-				color: {$this->colors['mobile']['hover']['color']};
-				background: {$this->colors['mobile']['hover']['back']};
+				color: ".$this->color_value('mobile', 'hover', 'color', 'white').";
+				background: ".$this->color_value('mobile', 'hover', 'back', 'transparent').";
 				}
 
 				{
-				color: {$this->colors['mobile']['seleover']['color']};
-				background: {$this->colors['mobile']['seleover']['back']};
+				color: ".$this->color_value('mobile', 'seleover', 'color', 'white').";
+				background: ".$this->color_value('mobile', 'seleover', 'back', 'transparent').";
 				}".
 			TAB."</style>";
 		$this->code['mobile'] = count($rows)

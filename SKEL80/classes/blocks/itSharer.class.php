@@ -12,7 +12,10 @@ class itSharer
 
 	public function __construct($options=NULL)
 		{
-		$this->link = ready_val($options['link'], "https://{$_SERVER['HTTP_HOST']}{$_SERVER['REQUEST_URI']}");
+		$options = is_array($options) ? $options : [];
+		$host = ready_value($_SERVER['HTTP_HOST'] ?? NULL, 'localhost');
+		$uri = ready_value($_SERVER['REQUEST_URI'] ?? NULL, '/');
+		$this->link = ready_value($options['link'] ?? NULL, "https://{$host}{$uri}");
 		$this->compile();
 		}
 
@@ -24,6 +27,7 @@ class itSharer
 		if (is_array($social_cat))
 		foreach ($social_cat as $key=>$row)
 			{
+			if (!is_array($row)) continue;
 			$result .= $this->get_social_link($key);
 			}
 
@@ -35,13 +39,13 @@ class itSharer
 		global $social_cat;
 		global $soclink_counter;
 
-		if ($social_cat[$type]['show']!=1) return;
+		if (!isset($social_cat[$type]) OR !is_array($social_cat[$type]) OR ready_value($social_cat[$type]['show'] ?? NULL, 0)!=1) return '';
 
 		$soclink_counter++;
 
-		$l_class 	= $social_cat[$type]['class'];
+		$l_class 	= ready_value($social_cat[$type]['class'] ?? NULL, '');
 		$field_id 	= "soclink-$soclink_counter";
-		$l_title	= $social_cat[$type]['share'];
+		$l_title	= ready_value($social_cat[$type]['share'] ?? NULL, '');
 
 		$result = TAB."<span id='$field_id' class='l-ico $l_class' title='$l_title'></span>".
 			TAB."
@@ -65,9 +69,12 @@ function get_social_groups()
 	{
 	global $social_cat;
 	$tab = "\n\t";
+	$result = '';
+	if (is_array($social_cat))
 	foreach ($social_cat as $key=>$row)
 		{
-		if ($row['group'])
+		if (!is_array($row)) continue;
+		if (ready_value($row['group'] ?? NULL, false))
 			{
 			$result .= get_group_link($key);
 			}
@@ -88,15 +95,15 @@ function get_group_link($type=NULL)
 	global $social_cat;
 	global $num_sum;
 
-	if ($social_cat[$type]['show']!=1) return;
+	if (!isset($social_cat[$type]) OR !is_array($social_cat[$type]) OR ready_value($social_cat[$type]['show'] ?? NULL, 0)!=1) return '';
 
-	$l_class 	= $social_cat[$type]['class'];
-	$l_link		= $social_cat[$type]['group'];
-	$l_title	= $social_cat[$type]['title'];
+	$l_class 	= ready_value($social_cat[$type]['class'] ?? NULL, '');
+	$l_link		= ready_value($social_cat[$type]['group'] ?? NULL, '#');
+	$l_title	= ready_value($social_cat[$type]['title'] ?? NULL, '');
 
 	$tab = "\n\t\t";
 
-	$result .= "$tab<a target='_blank' href='$l_link' class='l-ico $l_class' title='$l_title'></a>";
+	$result = "$tab<a target='_blank' href='$l_link' class='l-ico $l_class' title='$l_title'></a>";
 	return $result;
 	}
 ?>

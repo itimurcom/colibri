@@ -99,7 +99,7 @@ class itCats
 							{
 						$result .= TAB."\t<div class='cats' cat_id='{$key}' parent_id='{$row['parent_id']}' ".((count($ed_rec)==1)? ' last' : '').">".
 							TAB."\t<span class='cats_label".((($titles_str!='') or $has_child) ? ' not_empty' : '')."' cat_id='{$key}' parent_id='{$row['parent_id']}'>".get_field_by_lang($row['title_xml'])."</span>".
-							(($_USER->is_logged()) ? TAB."\t\t<span class='cats_admin_div'>".
+							(($is_logged) ? TAB."\t\t<span class='cats_admin_div'>".
 								get_cats_events_set($row).
 								"</span>" : '').
 							$titles_str.
@@ -120,21 +120,27 @@ class itCats
 		global $_USER;
 		$result = '';
 		$db = new itMySQL();
-		$request = $db->get_arr_from_db('contents', "`category_id`='{$category_id}' ".((!$_USER->is_logged()) ? "AND `status`='PUBLISHED' AND (`lang`='".CMS_LANG."' OR `lang` IS NULL OR `lang`='')" : "")."order by `id`");
-		if (count($request))
+		$is_logged = (isset($_USER) AND is_object($_USER) AND method_exists($_USER, 'is_logged') AND $_USER->is_logged());
+		$request = $db->get_arr_from_db('contents', "`category_id`='{$category_id}' ".((!$is_logged) ? "AND `status`='PUBLISHED' AND (`lang`='".CMS_LANG."' OR `lang` IS NULL OR `lang`='')" : "")."order by `id`");
+		if (is_array($request) AND count($request))
 			{
 			$result = TAB."\t<div class='cats_list' parent_id='$category_id'>";
+			$request_rec_id = ready_value($_REQUEST['rec_id'] ?? NULL, NULL);
 			foreach ($request as $key=>$row)
 				{
-				$base['prev'] = is_array($prev = itMySQL::_request("SELECT * FROM `".DB_PREFIX."{$table_name}` WHERE `category_id`='{$row['category_id']}' and `id`<{$row['id']} order by `id` DESC limit 1"))
+				if (!is_array($row)) continue;
+				$row_id = ready_value($row['id'] ?? NULL, 0);
+				$row_category_id = ready_value($row['category_id'] ?? NULL, 0);
+				$row_rec_id = ready_value($row['rec_id'] ?? NULL, $row_id);
+				$base['prev'] = is_array($prev = itMySQL::_request("SELECT * FROM `".DB_PREFIX."{$table_name}` WHERE `category_id`='{$row_category_id}' and `id`<{$row_id} order by `id` DESC limit 1")) AND isset($prev[0]['id'])
 					? $prev[0]['id']
 					: NULL;
-				$base['next'] = is_array($next = itMySQL::_request("SELECT * FROM `".DB_PREFIX."{$table_name}` WHERE `category_id`='{$row['category_id']}' and `id`>{$row['id']} order by `id` ASC limit 1"))
+				$base['next'] = is_array($next = itMySQL::_request("SELECT * FROM `".DB_PREFIX."{$table_name}` WHERE `category_id`='{$row_category_id}' and `id`>{$row_id} order by `id` ASC limit 1")) AND isset($next[0]['id'])
 					? $next[0]['id']
 					: NULL;
 				$result .= TAB."\t<div class='cats_title_div'>".
-					TAB."\t<a class='cats_title".(($_REQUEST['rec_id']==$row['id']) ? " selected' id='cats_selected'" : "'")." href='/".CMS_LANG."/material/{$row['rec_id']}/'>".get_field_by_lang($row['title_xml'])."</a>".
-					(($_USER->is_logged()) ? TAB."\t\t<span class='cats_admin_div'>".
+					TAB."\t<a class='cats_title".(($request_rec_id==$row_id) ? " selected' id='cats_selected'" : "'")." href='/".CMS_LANG."/material/{$row_rec_id}/'>".get_field_by_lang(ready_value($row['title_xml'] ?? NULL, []))."</a>".
+					(($is_logged) ? TAB."\t\t<span class='cats_admin_div'>".
 						get_content_cats_events_set($row).
 						"</span>" : '').
 					TAB."\t</div>";
@@ -149,7 +155,7 @@ class itCats
 	static function remove_cats($table_name, $id)
 		{	
 		$rem_rec = itMySQL::_get_rec_from_db($table_name, $id);
-		$title = get_field_by_lang($rem_rec['title_xml']);
+		$title = is_array($rem_rec) ? get_field_by_lang(ready_value($rem_rec['title_xml'] ?? NULL, [])) : '';
 		itMySQL::_remove_rec_from_db($table_name, $id);
 		itMySQL::_request("update ".DB_PREFIX.DEFAULT_CONTENT_TABLE." set `category_id`='0', `status`='MODERATE' WHERE `category_id`='{$id}'");
 
@@ -165,7 +171,7 @@ class itCats
 		{
 		$db = new itMySQL();
 		$rem_rec = $db->get_rec_from_db($table_name, $category_id);
-		$title = get_field_by_lang($rem_rec['title_xml']);
+		$title = is_array($rem_rec) ? get_field_by_lang(ready_value($rem_rec['title_xml'] ?? NULL, [])) : '';
 		unset($db);
 		return $title;		
 		}
