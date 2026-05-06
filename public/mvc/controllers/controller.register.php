@@ -1,14 +1,16 @@
 <?php 
 function register_controller_request_value($key)
 	{
-	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	return (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($key, $_REQUEST)) ? ready_value($_REQUEST[$key]) : NULL;
 	}
 
 $_CONTENT['admin'] = get_admin_button_set();
 
 global $_USER;
 
-if ($_USER->is_logged('ANY'))
+$register_user_logged = is_object($_USER) AND method_exists($_USER, 'is_logged') AND $_USER->is_logged('ANY');
+
+if ($register_user_logged)
 	{
 	cms_redirect_page("/".CMS_LANG.'/cabinet/');
 	}

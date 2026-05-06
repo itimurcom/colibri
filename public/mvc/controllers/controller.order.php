@@ -1,7 +1,26 @@
 <?php 
-function order_controller_request_value($key)
+function order_controller_request_value($key, $default=NULL)
 	{
-	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	return (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($key, $_REQUEST)) ? ready_value($_REQUEST[$key], $default) : $default;
+	}
+
+function order_controller_user_logged($scope=NULL)
+	{
+	global $_USER;
+	return is_object($_USER) AND method_exists($_USER, 'is_logged') AND (!is_null($scope) ? $_USER->is_logged($scope) : $_USER->is_logged());
+	}
+
+function order_controller_form_title($editor)
+	{
+	return (is_object($editor) AND isset($editor->data) AND is_array($editor->data) AND isset($editor->data['title_xml']))
+		? get_field_by_lang($editor->data['title_xml'], CMS_LANG, '')
+		: NULL;
+	}
+
+function order_controller_focus_script($form_id, $element='articul')
+	{
+	$focus_element = "{$form_id}-{$element}";
+	return "<script>$('#{$focus_element}').closest('.modal_row.f2_row').addClass('focusblue');</script>";
 	}
 
 $_CONTENT['admin'] = get_admin_button_set();
@@ -28,18 +47,19 @@ $o_form->buttons_xml = NULL;
 $o_form->add_button(get_const('BUTTON_OK'), 'submit', ['form' => $o_form->form_id(), 'show'=>true], 'blue big' );	
 $o_form->add_button(get_const('BUTTON_CLEAR'), 'a', ['ajax'=>"f2_reset('".$o_form->form_id()."');"], 'green big' );	
 
-if ($_USER->is_logged()) $o_form->store();
+if (order_controller_user_logged()) $o_form->store();
 	
 
 $focus_str = NULL;
 $order_item_id = order_controller_request_value('rec_id');
-if(intval($order_item_id) AND $row=itMySQL::_get_rec_from_db('items', $order_item_id))
+if(intval($order_item_id) AND is_array($row=itMySQL::_get_rec_from_db('items', $order_item_id)))
 	{
-	$_REQUEST['articul'] = get_item_articul($row);
+	$articul = get_item_articul($row);
+	$_REQUEST['articul'] = $articul;
 	$_SESSION['focus']['element'] = $o_form->form_id()."-articul";
 	$_SESSION['focus']['color'] = 'blue';
-	$_SESSION['focus']['data'] = $_REQUEST['articul'];
-	$focus_str = "<script>$('#{$_SESSION['focus']['element']}').closest('.modal_row.f2_row').addClass('focusblue');</script>";
+	$_SESSION['focus']['data'] = $articul;
+	$focus_str = order_controller_focus_script($o_form->form_id());
 	}
 	
 $form_container =
@@ -52,7 +72,8 @@ $o_editor = new itEditor([
 	'rec_id'	=> FORM2_ORDER,
 	]);
 
-$title = !is_null($o_editor->data) ? get_field_by_lang($o_editor->data['title_xml'], CMS_LANG, '') : NULL;
+$title = order_controller_form_title($o_editor);
+$editor_data = (is_object($o_editor) AND isset($o_editor->data) AND is_array($o_editor->data)) ? $o_editor->data : NULL;
 
 
 $_CONTENT['content'] = 
@@ -61,9 +82,9 @@ $_CONTENT['content'] =
 		TAB."<div class='siterow boxed'>".
 			$o_editor->container().
 		TAB."</div>".
-	(($_USER->is_logged() AND !is_null($o_editor->data)) ?
+	((order_controller_user_logged() AND !is_null($editor_data)) ?
 			TAB."<div class='admin_panel_div'>".
-			(function_exists('get_content_title_event') ? get_content_title_event($o_editor->data) : "").
+			(function_exists('get_content_title_event') ? get_content_title_event($editor_data) : "").
 			TAB."</div>"
 			: NULL);
 

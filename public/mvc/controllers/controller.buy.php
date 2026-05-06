@@ -1,17 +1,26 @@
 <?php 
-function buy_controller_request_value($key)
+function buy_controller_request_value($key, $default=NULL)
 	{
-	return isset($_REQUEST[$key]) ? ready_val($_REQUEST[$key]) : NULL;
+	return (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($key, $_REQUEST)) ? ready_value($_REQUEST[$key], $default) : $default;
+	}
+
+function buy_controller_user_logged($scope=NULL)
+	{
+	global $_USER;
+	return is_object($_USER) AND method_exists($_USER, 'is_logged') AND (!is_null($scope) ? $_USER->is_logged($scope) : $_USER->is_logged());
 	}
 
 function buy_controller_item_id()
 	{
-	return !is_null(buy_controller_request_value('selected_id')) ? buy_controller_request_value('selected_id') : buy_controller_request_value('rec_id');
+	$selected_id = buy_controller_request_value('selected_id');
+	return !is_null($selected_id) ? $selected_id : buy_controller_request_value('rec_id');
 	}
 
 function buy_controller_item_preview($item_id, &$item_row)
 	{
-	$item_row = itMySQL::_get_rec_from_db('items', $item_id);
+	$item_id = intval($item_id);
+	$item_row = $item_id ? itMySQL::_get_rec_from_db('items', $item_id) : NULL;
+	$item_row = is_array($item_row) ? $item_row : NULL;
 	$articul = $item_row ? get_item_articul($item_row) : NULL;
 	if (!$articul)
 		{
@@ -51,7 +60,7 @@ function buy_controller_form($item_id)
 	$o_form->add_button(get_const('BUTTON_CLEAR'), 'a', ['ajax'=>"f2_reset('".$o_form->form_id()."');"], 'green' );
 	$o_form->add_hidden([
 		'name'	=> 'selected_id',
-		'value'	=> $item_id,
+		'value'	=> intval($item_id),
 		]);
 	return $o_form;
 	}
@@ -73,6 +82,15 @@ function buy_controller_thankyou_content()
 		TAB."</div>";
 	}
 
+function buy_controller_item_message($item_row)
+	{
+	if (!is_array($item_row)) return;
+	$_REQUEST['message'] = mstr_replace([
+		'[VALUE]'	=> get_item_articul($item_row),
+		'[CAT]'		=> isset($item_row['category_id']) ? get_category_by_id($item_row['category_id']) : '',
+		], get_const('BUY_MESSAGE_TITLE'));
+	}
+
 $_CONTENT['admin'] = get_admin_button_set();
 $_CONTENT['widgets'] = get_widgets_set();
 $_CONTENT['widgets-cell'] = get_widgets_set();
@@ -88,15 +106,9 @@ if (buy_controller_request_value('view') == 'thankyou')
 $_ITEM_ID = buy_controller_item_id();
 $_CONTENT['content'] = buy_controller_item_preview($_ITEM_ID, $item_row);
 $o_form = buy_controller_form($_ITEM_ID);
-if ($_USER->is_logged()) $o_form->store();
+if (buy_controller_user_logged()) $o_form->store();
 
-if($item_row)
-	{
-	$_REQUEST['message'] = mstr_replace([
-		'[VALUE]'	=> get_item_articul($item_row),
-		'[CAT]'		=> get_category_by_id($item_row['category_id']), 
-		], get_const('BUY_MESSAGE_TITLE'));
-	}
+buy_controller_item_message($item_row);
 
 if ($o_form->accepted AND (buy_controller_request_value('op')=='buy'))
 	{

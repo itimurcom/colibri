@@ -151,7 +151,7 @@ function get_measurement_panel()
 		'name'		=> 'order',
 		'compact'	=> true,
 		]);
-	$o_form->add_field("<input type='hidden' id='{$form_id}-form_id' val='".FORM2_MEASUREMENT."' name='form_id' />");
+	$o_form->add_field("<input type='hidden' id='{$form_id}-form_id' value='".FORM2_MEASUREMENT."' name='form_id' />");
 	$o_form->add_data(['op' => 'encode']);
 
 	admin_event_measurement_button($o_form, $form_id, 'MEAS_1', FORM2_MEASUREMENT, 'blue');

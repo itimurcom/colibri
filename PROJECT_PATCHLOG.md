@@ -171,3 +171,10 @@
   - hardened reCaptcha handling against missing session arrays, absent `v3resp`, empty secret values, failed remote checks, and the old `v3cheked` typo in error reporting
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and valid form semantics
   - added `docs/FORM2_SUBMIT_RECAPTCHA_GUARD_STAGE.md`
+
+- M0 / P90 public customer flow controller guard stabilization bundle
+  - stabilized customer-facing buy/order/contact/measurement/register/cabinet/shop controllers against missing request keys, incomplete item rows, broken encrypted measurement keys, missing editor title payloads, and absent user runtime objects
+  - applied actual mobile/cellular menu request and row guards in `engine_cellular.php` so the code matches the intended P88 boundary behavior
+  - fixed the measurement admin hidden input markup from `val` to `value` so selected measurement form IDs are submitted consistently
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy form actions
+  - added `docs/PUBLIC_CUSTOMER_FLOW_CONTROLLER_GUARD_STAGE.md`
