@@ -178,3 +178,11 @@
   - fixed the measurement admin hidden input markup from `val` to `value` so selected measurement form IDs are submitted consistently
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy form actions
   - added `docs/PUBLIC_CUSTOMER_FLOW_CONTROLLER_GUARD_STAGE.md`
+
+- M0 / P91 theme header / schema output guard stabilization bundle
+  - stabilized public theme/header rendering against missing `$_CONTENT[...]` slots and direct `$_REQUEST['controller']` reads in default theme templates
+  - guarded `itHeader` global/header metadata inputs, server URL/media path reads, and plugin asset inclusion without changing routes or public entrypoint names
+  - declared and initialized legacy header/schema runtime properties such as `itHeader::$css` and `itMarkOrg::$found` to avoid PHP 8.x warning output
+  - guarded `itMarkOrg` organization schema options against partial `address`, `contacts`, `same`, and empty global markup payloads while preserving valid JSON-LD output
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public theme file names, and valid header/schema output semantics
+  - added `docs/THEME_HEADER_SCHEMA_OUTPUT_GUARD_STAGE.md`

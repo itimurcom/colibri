@@ -5,51 +5,56 @@ global $_LDJSON, $RDFA, $_SCHEMA;
 // itMarkOrg :  класс автоматизации разметки организации для поисковых систем
 class itMarkOrg
 	{
-	public $logo, $url, $name, $legal, $founders, $address, $contacts, $sameAs;
+	public $logo, $url, $name, $legal, $found, $founders, $address, $contacts, $sameAs;
 	// конструктор класса (ему можно передать конкретные данные)
+
+	private static function option_value($row, $key, $default=NULL)
+		{
+		return (is_array($row) AND array_key_exists($key, $row))
+			? ready_value($row[$key], $default)
+			: $default;
+		}
 
 	public function __construct($options = NULL)
 		{
 		global $_MARKUP_ORG;
 
-   		$this->logo = isset($options['logo'])
-		 		? $options['logo']
-		 		: ready_val($_MARKUP_ORG['logo']);  // логотип компании
+		if (!is_array($options)) $options = [];
+		if (!is_array($_MARKUP_ORG)) $_MARKUP_ORG = [];
 
-        $this->url = isset($options['url'])
-		 		? $options['url']
-	 		    : SERVER_HTTP_DEBUG;  // ссылка на сайт компании
+   		$this->logo = self::option_value($options, 'logo', self::option_value($_MARKUP_ORG, 'logo'));  // логотип компании
+
+        $this->url = self::option_value($options, 'url', SERVER_HTTP_DEBUG);  // ссылка на сайт компании
 		
-		$this->name = isset($options['name'])
-				? $options['name']
-				: get_const(CMS_NAME);		// Название компании
+		$this->name = self::option_value($options, 'name', get_const(CMS_NAME));		// Название компании
 
-        $this->legal = isset($options['legalName'])
-				? $options['legalName']
-				: get_const(CMS_NAME);		// Название компании
+        $this->legal = self::option_value($options, 'legalName', get_const(CMS_NAME));		// Название компании
+		$this->found = self::option_value($options, 'foundingDate', self::option_value($options, 'found'));
 		
         if (isset($options['founders']) AND is_array($options['founders'])) { // Основатели компании
             foreach ($options['founders'] as $founder) {
+				if ($founder==='') continue;
                 $this->founders[] = $founder;
                 }
             } else {
                 $this->founders = NULL;
                 }
 
-        $this->address = (isset($options['address'])) ? [    // Адрес компании
-                'streetAddress'     => ready_val($options['address']['street']),
-                'addressLocality'   => ready_val($options['address']['local']),
-                'addressRegion'     => ready_val($options['address']['region']),
-                'postalCode'        => ready_val($options['address']['postal']),
-                'addressCountry'    => ready_val($options['address']['country']),
+        $this->address = (isset($options['address']) AND is_array($options['address'])) ? [    // Адрес компании
+                'streetAddress'     => self::option_value($options['address'], 'street'),
+                'addressLocality'   => self::option_value($options['address'], 'local'),
+                'addressRegion'     => self::option_value($options['address'], 'region'),
+                'postalCode'        => self::option_value($options['address'], 'postal'),
+                'addressCountry'    => self::option_value($options['address'], 'country'),
                 ] : NULL;
 
         if (isset($options['contacts']) AND is_array($options['contacts'])) { // Контакты компании
                 foreach ($options['contacts'] as $contact) {
+					if (!is_array($contact)) continue;
                     $this->contacts[] = [
-                        'type'      => ready_val($contact['type']),
-                        'telephone' => ready_val($contact['phone']),
-                        'email'     => ready_val($contact['email']),
+                        'type'      => self::option_value($contact, 'type'),
+                        'telephone' => self::option_value($contact, 'phone'),
+                        'email'     => self::option_value($contact, 'email'),
                         ];
                     }
                 } else {
@@ -58,6 +63,7 @@ class itMarkOrg
 
         if (isset($options['same']) AND is_array($options['same'])) { // Контакты компании
                 foreach ($options['same'] as $same) {
+					if ($same==='') continue;
                     $this->sameAs[] = $same;
                     }
                 } else {
@@ -71,6 +77,11 @@ class itMarkOrg
 	public function prepare()
 		{
 		global $_LDJSON, $_RDFA, $_SCHEMA;
+
+		if (!isset($_LDJSON) OR !is_string($_LDJSON)) $_LDJSON = '';
+		if (!isset($_RDFA) OR !is_string($_RDFA)) $_RDFA = '';
+		if (!isset($_SCHEMA) OR !is_string($_SCHEMA)) $_SCHEMA = '';
+
 		$_LDJSON .=
 TAB.'<script type="application/ld+json">
 {
