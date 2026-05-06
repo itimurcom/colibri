@@ -87,6 +87,61 @@ class itForm2
         return isset($form2_defaults[$kind]) ? $kind : $default;
         }
 
+    protected static function requestValue($key, $default=NULL)
+        {
+        return (isset($_REQUEST) AND is_array($_REQUEST) AND array_key_exists($key, $_REQUEST))
+            ? $_REQUEST[$key]
+            : $default;
+        }
+
+    protected static function requestText($key, $default='')
+        {
+        $value = self::requestValue($key, $default);
+        return is_array($value) ? $default : (string) $value;
+        }
+
+    protected static function sessionArray($key)
+        {
+        if (!isset($_SESSION) OR !is_array($_SESSION))
+            {
+            return [];
+            }
+
+        return (isset($_SESSION[$key]) AND is_array($_SESSION[$key]))
+            ? $_SESSION[$key]
+            : [];
+        }
+
+    protected static function fieldRowValue($row, $key, $default=NULL)
+        {
+        return (is_array($row) AND array_key_exists($key, $row))
+            ? $row[$key]
+            : $default;
+        }
+
+    protected static function normalizedFieldRow($row, $fallback_key=0)
+        {
+        $row = is_array($row) ? $row : [];
+        $row['kind'] = self::normalize_field_kind(self::fieldRowValue($row, 'kind', 'INPUT'));
+
+        if (!isset($row['name']) OR trim((string) $row['name'])==='')
+            {
+            $row['name'] = 'field_'.$fallback_key;
+            }
+
+        if (!isset($row['element']) OR trim((string) $row['element'])==='')
+            {
+            $row['element'] = $row['name'];
+            }
+
+        if (!isset($row['array']) OR !is_array($row['array']))
+            {
+            $row['array'] = [];
+            }
+
+        return $row;
+        }
+
     public function index_name($kind)
         {
         $kind = self::normalize_field_kind($kind);
@@ -560,16 +615,15 @@ class itForm2
         $class_str	= !empty($this->class)	? " class=\"{$this->class}\"" : NULL;
         $captcha_str	= $this->reCaptcha ? " recv3='1'" : NULL;
 
+        $recaptcha = self::sessionArray('v3checked');
         $recaptcha_title = $this->reCaptcha
             ? "<center><small style='opacity:.4;'>protected with reCaptcha".
-                (isset($_SESSION['v3checked'])
-                    ? " score: ".$_SESSION['v3checked']['score']
+                (array_key_exists('score', $recaptcha)
+                    ? " score: ".ready_value($recaptcha['score'])
                     : NULL )."</small></center>"
             : NULL;
 
-        $f2hash = isset($_REQUEST['f2hash'])
-            ? $_REQUEST['f2hash']
-            : NULL;
+        $f2hash = self::requestValue('f2hash');
 
         $this->accepted = ($f2hash == $this->md5hash());
 
@@ -641,9 +695,10 @@ class itForm2
 
     protected function fieldLayoutState($row)
         {
+        $row = self::normalizedFieldRow($row);
         return [
-            'compact' => (ready_val($row['compact'], false) ? ' compact' : ''),
-            'full' => (ready_val($row['more']) ? NULL : ' full'),
+            'compact' => (ready_value(self::fieldRowValue($row, 'compact'), false) ? ' compact' : ''),
+            'full' => (ready_value(self::fieldRowValue($row, 'more')) ? NULL : ' full'),
             'special' => ($row['kind']=='TITLE' ? ' title' : ($row['kind']=='DESC' ? ' description' : NULL)),
             'class' => (!empty($this->class) ? " {$this->class}" : NULL),
             ];
@@ -669,15 +724,21 @@ class itForm2
 
     protected function isSetFieldOptionChecked($row)
         {
-        if (($row['kind']!='SET') OR !isset($row['array']))
+        $row = self::normalizedFieldRow($row);
+        if ($row['kind']!='SET')
             {
             return false;
             }
 
         foreach($row['array'] as $option_row)
             {
-            if (isset($_REQUEST["{$row['name']}_{$option_row['value']}"])
-                AND ($_REQUEST["{$row['name']}_{$option_row['value']}"]=='on'))
+            $value = is_array($option_row) ? self::fieldRowValue($option_row, 'value') : NULL;
+            if (is_null($value))
+                {
+                continue;
+                }
+
+            if (self::requestValue("{$row['name']}_{$value}")=='on')
                     {
                     return true;
                     }
@@ -689,11 +750,17 @@ class itForm2
     protected function fieldValidationError($row, $options_checked, &$focus_str)
         {
         $focus_str = NULL;
+        $row = self::normalizedFieldRow($row);
+        $request_value = self::requestValue($row['name']);
+        $request_text = is_array($request_value) ? '' : trim((string) $request_value);
 
-        if (!$this->error AND $this->accepted AND ready_val($row['required']) AND isset($row['element']) AND !isset($_SESSION['focus'])
-            AND (!isset($_REQUEST[$row['name']]) OR empty(trim($_REQUEST[$row['name']]))
-                OR (($row['kind']=='PHONE') AND !isPhone($_REQUEST[$row['name']]))
-                OR (($row['kind']=='EMAIL') AND !isEmail($_REQUEST[$row['name']])))
+        if (!$this->error
+            AND $this->accepted
+            AND ready_value(self::fieldRowValue($row, 'required'))
+            AND !isset($_SESSION['focus'])
+            AND (is_null($request_value) OR ($request_text==='')
+                OR (($row['kind']=='PHONE') AND !isPhone($request_text))
+                OR (($row['kind']=='EMAIL') AND !isEmail($request_text)))
             AND !$options_checked)
             {
             $_SESSION['focus']['element'] = ($row['kind']=='AUTO') ? "field-".$row['element'] : $row['element'];
@@ -727,7 +794,7 @@ class itForm2
         if (is_array($this->fields_xml))
         foreach ($this->fields_xml as $key=>$row)
             {
-            $row = $this->fieldBaseRow($row, $key);
+            $row = $this->fieldBaseRow(self::normalizedFieldRow($row, $key), $key);
             $layout = $this->fieldLayoutState($row);
             $label_zone = self::_label_zone($row);
             unset($row['class']);
@@ -744,10 +811,9 @@ class itForm2
             $focus_str = NULL;
             $error_str = $this->fieldValidationError($row, $this->isSetFieldOptionChecked($row), $focus_str);
 
-            if (!isset($row['element']))
+            if (!isset($row['element']) OR trim((string) $row['element'])==='')
                 {
-                var_dump($row['element']);
-                echo print_rr($row); die;
+                $row['element'] = isset($row['name']) ? $row['name'] : "field_{$key}";
                 }
 
             $code .= !mempty($label_zone, $editor_zone, $value_zone)
@@ -834,31 +900,33 @@ class itForm2
 
     static function _label_zone($row)
         {
-        $compact 	= ready_val($row['compact'], false) ? ' compact' : '';
+        $row = self::normalizedFieldRow($row);
+        $compact 	= ready_value(self::fieldRowValue($row, 'compact'), false) ? ' compact' : '';
         $class_str	=
-            (ready_val($row['more']) ? NULL : " full").
+            (ready_value(self::fieldRowValue($row, 'more')) ? NULL : " full").
             (!empty($row['class'])	? " {$row['class']}" : NULL);
 
-        return (ready_val($row['no_label']) OR is_null($title_str = self::_label_view($row)))
+        return (ready_value(self::fieldRowValue($row, 'no_label')) OR is_null($title_str = self::_label_view($row)))
                 ? 	NULL
                 :	TAB."<div class=\"label{$compact}{$class_str}\">".
                     $title_str.
-                    ( ready_val($row['required']) ? "&nbsp;<span style='font-size:1.2em;'>*</span>" : NULL).
+                    ( ready_value(self::fieldRowValue($row, 'required')) ? "&nbsp;<span style='font-size:1.2em;'>*</span>" : NULL).
                     TAB."</div>";
         }
 
     static function _label_zone_edit($row)
         {
-        $compact 	= ready_val($row['compact'], false) ? ' compact' : '';
+        $row = self::normalizedFieldRow($row);
+        $compact 	= ready_value(self::fieldRowValue($row, 'compact'), false) ? ' compact' : '';
         $class_str	=
-            (ready_val($row['more']) ? NULL : " full").
+            (ready_value(self::fieldRowValue($row, 'more')) ? NULL : " full").
             (!empty($row['class'])	? " {$row['class']}" : NULL);
 
-        return (ready_val($row['no_label']) OR is_null($title_str = self::_label_edit($row)))
+        return (ready_value(self::fieldRowValue($row, 'no_label')) OR is_null($title_str = self::_label_edit($row)))
                 ? 	NULL
                 :	TAB."<div class=\"label{$compact}{$class_str}\">".
                     $title_str.
-                    ( ready_val($row['required']) ? "&nbsp;<span style='font-size:1.2em;'>*</span>" : NULL).
+                    ( ready_value(self::fieldRowValue($row, 'required')) ? "&nbsp;<span style='font-size:1.2em;'>*</span>" : NULL).
                     TAB."</div>";
         }
 
@@ -930,73 +998,86 @@ class itForm2
         $rows = NULL;
         $empty = isset($options['empty']) ? $options['empty'] : true;
 
-        if ($form = itMySQL::_get_rec_from_db($options['table_name'], $options['rec_id']))
+        $table_name = isset($options['table_name']) ? $options['table_name'] : NULL;
+        $rec_id = isset($options['rec_id']) ? $options['rec_id'] : NULL;
+        if (empty($table_name) OR empty($rec_id))
             {
-            if (is_array($form['fields_xml']))
+            return $rows;
+            }
+
+        if ($form = itMySQL::_get_rec_from_db($table_name, $rec_id))
+            {
+            if (isset($form['fields_xml']) AND is_array($form['fields_xml']))
                 foreach ($form['fields_xml'] as $row)
                     {
+                    $row = self::normalizedFieldRow($row);
                     if ($row['kind']=='TITLE')
                         {
-                        $str = "<div style='font-size:1.2em; margin-top:16px; font-weight:bold;'>".get_field_by_lang($row['value'])."</div>";
+                        $value_title = self::fieldRowValue($row, 'value', []);
+                        $str = "<div style='font-size:1.2em; margin-top:16px; font-weight:bold;'>".get_field_by_lang($value_title)."</div>";
                         $rows[] 	= $str;
-                        $res_arr[] 	= $str;
-                        } else
-                    if (!in_array($row['kind'], explode(',', "TITLE,DESC,CODE")) AND isset($_REQUEST[$row['name']]))
-                        {
-                        $label = is_array($row['label']) ? get_field_by_lang($row['label']) : get_const($row['label']);
-                        $value = NULL;
-                        switch ($row['kind'])
-                            {
-                            case 'SELECT' : {
-                                foreach ($row['array'] as $key=>$line)
-                                    {
-                                    if ($line['value']==$_REQUEST[$row['name']])
-                                        {
-                                        $value = get_field_by_lang($row['array'][$key]['title']);
-                                        }
-                                    }
-                                break;
-                                }
-                            case 'UPGAL' : {
-                                if (is_array($images = explode("|",  $_REQUEST[$row['name']])))
-                                    {
-                                    $ima_res = NULL;
-                                    foreach($images as $image_row)
-                                        {
-                                        if (!empty(trim($image_row)))
-                                        $ima_res[] =
-                                            "<a href=\"".UPLOADS_HTTP.$image_row."\"' target='_blank'>".
-                                            get_thumbnail($image_row, 'GAL_MAIL')."</a><br/>";
-                                        }
-                                    $value = !is_null($ima_res)
-                                        ? "[GAL]".implode('', $ima_res)."[/GAL]"
-                                        : "-";
-                                    }
-                                break;
-                                }
-                            case 'AREA' : {
-                                $value =
-                                    "<div style='padding:.8em; border:1px dashed black;'>{$_REQUEST[$row['name']]}</div>";
-                                break;
-                                }
+                        continue;
+                        }
 
-                            case 'SET' : {
-                                foreach ($row['array'] as $key=>$line)
+                    if (in_array($row['kind'], explode(',', "TITLE,DESC,CODE")) OR is_null(self::requestValue($row['name'])))
+                        {
+                        continue;
+                        }
+
+                    $label_data = self::fieldRowValue($row, 'label', '');
+                    $label = is_array($label_data) ? get_field_by_lang($label_data) : get_const($label_data);
+                    $request_value = self::requestValue($row['name']);
+                    $request_text = is_array($request_value) ? '' : (string) $request_value;
+                    $value = NULL;
+
+                    switch ($row['kind'])
+                        {
+                        case 'SELECT' :
+                        case 'SET' : {
+                            foreach ($row['array'] as $key=>$line)
+                                {
+                                if (!is_array($line))
                                     {
-                                    if ($line['value']==$_REQUEST[$row['name']])
-                                        {
-                                        $value = get_field_by_lang($row['array'][$key]['title']);
-                                        }
+                                    continue;
                                     }
-                                break;
+
+                                if (self::fieldRowValue($line, 'value')==$request_value)
+                                    {
+                                    $value = get_field_by_lang(self::fieldRowValue($line, 'title', []));
+                                    }
                                 }
-                            default : {
-                                $value = $_REQUEST[$row['name']];
-                                break;
-                                }
+                            break;
                             }
-                        if ($empty OR !empty($_REQUEST[$row['name']]))
-                            $rows[] = "<div class='info'><span class='label'>{$label}</span>&nbsp;:&nbsp;{$value}</div>";
+                        case 'UPGAL' : {
+                            $images = explode("|", $request_text);
+                            $ima_res = NULL;
+                            foreach($images as $image_row)
+                                {
+                                if (!empty(trim($image_row)))
+                                    {
+                                    $ima_res[] =
+                                        "<a href=\"".UPLOADS_HTTP.$image_row."\"' target='_blank'>".
+                                        get_thumbnail($image_row, 'GAL_MAIL')."</a><br/>";
+                                    }
+                                }
+                            $value = !is_null($ima_res)
+                                ? "[GAL]".implode('', $ima_res)."[/GAL]"
+                                : "-";
+                            break;
+                            }
+                        case 'AREA' : {
+                            $value = "<div style='padding:.8em; border:1px dashed black;'>{$request_text}</div>";
+                            break;
+                            }
+                        default : {
+                            $value = $request_text;
+                            break;
+                            }
+                        }
+
+                    if ($empty OR !empty($request_text))
+                        {
+                        $rows[] = "<div class='info'><span class='label'>{$label}</span>&nbsp;:&nbsp;{$value}</div>";
                         }
                     }
             }
@@ -1128,28 +1209,45 @@ class itForm2
             return $_SESSION['v3checked'];
             }
 
-        if (!isset($_REQUEST['v3resp'])) {
+        $v3resp = self::requestText('v3resp');
+        if ($v3resp==='') {
             return NULL;
             }
 
-        $resp_json = file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=".urlencode(get_const('RECAPTCHA_SECRET'))."&response={$_REQUEST['v3resp']}");
-        $recaptcha = json_decode($resp_json, true);
+        $secret = get_const('RECAPTCHA_SECRET');
+        if (empty($secret))
+            {
+            $_SESSION['v3checked'] = false;
+            return $_SESSION['v3checked'];
+            }
+
+        $resp_json = @file_get_contents("https://www.google.com/recaptcha/api/siteverify?secret=".urlencode($secret)."&response=".urlencode($v3resp));
+        $recaptcha = json_decode((string) $resp_json, true);
         $_SESSION['v3checked'] = (!is_array($recaptcha) OR !isset($recaptcha['success'])) ? false : $recaptcha;
         return $_SESSION['v3checked'];
         }
 
     static function _check_value($options, $name, $default=NULL)
         {
-        if (isset($options['value']) AND is_array($options['value'])) { print_r($options); die; }
+        $options = is_array($options) ? $options : [];
+        $option_value = array_key_exists('value', $options) ? $options['value'] : NULL;
+        if (is_array($option_value))
+            {
+            return self::_smart_value($option_value, true);
+            }
 
-        return
-            (!empty(ready_val($options['value'])))
-                ? $options['value']
-                : (!isset($_REQUEST[$name])
-                    ? (((isset($options['value']) AND ((trim($options['value'])!=='') OR ($options['value']==0)))
-                            ? $options['value']
-                        : $default))
-                    : $_REQUEST[$name]);
+        $request_value = self::requestValue($name);
+        if (!is_null($request_value))
+            {
+            return $request_value;
+            }
+
+        if ((string) $option_value!=='' OR $option_value===0 OR $option_value==='0')
+            {
+            return $option_value;
+            }
+
+        return $default;
         }
     }
 

@@ -156,3 +156,18 @@
   - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy mail operation names
   - added `docs/MAILING_HISTORY_TEMPLATE_GUARD_STAGE.md`
 
+
+- M0 / P88 cellular language menu guard stabilization bundle
+  - stabilized mobile/cellular navigation boundary against missing `view`, `controller`, and `lang` request keys
+  - guarded language/category/cellular/OG row reads in mobile menu rendering to avoid warnings from incomplete payloads
+  - stabilized legacy `itMenu` top/mobile rendering and fixed an old fallback-link variable issue
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and legacy menu semantics
+  - added `docs/CELLULAR_LANGUAGE_MENU_GUARD_STAGE.md`
+
+- M0 / P89 form2 submit / recaptcha guard stabilization bundle
+  - stabilized `itForm2` view/submit/result rendering against missing form rows, incomplete field metadata, absent request values, and malformed option arrays
+  - removed legacy debug `var_dump/print_rr/die` fallback from missing field-element rendering and replaced it with safe element fallback generation
+  - guarded form result-info rendering for SELECT/SET/UPGAL/AREA/default fields so incomplete field arrays no longer leak warnings into mail/order output
+  - hardened reCaptcha handling against missing session arrays, absent `v3resp`, empty secret values, failed remote checks, and the old `v3cheked` typo in error reporting
+  - preserved bootstrap/config/env behavior, routes, DB schema, storage format, public entrypoint names, and valid form semantics
+  - added `docs/FORM2_SUBMIT_RECAPTCHA_GUARD_STAGE.md`
